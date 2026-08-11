@@ -95,7 +95,7 @@ def execute_tactical_analysis(image_objs, p_info, eco, manager):
             
         # NÂNG CẤP LÊN BỘ NÃO PRO ĐỈNH NHẤT CỦA DEVELOPER API
         response = client.models.generate_content(
-            model='gemini-1.5-pro',
+            model='gemini-3.1-pro',
             contents=contents,
             config=config
         )

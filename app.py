@@ -34,7 +34,12 @@ with col2:
 # ---------------------------------------------------------
 def execute_tactical_analysis(image_objs, p_info, eco, manager):
     try:
-        client = genai.Client()
+        # Lấy API Key từ Secrets của Streamlit
+        api_key = st.secrets.get("GEMINI_API_KEY")
+        if not api_key:
+            return "[LỖI CẤU HÌNH]: Không tìm thấy GEMINI_API_KEY trong mục Advanced settings -> Secrets!"
+            
+        client = genai.Client(api_key=api_key)
         
         system_instruction = """
         Bạn là DNS TACTICAL ARCHITECT - Giám đốc Kỹ thuật (Technical Director) kiêm Bậc thầy Chiến thuật eFootball đẳng cấp thế giới, mang tư duy bóng đá vĩ đại sánh ngang Pep Guardiola. Lời nói của bạn là chân lý chiến thuật: cực kỳ đanh thép, chuyên nghiệp, uy quyền và quyết đoán tuyệt đối. Mọi phân tích phải toát lên khí chất của một CEO quản lý dữ liệu bóng đá đỉnh cao, bảo vệ tuyệt đối uy tín của kênh. TUYỆT ĐỐI KHÔNG nói bừa, không dùng từ ngữ vòng vo, cảm tính hay "có lẽ", "tùy thuộc".
@@ -67,7 +72,6 @@ def execute_tactical_analysis(image_objs, p_info, eco, manager):
         
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
         
-        # BỘ CÔNG TẮC CƯỠNG CHẾ RẼ NHÁNH
         has_player = bool(p_info.strip())
         has_manager = bool(manager.strip())
         
@@ -88,18 +92,22 @@ def execute_tactical_analysis(image_objs, p_info, eco, manager):
             contents.extend(image_objs)
             
         response = client.models.generate_content(
-            model='gemini-3.6-flash',
+            model='gemini-2.5-flash',
             contents=contents,
             config=config
         )
         return response.text
     except Exception as e:
-        return f"[LỖI HỆ THỐNG]: {str(e)}"
+        return f"[LỖI XỬ LÝ AI]: {str(e)}"
 
 # ---------------------------------------------------------
 # XỬ LÝ SỰ KIỆN NÚT BẤM
 # ---------------------------------------------------------
 if st.button("[XỬ LÝ DỮ LIỆU]"):
+    # Xóa sạch báo cáo cũ ngay khi bấm nút
+    if 'analysis_report' in st.session_state:
+        del st.session_state['analysis_report']
+        
     if not uploaded_files:
         st.error("Lỗi dữ liệu: Bạn BẮT BUỘC phải tải lên ít nhất 1 ảnh (Phôi thẻ hoặc HLV)!")
     elif not player_info and not manager_name:

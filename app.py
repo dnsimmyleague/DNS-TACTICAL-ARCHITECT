@@ -11,17 +11,17 @@ st.set_page_config(page_title="DN SIM MY LEAGUE | VIP R&D", page_icon="👑", la
 
 custom_css = """
 <style>
-    /* 1. Xóa sạch dấu vết của Streamlit (Hàng Free) */
+    /* 1. Xóa sạch dấu vết của Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* 2. Màu nền Xám Than Không Gian (Charcoal) - Sang trọng */
+    /* 2. Màu nền Xám Than Không Gian */
     .stApp {
         background-color: #121418 !important; 
     }
     
-    /* 3. Tiêu đề Kênh - Gradient Vàng Kim */
+    /* 3. Tiêu đề Kênh */
     .title-gradient {
         text-align: center;
         background: -webkit-linear-gradient(45deg, #D4AF37, #FFF8DC);
@@ -43,7 +43,7 @@ custom_css = """
         letter-spacing: 1px;
     }
 
-    /* 4. Định dạng Nút Bấm Xử Lý Vàng Khối (Solid Gold) */
+    /* 4. Định dạng Nút Bấm VIP */
     .stButton > button { 
         width: 100%; 
         height: 65px; 
@@ -63,7 +63,7 @@ custom_css = """
         background: linear-gradient(90deg, #FFD700 0%, #D4AF37 100%);
     }
 
-    /* 5. CẤU TRÚC PHIẾU VIP (ĐỂ SẾP CHỤP MÀN HÌNH GỬI KHÁCH) */
+    /* 5. CẤU TRÚC PHIẾU VIP (Đã tăng kích thước Ảnh để chống mờ) */
     .vip-card {
         background: linear-gradient(145deg, #1A1D24, #242933);
         border: 2px solid #D4AF37;
@@ -78,7 +78,10 @@ custom_css = """
         padding-bottom: 20px;
         margin-bottom: 30px;
     }
-    .vip-logo { max-width: 150px; border-radius: 12px; margin-bottom: 15px; }
+    
+    /* TĂNG SIZE LOGO LÊN 180px */
+    .vip-logo { max-width: 180px; border-radius: 12px; margin-bottom: 15px; }
+    
     .vip-brand { color: #D4AF37; font-size: 28px; font-weight: 900; letter-spacing: 2px; margin: 0; }
     .vip-text { color: #E0E0E0; font-family: 'Consolas', monospace; font-size: 16px; line-height: 1.6; white-space: pre-wrap; }
     .vip-footer {
@@ -87,10 +90,12 @@ custom_css = """
         padding-top: 30px;
         margin-top: 40px;
     }
-    .vip-qr { max-width: 150px; border-radius: 10px; border: 3px solid #D4AF37; margin-bottom: 10px;}
+    
+    /* TĂNG SIZE QR LÊN 250px CHO DỄ QUÉT */
+    .vip-qr { max-width: 250px; border-radius: 10px; border: 3px solid #D4AF37; margin-bottom: 10px;}
+    
     .vip-copyright { color: #808080; font-size: 14px; margin-top: 10px;}
     
-    /* Chỉnh khung copy text cho gọn gàng */
     .stTextArea textarea { 
         font-family: 'Consolas', monospace !important; 
         font-size: 14px !important; 
@@ -145,10 +150,10 @@ def execute_tactical_analysis(image_objs, p_info, eco, manager):
         KỊCH BẢN 3: KHI CÓ CẢ CẦU THỦ VÀ HLV (ÉP CHỈ SỐ DÀNH CHO CONTENT)
         [VAI TRÒ THỰC CHIẾN] Cầu thủ đá vai trò gì trong sơ đồ HLV này?
         [TỔNG QUỸ PP] Quét Points X/Y. Lấy Y làm tổng.
-        [CÔNG THỨC MANUAL BUILD ĐỘC QUYỀN] Chỉ số cụ thể kèm 1 câu giải thích ý đồ phân bổ (Ví dụ: Bỏ qua phòng thủ, dồn sức vào tăng tốc).
+        [CÔNG THỨC MANUAL BUILD ĐỘC QUYỀN] Chỉ số cụ thể kèm 1 câu giải thích ý đồ phân bổ.
         [BOOSTER & TOP 5 SKILL] Đề xuất 1 Booster (nếu thỏa điều kiện) + 5 Skill mới KHÔNG TRÙNG SKILL TRONG ẢNH. BẮT BUỘC giải thích vai trò từng skill.
-        [BÓC TÁCH AUTO VS MANUAL] Tại sao Auto OVR lại ngu ngốc/lãng phí với con hàng này? Manual buff thêm vào đâu để tối ưu? (Phục vụ làm kịch bản Video so sánh).
-        [KỊCH BẢN HIGHLIGHT IN-GAME] Tưởng tượng 2 tình huống ghi bàn/kiến tạo/phòng ngự điển hình trong game thực tế dựa trên thông số Manual Build này.
+        [BÓC TÁCH AUTO VS MANUAL] Tại sao Auto OVR lại ngu ngốc/lãng phí với con hàng này? Manual buff thêm vào đâu để tối ưu?
+        [KỊCH BẢN HIGHLIGHT IN-GAME] Tưởng tượng 2 tình huống ghi bàn/kiến tạo/phòng ngự điển hình trong game thực tế.
         """
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.3)
         
@@ -188,9 +193,9 @@ if st.button("[BẮT ĐẦU PHÂN TÍCH VIP]"):
 # --- KHU VỰC IN PHIẾU VIP ĐỂ SẾP CHỤP MÀN HÌNH ---
 if 'analysis_report' in st.session_state:
     
-    # Đã cập nhật 2 link ảnh sống nhăn răng của sếp
-    LINK_LOGO = "https://i.postimg.cc/f3TrLpQc/044111AB-7F8B-4DBE-B375-A9EBF547FE57.jpg"
-    LINK_QR = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
+    # ĐÃ ĐẢO LẠI ĐÚNG VỊ TRÍ LINK: LOGO Ở TRÊN, QR Ở DƯỚI
+    LINK_LOGO = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
+    LINK_QR = "https://i.postimg.cc/f3TrLpQc/044111AB-7F8B-4DBE-B375-A9EBF547FE57.jpg"
     
     vip_html = f"""
 <div class="vip-card">

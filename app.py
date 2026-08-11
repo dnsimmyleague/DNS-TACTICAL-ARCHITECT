@@ -166,7 +166,6 @@ def execute_tactical_analysis(image_objs, p_info, eco, manager):
         contents = [context_prompt]
         if image_objs: contents.extend(image_objs)
             
-        # GỌI BỘ NÃO GEMINI 3.6 FLASH NHƯ SẾP ĐÃ TEST THÀNH CÔNG
         response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
         return response.text
     except Exception as e:
@@ -189,11 +188,10 @@ if st.button("[BẮT ĐẦU PHÂN TÍCH VIP]"):
 # --- KHU VỰC IN PHIẾU VIP ĐỂ SẾP CHỤP MÀN HÌNH ---
 if 'analysis_report' in st.session_state:
     
-    # 2 LINK ẢNH CHUẨN CỦA SẾP ĐÃ ĐƯỢC NHÚNG VĨNH VIỄN
-    LINK_LOGO = "https://i.postimg.cc/Z08wFwRz/6BE6F123-A510-4E26-A87D-013DD727C640.jpg"
-    LINK_QR = "https://i.postimg.cc/xqv6y6dg/9DAC0C0C-847B-4424-844D-B4BF2C07B7E4.jpg"
+    # Đã cập nhật 2 link ảnh sống nhăn răng của sếp
+    LINK_LOGO = "https://i.postimg.cc/f3TrLpQc/044111AB-7F8B-4DBE-B375-A9EBF547FE57.jpg"
+    LINK_QR = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
     
-    # Đã xóa khoảng trắng thụt lề để không bị lỗi viền xám Code block
     vip_html = f"""
 <div class="vip-card">
 <div class="vip-header">
@@ -205,7 +203,7 @@ if 'analysis_report' in st.session_state:
 {st.session_state['analysis_report']}
 </div>
 <div class="vip-footer">
-<h3 style="color: #D4AF37; margin-bottom: 15px;">ỦNG HỘ ĐỘI NGŨ R&D</h3>
+<h3 style="color: #D4AF37; margin-bottom: 15px;">ỦNG HỘ DN SIM MY LEAGUE</h3>
 <img src="{LINK_QR}" class="vip-qr">
 <p class="vip-copyright">© 2026 Bản quyền phân tích thuộc về DN SIM MY LEAGUE. Cấm sao chép dưới mọi hình thức.</p>
 </div>
@@ -213,7 +211,6 @@ if 'analysis_report' in st.session_state:
 """
     st.markdown(vip_html, unsafe_allow_html=True)
     
-    # Khung Text ẩn để copy cho team Content
     if 'text_key' not in st.session_state:
         st.session_state['text_key'] = "default_key"
         

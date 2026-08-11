@@ -193,25 +193,24 @@ if 'analysis_report' in st.session_state:
     LINK_LOGO = "https://i.postimg.cc/Z08wFwRz/6BE6F123-A510-4E26-A87D-013DD727C640.jpg"
     LINK_QR = "https://i.postimg.cc/xqv6y6dg/9DAC0C0C-847B-4424-844D-B4BF2C07B7E4.jpg"
     
+    # Đã xóa khoảng trắng thụt lề để không bị lỗi viền xám Code block
     vip_html = f"""
-    <div class="vip-card">
-        <div class="vip-header">
-            <img src="{LINK_LOGO}" class="vip-logo">
-            <h2 class="vip-brand">DN SIM MY LEAGUE</h2>
-            <p style="color: #A9A9A9; font-style: italic; margin-top: -10px;">Báo cáo Kỹ thuật Độc quyền (VIP)</p>
-        </div>
-        
-        <div class="vip-text">
+<div class="vip-card">
+<div class="vip-header">
+<img src="{LINK_LOGO}" class="vip-logo">
+<h2 class="vip-brand">DN SIM MY LEAGUE</h2>
+<p style="color: #A9A9A9; font-style: italic; margin-top: -10px;">Báo cáo Kỹ thuật Độc quyền (VIP)</p>
+</div>
+<div class="vip-text">
 {st.session_state['analysis_report']}
-        </div>
-        
-        <div class="vip-footer">
-            <h3 style="color: #D4AF37; margin-bottom: 15px;">ỦNG HỘ ĐỘI NGŨ R&D</h3>
-            <img src="{LINK_QR}" class="vip-qr">
-            <p class="vip-copyright">© 2026 Bản quyền phân tích thuộc về DN SIM MY LEAGUE. Cấm sao chép dưới mọi hình thức.</p>
-        </div>
-    </div>
-    """
+</div>
+<div class="vip-footer">
+<h3 style="color: #D4AF37; margin-bottom: 15px;">ỦNG HỘ ĐỘI NGŨ R&D</h3>
+<img src="{LINK_QR}" class="vip-qr">
+<p class="vip-copyright">© 2026 Bản quyền phân tích thuộc về DN SIM MY LEAGUE. Cấm sao chép dưới mọi hình thức.</p>
+</div>
+</div>
+"""
     st.markdown(vip_html, unsafe_allow_html=True)
     
     # Khung Text ẩn để copy cho team Content

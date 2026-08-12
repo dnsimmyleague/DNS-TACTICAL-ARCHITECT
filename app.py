@@ -4,133 +4,180 @@ from google import genai
 from google.genai import types
 import random
 import gc
+import re
 
 # ---------------------------------------------------------
-# CẤU HÌNH GIAO DIỆN CHUNG - VIP DNS (HỖ TRỢ AUTO SÁNG/TỐI)
+# 1. CẤU HÌNH GIAO DIỆN MỆNH KIM PREMIUM (TƯƠI SÁNG, SANG TRỌNG)
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
 custom_css = """
 <style>
-    /* 1. Xóa sạch dấu vết của Streamlit */
+    /* Xóa thanh trang trí của Streamlit */
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
     
-    /* 2. Tiêu đề Thương hiệu */
+    /* Khóa màu nền Titanium Slate tươi sáng, không bị tối u ám */
+    .stApp {
+        background-color: #1E222A !important;
+    }
+    
+    /* Tiêu đề Vàng Hoàng Kim Mệnh Kim */
     .title-brand { 
         text-align: center; 
-        color: #D4AF37; 
-        font-size: 2.2rem; 
+        color: #FFD700 !important; 
+        font-size: 2.4rem; 
         font-weight: 900; 
         margin-bottom: 5px; 
-        letter-spacing: 2px; 
+        letter-spacing: 2px;
+        text-shadow: 0px 2px 10px rgba(255, 215, 0, 0.3);
     }
     
     .slogan { 
         text-align: center; 
-        color: #888888; 
-        font-size: 1rem; 
+        color: #E0E6ED !important; 
+        font-size: 1.05rem; 
         font-style: italic; 
         margin-bottom: 25px; 
     }
 
-    /* 3. Nút bấm phẳng, mạnh mẽ */
-    .stButton > button { 
-        width: 100%; height: 55px; font-size: 18px; font-weight: 900; 
-        background-color: #D4AF37; color: #121418 !important; border: none; border-radius: 8px; 
+    /* Khung nhập liệu sáng rõ, dễ đọc */
+    .stTextInput > div > div > input, .stSelectbox > div > div > div {
+        background-color: #F4F6F9 !important;
+        color: #111827 !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        border: 1px solid #D4AF37 !important;
+    }
+    
+    label {
+        color: #FFD700 !important;
+        font-weight: bold !important;
     }
 
-    /* 4. HIỆU ỨNG TAB 3D (KẸP HỒ SƠ) */
-    .stTabs [data-baseweb="tab-list"] { 
-        gap: 8px; 
-    }
-    .stTabs [data-baseweb="tab"] { 
-        background-color: rgba(212, 175, 55, 0.05); /* Màu nền mờ khi chưa chọn */
-        border: 1px solid rgba(212, 175, 55, 0.4);
-        border-bottom: none;
-        border-radius: 8px 8px 0px 0px; /* Bo tròn góc trên như folder */
-        padding: 10px 15px; 
-        box-shadow: inset 0 -3px 5px rgba(0,0,0,0.02); /* Đổ bóng chìm */
-        transition: all 0.2s ease-in-out;
-    }
-    
-    /* Khi Tab được bấm (Nhô lên, đổi màu) */
-    .stTabs [aria-selected="true"] { 
-        background-color: #D4AF37 !important; 
+    /* Nút bấm Vàng Hoàng Kim rực rỡ */
+    .stButton > button { 
+        width: 100%; 
+        height: 55px; 
+        font-size: 19px; 
+        font-weight: 900; 
+        background: linear-gradient(135deg, #FFD700 0%, #D4AF37 100%) !important; 
         color: #121418 !important; 
-        font-weight: 900;
-        transform: translateY(-2px); /* Hiệu ứng nhô cao lên */
-        box-shadow: 0 -4px 10px rgba(0,0,0,0.1); /* Đổ bóng nổi */
-        border: 1px solid #D4AF37;
+        border: none !important; 
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Tab 3D nổi khối Bạch Kim & Gold */
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
+    .stTabs [data-baseweb="tab"] { 
+        background-color: #2A2F3A !important;
+        border: 1px solid #D4AF37 !important;
+        border-bottom: none !important;
+        border-radius: 8px 8px 0px 0px !important;
+        padding: 10px 16px !important; 
+        color: #E0E6ED !important;
     }
     
-    /* 5. Khung Báo Cáo nối liền với Tab */
+    .stTabs [aria-selected="true"] { 
+        background-color: #FFD700 !important; 
+        color: #121418 !important; 
+        font-weight: 900 !important;
+        transform: translateY(-3px);
+        box-shadow: 0 -4px 10px rgba(255, 215, 0, 0.3);
+    }
+    
+    /* Khung Báo Cáo VIP */
     .vip-card { 
-        background-color: var(--background-color); /* Tự động đổi Sáng/Tối theo thiết bị */
-        border: 2px solid #D4AF37; 
+        background-color: #252A34 !important; 
+        border: 2px solid #FFD700 !important; 
         border-radius: 0px 10px 10px 10px; 
-        padding: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        padding: 22px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
     
     .vip-text { 
-        font-family: monospace; 
-        font-size: 14px; 
+        font-family: 'Consolas', monospace; 
+        font-size: 14.5px; 
         line-height: 1.6; 
         white-space: pre-wrap; 
-        color: var(--text-color); /* Tự động đổi chữ đen/trắng theo nền */
+        color: #F3F4F6 !important; 
     }
     
     .vip-footer { 
         text-align: center; 
-        border-top: 1px dashed #D4AF37; 
+        border-top: 1px dashed #FFD700; 
         padding-top: 15px; 
         margin-top: 20px; 
-        color: #888888; 
+        color: #9CA3AF; 
         font-size: 12px; 
     }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# Hiển thị Tiêu đề và Slogan
+# Đầu trang Thương hiệu
 st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=True)
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# KHỐI NHẬP LIỆU
+# 2. KHỐI NHẬP LIỆU
 # ---------------------------------------------------------
 player_info = st.text_input("Tên Cầu thủ & Vị trí (Bỏ trống nếu vẽ sơ đồ):", placeholder="Ví dụ: D. Bergkamp - CF")
-ecosystem = st.selectbox("Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"])
+ecosystem = st.selectbox("Chọn hệ sinh thái (PvP / SIM AI):", ["PvP", "SIM AI"])
 manager_name = st.text_input("Tên HLV (Bỏ trống nếu khám bệnh cầu thủ):", placeholder="Ví dụ: R. Martínez (QC)...")
-uploaded_file = st.file_uploader("Tải 1 ảnh (Phôi thẻ/HLV)", type=['png', 'jpg', 'jpeg'], accept_multiple_files=False)
+uploaded_file = st.file_uploader("Tải 1 ảnh (Phôi thẻ hoặc Efhub đã buff HLV)", type=['png', 'jpg', 'jpeg'], accept_multiple_files=False)
 
 # ---------------------------------------------------------
-# LÕI TRÍ TUỆ NHÂN TẠO (AI CORE)
+# 3. LỌC RÁC KÝ TỰ & BỘ NÃO AI LOGIC VIP
 # ---------------------------------------------------------
+def clean_text_formatting(raw_text):
+    """Xóa bỏ triệt để các ký tự rác Markdown và LaTeX"""
+    text = raw_text.replace("**", "").replace("*", "").replace("$", "").replace("#", "")
+    text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
+    return text
+
 def execute_tactical_analysis(image_obj, p_info, eco, manager):
     try:
         api_key = st.secrets.get("GEMINI_API_KEY")
-        if not api_key: return "[LỖI]: Không tìm thấy mã API."
+        if not api_key: return "[LỖI CẤU HÌNH]: Không tìm thấy GEMINI_API_KEY trong Secrets!"
             
         client = genai.Client(api_key=api_key)
         
         system_instruction = """
-        Bạn là DNS TACTICAL ARCHITECT. Viết Báo cáo nội bộ VIP. Không dùng từ "(GIẤU)".
-        LỆNH QUAN TRỌNG NHẤT: BẠN BẮT BUỘC PHẢI CHIA BÀI VIẾT THÀNH ĐÚNG 3 PHẦN. 
-        Giữa mỗi phần, bạn phải đặt 1 dòng chỉ chứa duy nhất ký hiệu này: ===
+        Bạn là DNS TACTICAL ARCHITECT - Giám đốc Kỹ thuật & Chuyên gia Phân tích eFootball Cao cấp.
+
+        QUY TẮC ĐỊNH DẠNG (BẮT BUỘC):
+        1. KHÔNG dùng dấu sao (*), dấu thăng (#), dấu đô la ($), hoặc mã LaTeX (\\rightarrow). Dùng gạch ngang (-) cho danh sách, dùng (->) chỉ hướng.
+        2. CẤM TUYỆT ĐỐI dùng từ "(GIẤU)".
+        3. BẮT BUỘC CHIA BÀI VIẾT THÀNH ĐÚNG 3 PHẦN BẰNG DẤU ===
+
+        QUY TẮC PHÂN LOẠI THẺ THEO LEVEL (CỰC KỲ QUAN TRỌNG):
         
+        TRƯỜNG HỢP A: Ảnh hiển thị "Level 1" (Thẻ Cố Định / Preset của Konami):
+        - Tuyệt đối KHÔNG đề xuất Công thức Manual Build, KHÔNG đề xuất Booster, KHÔNG đề xuất Skill thêm.
+        - Tập trung 100% đánh giá thực chiến: Bộ chỉ số Level 1 này có gánh nổi triết lý của HLV không? Vị trí & sơ đồ tối ưu nhất để tận dụng phôi thẻ cố định này. Ưu/nhược điểm khi đá PvP/SIM.
+
+        TRƯỜNG HỢP B: Ảnh hiển thị Level > 1 (Thẻ Tùy Chỉnh):
+        - Xuất Công thức Manual Build Độc quyền (Chỉ rõ điểm cộng và giải thích chuyên môn lý do nâng).
+        - Chọn chính xác 1 Extra Booster (+1) từ Danh sách chuẩn bên dưới.
+        - Khẳng định đề xuất TOP 5 SKILLS BỔ SUNG BẮT BUỘC (Tẩy cho 5 slot trống, KHÔNG dùng từ 'nếu có/nếu còn trống', KHÔNG TRÙNG skill gốc trong ảnh).
+
+        DANH SÁCH EXTRA BOOSTER SLOT CHUẨN (+1 STATS):
+        Accuracy +1; Aerial +1; Aerial Block +1; Agility +1; Balancer +1; Ball Protection +1; Ball-carrying +1; Breakthrough +1; Counter +1; Crossing +1; Defending +1; Duelling +1; Fantasista +1; Free-kick Taking +1; Goalkeeping +1; Hard Worker +1; Off the ball +1; Offence creator +1; Passing +1; Physicality +1; Rebuilding +1; Regista +1; Saving +1; Shooting +1; Shutdown +1; Stealing +1; Strength +1; Striker's Instinct +1; Technique +1.
+
+        CẤU TRÚC ĐẦU RA 3 PHẦN:
         PHẦN 1: TỔNG QUAN (Trước dấu === đầu tiên)
         - Đọc vị tố chất / Triết lý HLV.
         - Vai trò thực chiến & Quỹ PP (Nếu có).
-        
+
         PHẦN 2: CHIẾN THUẬT & CHỈ SỐ (Giữa 2 dấu ===)
         - Nếu có HLV: Sơ đồ tối ưu & Quy hoạch nhân sự.
-        - Nếu có cầu thủ: Công thức Manual Build Độc quyền (Giải thích chi tiết). 
-        - Đề xuất Booster & Skill KHÔNG TRÙNG trong ảnh.
-        
+        - Công thức Manual Build (Nếu Level > 1) HOẶC Định hướng vị trí tối ưu (Nếu Level 1).
+        - 1 Booster (+1) + Top 5 Skill tẩy chuyên dụng (Nếu Level > 1).
+
         PHẦN 3: BÓC TÁCH & HIGHLIGHT (Sau dấu === cuối cùng)
-        - Phân tích điểm mù và sự lãng phí của hệ thống AUTO OVR.
-        - Vẽ kịch bản Highlight in-game.
+        - Bóc tách điểm mù và sự lãng phí của hệ thống Auto OVR.
+        - Kịch bản Highlight in-game thực chiến.
         """
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.3)
         
@@ -139,7 +186,7 @@ def execute_tactical_analysis(image_obj, p_info, eco, manager):
         
         if has_m and not has_p: kich_ban = "KỊCH BẢN 1: TƯ DUY KIẾN TRÚC SƯ"
         elif has_p and not has_m: kich_ban = "KỊCH BẢN 2: TUYỂN TRẠCH VIÊN"
-        else: kich_ban = "KỊCH BẢN 3: DNS ÉP CHỈ SỐ - CONTENT TRIỆU VIEW"
+        else: kich_ban = "KỊCH BẢN 3: DNS ÉP CHỈ SỐ"
             
         context_prompt = f"Cầu thủ: {p_info if has_p else 'Không'} | HLV: {manager if has_m else 'Không'} | Chế độ: {eco}. THỰC THI DUY NHẤT: {kich_ban}."
         
@@ -147,12 +194,14 @@ def execute_tactical_analysis(image_obj, p_info, eco, manager):
         if image_obj: contents.append(image_obj)
             
         response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
-        return response.text
+        return clean_text_formatting(response.text)
     except Exception as e:
+        if "503" in str(e):
+            return "[MÁY CHỦ BẬN]: Hệ thống Gemini đang quá tải tạm thời. Vui lòng bấm lại sau 5 giây."
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# XỬ LÝ SỰ KIỆN VÀ CHIA TAB GIAO DIỆN
+# 4. XỬ LÝ SỰ KIỆN & IN PHIẾU VIP (TỰ ĐỘNG CHIA TAB)
 # ---------------------------------------------------------
 if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
     if 'analysis_report' in st.session_state: del st.session_state['analysis_report']
@@ -182,19 +231,18 @@ if 'analysis_report' in st.session_state:
     
     tab1, tab2, tab3 = st.tabs(["📋 TỔNG QUAN", "⚙️ CHIẾN THUẬT", "🚀 ĐÁNH GIÁ"])
     
-    # Định dạng HTML bọc nội dung từng Tab, chèn thêm link Logo để nhận diện
     LINK_LOGO = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
     
     def format_tab(content):
         return f"""
         <div class="vip-card">
             <div style="text-align:center; margin-bottom: 15px;">
-                <img src="{LINK_LOGO}" style="max-width: 100px; border-radius: 8px;">
+                <img src="{LINK_LOGO}" style="max-width: 90px; border-radius: 8px;">
             </div>
             <div class="vip-text">{content.strip()}</div>
             <div class="vip-footer">
-                <span style="color: #D4AF37; font-weight: bold;">DN SIM MY LEAGUE</span><br>
-                © 2026 Bản quyền phân tích Độc quyền (VIP DNS)
+                <span style="color: #FFD700; font-weight: bold; font-size: 13px;">DNS TACTICAL ARCHITECT</span><br>
+                © 2026 DN SIM MY LEAGUE. All rights reserved.
             </div>
         </div>
         """

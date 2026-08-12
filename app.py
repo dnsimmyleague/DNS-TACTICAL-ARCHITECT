@@ -57,7 +57,7 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. KHỐI NHẬP LIỆU (CƠ CHẾ MỞ KHÓA TỰ DO)
+# 2. KHỐI NHẬP LIỆU (MỞ KHÓA TỰ DO)
 # ---------------------------------------------------------
 player_info = st.text_input("Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: D. Bergkamp hoặc 4-2-1-3")
 ecosystem = st.selectbox("Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"])
@@ -66,11 +66,11 @@ is_comparison = st.checkbox("✅ ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (Trái: AU
 st.markdown("<p style='color: #FFD700; font-weight: bold; margin-bottom: 0px;'>📸 1. Tải ảnh Cầu thủ (Phôi thẻ gốc HOẶC Ảnh so sánh 2 cột):</p>", unsafe_allow_html=True)
 uploaded_player = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="player_img")
 
-st.markdown("<p style='color: #FFD700; font-weight: bold; margin-bottom: 0px;'>📸 2. Tải ảnh HLV (Để phân tích Dream Team hoặc Buff cộng hưởng):</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #FFD700; font-weight: bold; margin-bottom: 0px;'>📸 2. Tải ảnh HLV (Phân tích Dream Team / Buff cộng hưởng):</p>", unsafe_allow_html=True)
 uploaded_manager = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="manager_img")
 
 # ---------------------------------------------------------
-# 3. BỘ NÃO AI LOGIC VIP (XỬ LÝ DỮ LIỆU ĐA KỊCH BẢN)
+# 3. BỘ NÃO AI LOGIC VIP (XỬ LÝ ĐA KỊCH BẢN & LÕI CHIẾN THUẬT)
 # ---------------------------------------------------------
 def clean_text(raw_text):
     text = raw_text.replace("**", "").replace("*", "").replace("$", "").replace("#", "")
@@ -84,34 +84,32 @@ def execute_tactical_analysis(img_player, img_manager, p_info, eco, is_comp):
         client = genai.Client(api_key=api_key)
         
         system_instruction = """
-        Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Phân tích Chiến thuật eFootball VIP quốc tế.
+        Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Phân tích Chiến thuật eFootball VIP.
 
-        QUY TẮC ĐỊNH DẠNG & VĂN PHONG:
-        1. KHÔNG dùng ký tự Markdown (*, #, $, \\rightarrow). Dùng gạch ngang (-) cho danh sách, mũi tên (->) chỉ hướng.
-        2. NGHIÊM CẤM dùng tiếng lóng (đè C, chọc ngoáy, ảo ma, phế...). Không dùng từ "(GIẤU)". Chỉ dùng ngôn ngữ phân tích VIP.
-        3. BẮT BUỘC CHIA BÀI VIẾT THÀNH ĐÚNG 3 PHẦN BẰNG KÝ HIỆU ===
+        QUY TẮC ĐỊNH DẠNG: KHÔNG ký tự Markdown (*, #, $, \\rightarrow). Cấm tiếng lóng (đè C, phế, ngáo...). Chia 3 phần bằng ===.
 
-        XÁC ĐỊNH KỊCH BẢN LÀM VIỆC DỰA TRÊN ẢNH ĐẦU VÀO:
-        
-        KỊCH BẢN A: CHỈ CÓ ẢNH HLV (KHÔNG CÓ ẢNH CẦU THỦ) - KIẾN TẠO DREAM TEAM
-        - PHẦN 1 (Trước ===): TỔNG QUAN TRIẾT LÝ. Đọc vị lối chơi HLV, phân tích Link-up Play (nếu có) và đề xuất sơ đồ chiến thuật tối ưu nhất.
-        - PHẦN 2 (Giữa ===): QUY HOẠCH 23 NHÂN SỰ. Chỉ định vị trí và Playstyle bắt buộc cho 11 người đá chính và 12 dự bị (Ví dụ: CF - Goal Poacher, DMF - Anchor Man).
-        - PHẦN 3 (Sau ===): INDIVIDUAL INSTRUCTIONS & KỊCH BẢN THAY NGƯỜI.
-            + Mặc định: Đề xuất Individual Instructions cho 11 người đá chính (Anchoring, Defensive, Counter Target...).
-            + Tấn công tất tay (Bị dẫn bàn): Đề xuất thay ai, vai trò gì, cài Instruction gì.
-            + Bảo toàn tỉ số (Thủ): Đề xuất thay ai, vai trò gì, cài Instruction gì.
+        QUY TẮC CỐT TỦ VỀ INDIVIDUAL INSTRUCTIONS (CHỈ ĐẠO CÁ NHÂN):
+        Game bị giới hạn cứng tối đa 4 slot:
+        - Tấn Công (Max 2 Slot): Defensive, Attacking, Anchoring, False No.9, Hug the Touchline, Centering Targets.
+        - Phòng Ngự (Max 2 Slot): Counter Target, Deep Line, Man Marking, Tight Marking.
+        TUYỆT ĐỐI KHÔNG đề xuất vượt quá giới hạn này.
+        Lệnh cài đặt PHẢI LÀ SỰ TỔNG HÒA của: Triết lý HLV + Sơ đồ + Playstyle cầu thủ. 
+        (VD: Không tốn slot 'Defensive' cho DMF 'Anchor Man' vì bản năng đã tự giữ vị trí. HLV đá Possession thì hạn chế 'Counter Target' làm gãy Link-up).
 
-        KỊCH BẢN B: CÓ ẢNH CẦU THỦ (CÓ HOẶC KHÔNG CÓ HLV KÈM THEO)
-        - Nếu có HLV kèm theo, lấy thông số Buff/Link-up của HLV để trừ hao điểm PP và thiết kế lối chơi cộng hưởng.
-        - Nếu là ẢNH SO SÁNH KÉP (Trái: Auto, Phải: Manual): Phản biện sự lãng phí của Auto, bảo vệ bản Manual dựa trên chiến thuật. Tuyệt đối không tự bịa số.
-        - Nếu là Cầu thủ Level 1: Chỉ đánh giá thực chiến, vị trí tối ưu.
-        - Nếu là Cầu thủ Build tay (Level > 1): Xuất Công thức Manual. Chọn 1 Booster (+1). Xuất TOP 5 SKILL BỔ SUNG: Xếp thứ tự ưu tiên 1 đến 5 (1 là quan trọng nhất). Không dùng từ ngập ngừng.
+        KỊCH BẢN A: CHỈ CÓ ẢNH HLV - KIẾN TẠO DREAM TEAM
+        - PHẦN 1 (Trước ===): TỔNG QUAN TRIẾT LÝ. Đọc vị lối chơi HLV, Link-up Play, đề xuất Sơ đồ.
+        - PHẦN 2 (Giữa ===): QUY HOẠCH 23 NHÂN SỰ. Chỉ định vị trí và Playstyle chuẩn (VD: CF - Goal Poacher).
+        - PHẦN 3 (Sau ===): INDIVIDUAL INSTRUCTIONS. Đề xuất tuân thủ luật 4 Slot ở trên. Ghi rõ giải pháp cho Kịch bản Tấn công tất tay và Thủ bảo toàn.
 
-        DANH SÁCH EXTRA BOOSTER (+1): Accuracy, Aerial, Aerial Block, Agility, Balancer, Ball Protection, Ball-carrying, Breakthrough, Counter, Crossing, Defending, Duelling, Fantasista, Free-kick Taking, Goalkeeping, Hard Worker, Off the ball, Offence creator, Passing, Physicality, Rebuilding, Regista, Saving, Shooting, Shutdown, Stealing, Strength, Striker's Instinct, Technique.
+        KỊCH BẢN B: CÓ ẢNH CẦU THỦ
+        - Nếu kèm HLV: Trừ hao điểm PP bị buff, thiết kế lối chơi cộng hưởng Link-up.
+        - ẢNH SO SÁNH (Trái Auto, Phải Manual): Phản biện Auto, bảo vệ Manual.
+        - Thẻ Level 1: Đánh giá thực chiến, vị trí tối ưu (Không Build).
+        - Thẻ Level > 1: Công thức Build. 1 Booster (+1). TOP 5 SKILL BỔ SUNG (Xếp thứ tự ưu tiên 1-5).
         """
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.3)
         
-        comp_text = "ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (TRÁI LÀ AUTO, PHẢI LÀ MANUAL). Hãy phản biện Auto và bảo vệ Manual." if is_comp else ""
+        comp_text = "ĐÂY LÀ ẢNH SO SÁNH (TRÁI AUTO, PHẢI MANUAL). Tập trung phản biện." if is_comp else ""
         context_prompt = f"Thông tin/Sơ đồ: {p_info} | Chế độ: {eco}. {comp_text}"
         
         contents = [context_prompt]
@@ -121,28 +119,22 @@ def execute_tactical_analysis(img_player, img_manager, p_info, eco, is_comp):
         response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
         return clean_text(response.text)
     except Exception as e:
-        if "503" in str(e): return "[MÁY CHỦ BẬN]: Hệ thống Gemini quá tải tạm thời. Vui lòng thử lại sau 5 giây."
+        if "503" in str(e): return "[MÁY CHỦ BẬN]: Hệ thống Gemini quá tải tạm thời."
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 4. XỬ LÝ SỰ KIỆN & IN PHIẾU VIP (CHIA TAB)
+# 4. XỬ LÝ SỰ KIỆN & IN PHIẾU VIP 
 # ---------------------------------------------------------
 if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
-    # Cập nhật Logic: Cho phép chạy nếu có BẤT KỲ ảnh nào (Cầu thủ hoặc HLV)
     if not uploaded_player and not uploaded_manager: 
-        st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ ở mục 1 HOẶC 1 ảnh HLV ở mục 2!")
+        st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ HOẶC 1 ảnh HLV!")
     else:
         with st.spinner("Hệ thống DNS đang trích xuất Báo cáo VIP..."):
-            img_p = None
-            img_m = None
-            
+            img_p = img_m = None
             if uploaded_player:
-                img_p = Image.open(uploaded_player)
-                img_p.thumbnail((1000, 1000))
-                
+                img_p = Image.open(uploaded_player); img_p.thumbnail((1000, 1000))
             if uploaded_manager:
-                img_m = Image.open(uploaded_manager)
-                img_m.thumbnail((1000, 1000))
+                img_m = Image.open(uploaded_manager); img_m.thumbnail((1000, 1000))
                 
             st.session_state['analysis_report'] = execute_tactical_analysis(img_p, img_m, player_info, ecosystem, is_comparison)
             

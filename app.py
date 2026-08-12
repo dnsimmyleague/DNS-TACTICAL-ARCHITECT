@@ -63,7 +63,7 @@ custom_css = """
         background: linear-gradient(90deg, #FFD700 0%, #D4AF37 100%);
     }
 
-    /* 5. CẤU TRÚC PHIẾU VIP (Đã tăng kích thước Ảnh để chống mờ) */
+    /* 5. CẤU TRÚC PHIẾU VIP */
     .vip-card {
         background: linear-gradient(145deg, #1A1D24, #242933);
         border: 2px solid #D4AF37;
@@ -79,7 +79,6 @@ custom_css = """
         margin-bottom: 30px;
     }
     
-    /* TĂNG SIZE LOGO LÊN 180px */
     .vip-logo { max-width: 180px; border-radius: 12px; margin-bottom: 15px; }
     
     .vip-brand { color: #D4AF37; font-size: 28px; font-weight: 900; letter-spacing: 2px; margin: 0; }
@@ -90,9 +89,6 @@ custom_css = """
         padding-top: 30px;
         margin-top: 40px;
     }
-    
-    /* TĂNG SIZE QR LÊN 250px CHO DỄ QUÉT */
-    .vip-qr { max-width: 250px; border-radius: 10px; border: 3px solid #D4AF37; margin-bottom: 10px;}
     
     .vip-copyright { color: #808080; font-size: 14px; margin-top: 10px;}
     
@@ -193,9 +189,7 @@ if st.button("[BẮT ĐẦU PHÂN TÍCH VIP]"):
 # --- KHU VỰC IN PHIẾU VIP ĐỂ SẾP CHỤP MÀN HÌNH ---
 if 'analysis_report' in st.session_state:
     
-    # ĐÃ ĐẢO LẠI ĐÚNG VỊ TRÍ LINK: LOGO Ở TRÊN, QR Ở DƯỚI
     LINK_LOGO = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
-    LINK_QR = "https://i.postimg.cc/f3TrLpQc/044111AB-7F8B-4DBE-B375-A9EBF547FE57.jpg"
     
     vip_html = f"""
 <div class="vip-card">
@@ -209,7 +203,6 @@ if 'analysis_report' in st.session_state:
 </div>
 <div class="vip-footer">
 <h3 style="color: #D4AF37; margin-bottom: 15px;">ỦNG HỘ DN SIM MY LEAGUE</h3>
-<img src="{LINK_QR}" class="vip-qr">
 <p class="vip-copyright">© 2026 Bản quyền phân tích thuộc về DN SIM MY LEAGUE. Cấm sao chép dưới mọi hình thức.</p>
 </div>
 </div>

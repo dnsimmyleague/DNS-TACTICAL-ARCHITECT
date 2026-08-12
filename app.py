@@ -11,13 +11,9 @@ st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", la
 
 custom_css = """
 <style>
-    /* Xóa thanh mặc định Streamlit */
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-    
-    /* Màu nền Titanium Slate cao cấp */
     .stApp { background-color: #1E222A !important; }
     
-    /* Typography VIP */
     .title-brand { 
         text-align: center; color: #FFD700 !important; font-size: 2.4rem; 
         font-weight: 900; margin-bottom: 5px; letter-spacing: 2px;
@@ -25,14 +21,12 @@ custom_css = """
     }
     .slogan { text-align: center; color: #E0E6ED !important; font-size: 1.05rem; font-style: italic; margin-bottom: 25px; }
 
-    /* Ô nhập liệu chuẩn doanh nghiệp */
     .stTextInput > div > div > input, .stSelectbox > div > div > div {
         background-color: #F4F6F9 !important; color: #111827 !important;
         font-weight: 600 !important; border-radius: 8px !important; border: 1px solid #D4AF37 !important;
     }
     label, .stCheckbox > label > div > p { color: #FFD700 !important; font-weight: bold !important; font-size: 15px !important;}
 
-    /* Nút bấm Vàng Hoàng Kim */
     .stButton > button { 
         width: 100%; height: 55px; font-size: 19px; font-weight: 900; 
         background: linear-gradient(135deg, #FFD700 0%, #D4AF37 100%) !important; 
@@ -40,7 +34,6 @@ custom_css = """
         box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
     }
 
-    /* Hiệu ứng Tab kẹp hồ sơ 3D */
     .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] { 
         background-color: #2A2F3A !important; border: 1px solid #D4AF37 !important;
@@ -51,7 +44,6 @@ custom_css = """
         font-weight: 900 !important; transform: translateY(-3px); box-shadow: 0 -4px 10px rgba(255, 215, 0, 0.3);
     }
     
-    /* Khung Report Card VIP */
     .vip-card { 
         background-color: #252A34 !important; border: 2px solid #FFD700 !important; 
         border-radius: 0px 10px 10px 10px; padding: 22px; box-shadow: 0 6px 20px rgba(0,0,0,0.3);
@@ -65,20 +57,20 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. KHỐI NHẬP LIỆU (CƠ CHẾ 2 ẢNH)
+# 2. KHỐI NHẬP LIỆU (CƠ CHẾ MỞ KHÓA TỰ DO)
 # ---------------------------------------------------------
-player_info = st.text_input("Tên Cầu thủ & Vị trí:", placeholder="Ví dụ: D. Bergkamp - CF")
+player_info = st.text_input("Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: D. Bergkamp hoặc 4-2-1-3")
 ecosystem = st.selectbox("Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"])
-is_comparison = st.checkbox("✅ ĐÂY LÀ ẢNH SO SÁNH (Trái: AUTO | Phải: MANUAL DNS)")
+is_comparison = st.checkbox("✅ ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (Trái: AUTO | Phải: MANUAL DNS)")
 
 st.markdown("<p style='color: #FFD700; font-weight: bold; margin-bottom: 0px;'>📸 1. Tải ảnh Cầu thủ (Phôi thẻ gốc HOẶC Ảnh so sánh 2 cột):</p>", unsafe_allow_html=True)
 uploaded_player = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="player_img")
 
-st.markdown("<p style='color: #FFD700; font-weight: bold; margin-bottom: 0px;'>📸 2. Tải ảnh HLV (Tùy chọn - Nhận diện Link-up & Buff chỉ số):</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #FFD700; font-weight: bold; margin-bottom: 0px;'>📸 2. Tải ảnh HLV (Để phân tích Dream Team hoặc Buff cộng hưởng):</p>", unsafe_allow_html=True)
 uploaded_manager = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="manager_img")
 
 # ---------------------------------------------------------
-# 3. BỘ NÃO AI LOGIC VIP (XỬ LÝ DỮ LIỆU KÉP)
+# 3. BỘ NÃO AI LOGIC VIP (XỬ LÝ DỮ LIỆU ĐA KỊCH BẢN)
 # ---------------------------------------------------------
 def clean_text(raw_text):
     text = raw_text.replace("**", "").replace("*", "").replace("$", "").replace("#", "")
@@ -94,40 +86,33 @@ def execute_tactical_analysis(img_player, img_manager, p_info, eco, is_comp):
         system_instruction = """
         Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Phân tích Chiến thuật eFootball VIP quốc tế.
 
-        QUY TẮC ĐỊNH DẠNG & VĂN PHONG (BẮT BUỘC):
+        QUY TẮC ĐỊNH DẠNG & VĂN PHONG:
         1. KHÔNG dùng ký tự Markdown (*, #, $, \\rightarrow). Dùng gạch ngang (-) cho danh sách, mũi tên (->) chỉ hướng.
-        2. NGHIÊM CẤM dùng tiếng lóng Việt Nam (đè C, chọc ngoáy, ảo ma, phế...). Không dùng từ "(GIẤU)". Chỉ dùng ngôn ngữ phân tích chiến thuật (VD: Overload, Link-up, Positional Play).
+        2. NGHIÊM CẤM dùng tiếng lóng (đè C, chọc ngoáy, ảo ma, phế...). Không dùng từ "(GIẤU)". Chỉ dùng ngôn ngữ phân tích VIP.
         3. BẮT BUỘC CHIA BÀI VIẾT THÀNH ĐÚNG 3 PHẦN BẰNG KÝ HIỆU ===
 
-        CƠ CHẾ ĐỌC ẢNH KÉP (NẾU CÓ ẢNH HLV):
-        - Nếu có ảnh HLV: Quét ngay HLV đang buff +1 chỉ số nào (Affinity) và có chiến thuật liên kết (Link-up Play) gì. 
-        - Áp dụng vào Cầu thủ: TRỪ HAO điểm PP đã được HLV buff để tránh lãng phí. Thiết kế lối chơi phục vụ đúng vai trò (Center Piece/Key Man) trong Link-up đó.
+        XÁC ĐỊNH KỊCH BẢN LÀM VIỆC DỰA TRÊN ẢNH ĐẦU VÀO:
+        
+        KỊCH BẢN A: CHỈ CÓ ẢNH HLV (KHÔNG CÓ ẢNH CẦU THỦ) - KIẾN TẠO DREAM TEAM
+        - PHẦN 1 (Trước ===): TỔNG QUAN TRIẾT LÝ. Đọc vị lối chơi HLV, phân tích Link-up Play (nếu có) và đề xuất sơ đồ chiến thuật tối ưu nhất.
+        - PHẦN 2 (Giữa ===): QUY HOẠCH 23 NHÂN SỰ. Chỉ định vị trí và Playstyle bắt buộc cho 11 người đá chính và 12 dự bị (Ví dụ: CF - Goal Poacher, DMF - Anchor Man).
+        - PHẦN 3 (Sau ===): INDIVIDUAL INSTRUCTIONS & KỊCH BẢN THAY NGƯỜI.
+            + Mặc định: Đề xuất Individual Instructions cho 11 người đá chính (Anchoring, Defensive, Counter Target...).
+            + Tấn công tất tay (Bị dẫn bàn): Đề xuất thay ai, vai trò gì, cài Instruction gì.
+            + Bảo toàn tỉ số (Thủ): Đề xuất thay ai, vai trò gì, cài Instruction gì.
 
-        QUY TẮC PHÂN TÍCH THEO CHẾ ĐỘ:
-        TRƯỜNG HỢP 1: ẢNH SO SÁNH KÉP (TRÁI: AUTO, PHẢI: MANUAL DNS)
-        - Tập trung 100% vào BIỆN LUẬN. Tuyệt đối không tự bịa thông số nếu không có trong ảnh.
-        - Cột Trái (Auto): Phân tích sự lãng phí tài nguyên, điểm mù của Auto OVR.
-        - Cột Phải (Manual): Bảo vệ quyết định Build. Giải thích sự hy sinh chỉ số này để đắp vào chỉ số kia nhằm phục vụ đúng ý đồ của HLV. KHÔNG xuất lại công thức cộng điểm dài dòng.
+        KỊCH BẢN B: CÓ ẢNH CẦU THỦ (CÓ HOẶC KHÔNG CÓ HLV KÈM THEO)
+        - Nếu có HLV kèm theo, lấy thông số Buff/Link-up của HLV để trừ hao điểm PP và thiết kế lối chơi cộng hưởng.
+        - Nếu là ẢNH SO SÁNH KÉP (Trái: Auto, Phải: Manual): Phản biện sự lãng phí của Auto, bảo vệ bản Manual dựa trên chiến thuật. Tuyệt đối không tự bịa số.
+        - Nếu là Cầu thủ Level 1: Chỉ đánh giá thực chiến, vị trí tối ưu.
+        - Nếu là Cầu thủ Build tay (Level > 1): Xuất Công thức Manual. Chọn 1 Booster (+1). Xuất TOP 5 SKILL BỔ SUNG: Xếp thứ tự ưu tiên 1 đến 5 (1 là quan trọng nhất). Không dùng từ ngập ngừng.
 
-        TRƯỜNG HỢP 2: ẢNH PHÔI THẺ ĐƠN THUẦN
-        - Thẻ Level 1 (Cố định): Tự động nhận diện. BỎ QUA công thức Build, Booster, Skill. Tập trung đánh giá thực chiến, vị trí tối ưu để gánh vác sơ đồ HLV.
-        - Thẻ Level > 1 (Build tay):
-            + Xuất Công thức Manual Build Độc quyền (Giải thích lý do).
-            + Chọn 1 Extra Booster (+1) từ danh sách: Accuracy, Aerial, Aerial Block, Agility, Balancer, Ball Protection, Ball-carrying, Breakthrough, Counter, Crossing, Defending, Duelling, Fantasista, Free-kick Taking, Goalkeeping, Hard Worker, Off the ball, Offence creator, Passing, Physicality, Rebuilding, Regista, Saving, Shooting, Shutdown, Stealing, Strength, Striker's Instinct, Technique.
-            + Xuất TOP 5 SKILL BỔ SUNG BẮT BUỘC: Xếp hạng ưu tiên TỪ CAO XUỐNG THẤP (1 là bắt buộc phải có nhất, 5 là bổ trợ). Không dùng từ ngập ngừng (như "nếu còn trống"). Không trùng skill trong ảnh.
-
-        CẤU TRÚC 3 PHẦN:
-        PHẦN 1: TỔNG QUAN (Trước === đầu tiên)
-        - Vai trò thực chiến, tố chất cầu thủ, triết lý HLV.
-        PHẦN 2: CHIẾN THUẬT & CHỈ SỐ (Giữa 2 dấu ===)
-        - Phân tích So sánh phản biện HOẶC Công thức Manual (Kèm 1 Booster + 5 Skill ưu tiên).
-        PHẦN 3: BÓC TÁCH & HIGHLIGHT (Sau === cuối cùng)
-        - Kịch bản Highlight in-game thực chiến.
+        DANH SÁCH EXTRA BOOSTER (+1): Accuracy, Aerial, Aerial Block, Agility, Balancer, Ball Protection, Ball-carrying, Breakthrough, Counter, Crossing, Defending, Duelling, Fantasista, Free-kick Taking, Goalkeeping, Hard Worker, Off the ball, Offence creator, Passing, Physicality, Rebuilding, Regista, Saving, Shooting, Shutdown, Stealing, Strength, Striker's Instinct, Technique.
         """
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.3)
         
-        comp_text = "ĐÂY LÀ ẢNH SO SÁNH (TRÁI LÀ AUTO, PHẢI LÀ MANUAL). Hãy tập trung phản biện sự lãng phí của Auto và bảo vệ bản Manual dựa trên chiến thuật HLV." if is_comp else "Đây là ảnh phôi thẻ cầu thủ bình thường."
-        context_prompt = f"Thông tin cầu thủ: {p_info} | Chế độ: {eco}. {comp_text}"
+        comp_text = "ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (TRÁI LÀ AUTO, PHẢI LÀ MANUAL). Hãy phản biện Auto và bảo vệ Manual." if is_comp else ""
+        context_prompt = f"Thông tin/Sơ đồ: {p_info} | Chế độ: {eco}. {comp_text}"
         
         contents = [context_prompt]
         if img_player: contents.append(img_player)
@@ -143,19 +128,25 @@ def execute_tactical_analysis(img_player, img_manager, p_info, eco, is_comp):
 # 4. XỬ LÝ SỰ KIỆN & IN PHIẾU VIP (CHIA TAB)
 # ---------------------------------------------------------
 if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
-    if not uploaded_player: st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ/Ảnh So sánh ở mục số 1!")
+    # Cập nhật Logic: Cho phép chạy nếu có BẤT KỲ ảnh nào (Cầu thủ hoặc HLV)
+    if not uploaded_player and not uploaded_manager: 
+        st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ ở mục 1 HOẶC 1 ảnh HLV ở mục 2!")
     else:
         with st.spinner("Hệ thống DNS đang trích xuất Báo cáo VIP..."):
-            img_p = Image.open(uploaded_player)
-            img_p.thumbnail((1000, 1000))
-            
+            img_p = None
             img_m = None
+            
+            if uploaded_player:
+                img_p = Image.open(uploaded_player)
+                img_p.thumbnail((1000, 1000))
+                
             if uploaded_manager:
                 img_m = Image.open(uploaded_manager)
                 img_m.thumbnail((1000, 1000))
                 
             st.session_state['analysis_report'] = execute_tactical_analysis(img_p, img_m, player_info, ecosystem, is_comparison)
-            del img_p; 
+            
+            if img_p: del img_p
             if img_m: del img_m
             gc.collect()
 
@@ -165,7 +156,7 @@ if 'analysis_report' in st.session_state:
     tab2_c = parts[1] if len(parts) > 1 else "Xem Tab Tổng Quan."
     tab3_c = parts[2] if len(parts) > 2 else "Xem Tab Tổng Quan."
     
-    t1, t2, t3 = st.tabs(["📋 TỔNG QUAN", "⚙️ CHIẾN THUẬT / PHẢN BIỆN", "🚀 ĐÁNH GIÁ"])
+    t1, t2, t3 = st.tabs(["📋 TỔNG QUAN", "⚙️ CHIẾN THUẬT / NHÂN SỰ", "🚀 ĐÁNH GIÁ / CHỈ ĐẠO CÁ NHÂN"])
     
     def format_tab(content):
         return f"""<div class="vip-card">

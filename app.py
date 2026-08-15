@@ -7,40 +7,41 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM TITANIUM 3D: SÁNG/TỐI TỰ ĐỘNG
+# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM TITANIUM 3D: SÁNG/TỐI TỰ ĐỘNG (BẢN V5.4 - FIX SPINNER & TƯƠNG PHẢN CHỮ)
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
-# Lấy giờ thực tế tại Việt Nam (UTC+7)
+# Lấy giờ thực tế tại Việt Nam (UTC+7) để tự động đổi Theme Sáng/Tối
 current_hour = (datetime.datetime.utcnow() + datetime.timedelta(hours=7)).hour
 is_daytime = 6 <= current_hour < 18
 
 if is_daytime:
-    # BAN NGÀY: Trắng nhẹ dịu mắt, bóng đổ 3D sáng
-    app_bg = "#F4F7F6"         
-    element_bg = "#FFFFFF"      
-    text_color = "#1E293B"      
-    label_color = "#E5C058"     
+    # BAN NGÀY: Trắng xám nhẹ dịu mắt, bóng đổ 3D sáng nổi khối
+    app_bg = "#F4F7F6"         # Nền tổng thể 
+    element_bg = "#FFFFFF"      # Nền ô nhập liệu, dropdown, thẻ file
+    text_color = "#1E293B"      # Chữ xám đen đậm (Tương phản cao trên nền sáng)
+    label_color = "#E5C058"     # Màu nhãn (Vàng Mệnh Kim Champagne)
     slogan_color = "#64748B"
     shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.08), -6px -6px 14px rgba(255, 255, 255, 0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)"
-    tab_inactive_color = "#4B5563"  
+    tab_inactive_color = "#374151"  # Xám than đậm (Dễ đọc trên nền tab sáng)
 else:
-    # BAN ĐÊM: Xám Titan, bóng đổ 3D tối
-    app_bg = "#202531"         
-    element_bg = "#2B3242"      
-    text_color = "#F1F5F9"      
-    label_color = "#E5C058"     
+    # BAN ĐÊM: Xám Titan, bóng đổ 3D tối chìm
+    app_bg = "#202531"         # Nền tổng thể (Xám Titan)
+    element_bg = "#2B3242"      # Nền ô nhập liệu
+    text_color = "#F1F5F9"      # Chữ trắng bạc (Tương phản cao trên nền tối)
+    label_color = "#E5C058"     # Màu nhãn (Vàng Mệnh Kim Champagne)
     slogan_color = "#94A3B8"
     shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.05)"
     tab_inactive_bg = "linear-gradient(145deg, #323A4C, #252B38)"
-    tab_inactive_color = "#9CA3AF"  
+    tab_inactive_color = "#9CA3AF"  # Xám bạc (Dễ đọc trên nền tab tối)
 
-# TIÊM BIẾN CSS VÀO GIAO DIỆN
+# TIÊM BIẾN CSS VÀO GIAO DIỆN (ĐỒNG BỘ 100% TRÊN NỀN MỆNH KIM)
 custom_css = f"""
 <style>
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
     
+    /* Nền tổng thể thay đổi Sáng/Tối */
     .stApp {{ background-color: {app_bg} !important; transition: background-color 0.5s ease; }}
     
     .title-brand {{ 
@@ -53,6 +54,7 @@ custom_css = f"""
         font-style: italic; margin-bottom: 30px; letter-spacing: 0.5px;
     }}
 
+    /* NHÃN (LABELS) VÀ CHECKBOX */
     label, .stCheckbox > label > div > p {{ 
         color: {label_color} !important; 
         font-weight: bold !important; 
@@ -61,11 +63,13 @@ custom_css = f"""
         visibility: visible !important; 
         display: block !important;
     }}
+    
+    .stCheckbox > label > span {{ background-color: {element_bg} !important; border-color: #D4AF37 !important; }}
+    {f'.stCheckbox > label > span::after {{ border-color: #121418 !important; }}' if is_daytime else ''}
 
-    /* KHỬ LỖI KHỐI ĐEN (Ô NHẬP LIỆU & DROPDOWN) */
+    /* Ô NHẬP LIỆU & DROPDOWN */
     .stTextInput > div > div > input, .stSelectbox > div > div > div {{
-        background-color: {element_bg} !important; 
-        color: {text_color} !important; 
+        background-color: {element_bg} !important; color: {text_color} !important;
         font-weight: 600 !important; border-radius: 12px !important; 
         border: 1px solid #D4AF37 !important;
         box-shadow: {shadow_3d} !important; 
@@ -75,8 +79,11 @@ custom_css = f"""
     .stTextInput > div > div > input:focus {{
         box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.7) !important;
     }}
+    
+    div[role="listbox"] {{ background-color: {element_bg} !important; border: 1px solid #D4AF37 !important; }}
+    div[role="listbox"] ul li {{ color: {text_color} !important; }}
 
-    /* KHỬ LỖI KHỐI ĐEN & HIỆU ỨNG 3D KHỐI KÉO THẢ UPLOAD */
+    /* KHỐI KÉO THẢ UPLOAD & FILE ĐÃ TẢI */
     [data-testid="stFileUploader"] section {{
         background-color: {element_bg} !important; 
         border: 1.5px dashed #D4AF37 !important;
@@ -92,17 +99,22 @@ custom_css = f"""
     [data-testid="stFileUploader"] section span, [data-testid="stFileUploader"] section small {{
         color: {text_color} !important; font-weight: bold;
     }}
-    [data-testid="stFileUploader"] button {{
-        background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important;
-        color: #121418 !important; border: none !important; font-weight: bold !important;
+    
+    /* Đổi màu Nút browse file */
+    [data-testid="stFileUploader"] button {{ 
+        background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; 
+        color: #121418 !important; font-weight: bold !important; border: none !important;
     }}
+
+    /* Đổi màu Thẻ hiển thị File đã Upload */
     [data-testid="stUploadedFile"] {{
         background-color: {element_bg} !important;
-        border: 1px solid #D4AF37 !important;
-    }}
-    [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span, [data-testid="stUploadedFile"] button {{
         color: {text_color} !important;
+        border: 1px solid #D4AF37 !important;
+        border-radius: 8px !important;
     }}
+    [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: {text_color} !important; }}
+    [data-testid="stUploadedFile"] button {{ background-color: transparent !important; color: #FF4D4D !important; }}
 
     /* NÚT BẤM CHÍNH 3D MẠ VÀNG CHAMPAGNE */
     .stButton > button {{ 
@@ -114,30 +126,39 @@ custom_css = f"""
     }}
     .stButton > button:active {{ transform: translateY(4px); box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4) !important; }}
 
-    /* FIX LỖI TÀNG HÌNH CHỮ "ĐANG TRÍCH XUẤT BÁO CÁO..." CỦA SPINNER */
+    /* =================================================== */
+    /* FIX MÀU VÒNG XOAY (SPINNER) & CHỮ TRONG LÚC CHỜ     */
+    /* =================================================== */
+    [data-testid="stSpinner"] svg circle {{
+        stroke: #E5C058 !important; /* Vòng xoay màu Vàng Mệnh Kim */
+    }}
     [data-testid="stSpinner"] p {{
-        color: #E5C058 !important;
+        color: #E5C058 !important; /* Chữ màu Vàng */
         font-weight: 900 !important;
         font-size: 17px !important;
-        text-shadow: 0px 1px 4px rgba(0,0,0,0.15) !important;
+        text-shadow: 0px 1px 4px rgba(0,0,0,0.2) !important;
     }}
 
     /* THANH TAB 3D NỔI KHỐI RÕ RỆT */
     .stTabs [data-baseweb="tab-list"] {{ gap: 14px; padding-bottom: 5px; }}
     
+    .stTabs [data-baseweb="tab"] > * {{ color: {tab_inactive_color} !important; transition: all 0.3s ease; }}
+
     .stTabs [data-baseweb="tab"] {{ 
         background: {tab_inactive_bg} !important; 
         border: 1px solid #D4AF37 !important; border-bottom: none !important; 
         border-radius: 16px 16px 0px 0px !important; padding: 14px 22px !important; 
-        color: {tab_inactive_color} !important; 
         box-shadow: {shadow_3d} !important;
         transition: all 0.2s ease-in-out;
     }}
-    .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); color: {text_color} !important; }}
+    .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
+    .stTabs [data-baseweb="tab"]:hover > * {{ color: {text_color} !important; }}
+
+    .stTabs [aria-selected="true"] > * {{ color: #121418 !important; }}
 
     .stTabs [aria-selected="true"] {{ 
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important; 
-        color: #121418 !important; font-weight: 900 !important; 
+        font-weight: 900 !important; 
         border: 1px solid #F7E08B !important; border-bottom: none !important;
         transform: translateY(-8px); 
         box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.6), inset 3px 3px 6px rgba(255,255,255,0.5), inset -3px -3px 6px rgba(0,0,0,0.2) !important;
@@ -164,7 +185,7 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. KHỐI NHẬP LIỆU (ĐÃ SỬA LỖI & NỔI KHỐI 3D)
+# 2. KHỐI NHẬP LIỆU
 # ---------------------------------------------------------
 player_info = st.text_input("Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos hoặc 4-2-1-3")
 ecosystem = st.selectbox("Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"])
@@ -222,7 +243,7 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp):
         
         ===
         PHẦN 4: CÀI ĐẶT & KỸ NĂNG (Sau === thứ 3)
-        - Individual Instructions (Max 2 slot Tấn Công, Max 2 slot Phòng Ngự).
+        - Individual Instructions (Max 2 slot Tấn Công, Tối đa 2 slot Phòng Ngự).
         - Top 5 Skill bổ sung ưu tiên (Dùng số thứ tự 1️⃣ đến 5️⃣).
         - Insight chốt hạ dành cho Streamer.
         """
@@ -257,7 +278,6 @@ if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
                 
             st.session_state['analysis_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, is_comparison)
             
-            # Ghi nhận thời gian thực
             vn_time = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
             st.session_state['report_time'] = vn_time.strftime("%d/%m/%Y | %H:%M:%S")
             
@@ -267,22 +287,21 @@ if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
 if 'analysis_report' in st.session_state:
     parts = st.session_state['analysis_report'].split("===")
     
-    if len(parts) == 1 and ("🚨" in parts[0] or "CẢNH BÁO" in parts[0]):
+    if len(parts) == 1 and ("🚨" in parts[0] or "CẢNH BÁO TỬ HUYỆT" in parts[0]):
         tab1_c = parts[0]
         tab2_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ tính toán PP do thiếu dữ liệu in-game.</div>"
         tab3_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ so sánh do rủi ro sai lệch dữ liệu.</div>"
         tab4_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ tư vấn cài đặt cá nhân.</div>"
     else:
-        tab1_c = parts[0] if len(parts) > 0 else "Đang xử lý..."
-        tab2_c = parts[1] if len(parts) > 1 else "Không có dữ liệu PP."
-        tab3_c = parts[2] if len(parts) > 2 else "Không có dữ liệu So sánh."
-        tab4_c = parts[3] if len(parts) > 3 else "Không có dữ liệu Cài đặt."
+        tab1_c = parts[part_index] if (part_index := 0) < len(parts) else "Đang xử lý..."
+        tab2_c = parts[part_index] if (part_index := 1) < len(parts) else "Không có dữ liệu PP."
+        tab3_c = parts[part_index] if (part_index := 2) < len(parts) else "Không có dữ liệu So sánh."
+        tab4_c = parts[part_index] if (part_index := 3) < len(parts) else "Không có dữ liệu Cài đặt."
     
     report_time = st.session_state.get('report_time', 'Chưa xác định')
     
     t1, t2, t3, t4 = st.tabs(["🪪 HỒ SƠ THẨM ĐỊNH", "🛠️ NÂNG CẤP CHỈ SỐ", "⚖️ SO SÁNH ĐỐI ĐẦU", "🎯 CÀI ĐẶT KỸ NĂNG"])
     
-    # Text color phụ thuộc vào giao diện sáng/tối
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab(content):
@@ -291,7 +310,7 @@ if 'analysis_report' in st.session_state:
             <div class="vip-text">{content.strip()}</div>
             <div class="vip-footer">
                 <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
-                <span style="color: #D4AF37; font-weight: 900;">© 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+                <span style="color: #D4AF37; font-weight: bold;">© 2026 DN SIM MY LEAGUE. All rights reserved.</span>
             </div>
         </div>"""
 

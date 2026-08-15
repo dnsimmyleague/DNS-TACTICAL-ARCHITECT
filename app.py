@@ -7,7 +7,7 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM TITANIUM 3D (ĐÃ XÓA SẠCH KHỐI ĐEN LỖI)
+# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM TITANIUM 3D: SÁNG/TỐI TỰ ĐỘNG
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
@@ -17,24 +17,24 @@ is_daytime = 6 <= current_hour < 18
 
 if is_daytime:
     # BAN NGÀY: Trắng nhẹ dịu mắt, bóng đổ 3D sáng
-    app_bg = "#F4F7F6"         # Nền tổng thể
-    element_bg = "#FFFFFF"      # Nền ô nhập liệu nổi lên
-    text_color = "#1E293B"      # Chữ xám đen đậm
+    app_bg = "#F4F7F6"         
+    element_bg = "#FFFFFF"      
+    text_color = "#1E293B"      
     label_color = "#E5C058"     
     slogan_color = "#64748B"
     shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.08), -6px -6px 14px rgba(255, 255, 255, 0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)"
-    tab_inactive_color = "#4B5563"
+    tab_inactive_color = "#4B5563"  
 else:
     # BAN ĐÊM: Xám Titan, bóng đổ 3D tối
-    app_bg = "#202531"         # Nền tổng thể
-    element_bg = "#2B3242"      # Nền ô nhập liệu
-    text_color = "#F1F5F9"      # Chữ trắng bạc
+    app_bg = "#202531"         
+    element_bg = "#2B3242"      
+    text_color = "#F1F5F9"      
     label_color = "#E5C058"     
     slogan_color = "#94A3B8"
     shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.05)"
     tab_inactive_bg = "linear-gradient(145deg, #323A4C, #252B38)"
-    tab_inactive_color = "#9CA3AF"
+    tab_inactive_color = "#9CA3AF"  
 
 # TIÊM BIẾN CSS VÀO GIAO DIỆN
 custom_css = f"""
@@ -58,75 +58,53 @@ custom_css = f"""
         font-weight: bold !important; 
         font-size: 15px !important; 
         letter-spacing: 0.5px;
-        visibility: visible !important;
+        visibility: visible !important; 
         display: block !important;
     }}
 
-    /* --------------------------------------------------- */
-    /* KHỬ SẠCH MÀU ĐEN: MENU DROPDOWN & Ô TEXT            */
-    /* --------------------------------------------------- */
-    .stTextInput > div > div > input {{
+    /* KHỬ LỖI KHỐI ĐEN (Ô NHẬP LIỆU & DROPDOWN) */
+    .stTextInput > div > div > input, .stSelectbox > div > div > div {{
         background-color: {element_bg} !important; 
         color: {text_color} !important; 
         font-weight: 600 !important; border-radius: 12px !important; 
         border: 1px solid #D4AF37 !important;
         box-shadow: {shadow_3d} !important; 
         padding: 12px !important;
+        transition: all 0.3s ease;
     }}
-    
-    /* Ép khung Dropdown đổi màu Sáng/Tối */
-    div[data-baseweb="select"] > div {{
-        background-color: {element_bg} !important; 
-        color: {text_color} !important; 
-        border-radius: 12px !important; 
-        border: 1px solid #D4AF37 !important;
-        box-shadow: {shadow_3d} !important;
+    .stTextInput > div > div > input:focus {{
+        box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.7) !important;
     }}
-    /* Ép Menu xổ xuống của Dropdown */
-    ul[data-baseweb="menu"] {{ background-color: {element_bg} !important; border: 1px solid #D4AF37 !important; }}
-    ul[data-baseweb="menu"] li {{ color: {text_color} !important; }}
 
-    /* --------------------------------------------------- */
-    /* KHỬ MÀU ĐEN: KHU VỰC KÉO THẢ UPLOAD & FILE ĐÃ TẢI   */
-    /* --------------------------------------------------- */
+    /* KHỬ LỖI KHỐI ĐEN & HIỆU ỨNG 3D KHỐI KÉO THẢ UPLOAD */
     [data-testid="stFileUploader"] section {{
         background-color: {element_bg} !important; 
         border: 1.5px dashed #D4AF37 !important;
         border-radius: 15px !important;
         box-shadow: {shadow_3d} !important; 
         padding: 20px !important;
+        transition: all 0.3s ease;
+    }}
+    [data-testid="stFileUploader"] section:hover {{
+        border: 1.5px solid #E5C058 !important;
+        transform: translateY(-2px);
     }}
     [data-testid="stFileUploader"] section span, [data-testid="stFileUploader"] section small {{
         color: {text_color} !important; font-weight: bold;
     }}
-    
-    /* Đổi màu Nút "Browse files / Upload" bên trong khung */
     [data-testid="stFileUploader"] button {{
         background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important;
-        color: #121418 !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: bold !important;
+        color: #121418 !important; border: none !important; font-weight: bold !important;
     }}
-
-    /* Đổi màu Cục Đen (Thẻ hiển thị File đã Upload) */
     [data-testid="stUploadedFile"] {{
         background-color: {element_bg} !important;
-        color: {text_color} !important;
         border: 1px solid #D4AF37 !important;
-        border-radius: 8px !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
     }}
-    [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{
+    [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span, [data-testid="stUploadedFile"] button {{
         color: {text_color} !important;
-    }}
-    [data-testid="stUploadedFile"] button {{
-        background-color: transparent !important; color: {text_color} !important;
     }}
 
-    /* --------------------------------------------------- */
-    /* NÚT BẤM PHÂN TÍCH CHÍNH 3D                          */
-    /* --------------------------------------------------- */
+    /* NÚT BẤM CHÍNH 3D MẠ VÀNG CHAMPAGNE */
     .stButton > button {{ 
         width: 100%; height: 60px; font-size: 20px; font-weight: 900; 
         background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; 
@@ -136,9 +114,15 @@ custom_css = f"""
     }}
     .stButton > button:active {{ transform: translateY(4px); box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4) !important; }}
 
-    /* --------------------------------------------------- */
-    /* THANH TAB 3D NỔI KHỐI RÕ RỆT                        */
-    /* --------------------------------------------------- */
+    /* FIX LỖI TÀNG HÌNH CHỮ "ĐANG TRÍCH XUẤT BÁO CÁO..." CỦA SPINNER */
+    [data-testid="stSpinner"] p {{
+        color: #E5C058 !important;
+        font-weight: 900 !important;
+        font-size: 17px !important;
+        text-shadow: 0px 1px 4px rgba(0,0,0,0.15) !important;
+    }}
+
+    /* THANH TAB 3D NỔI KHỐI RÕ RỆT */
     .stTabs [data-baseweb="tab-list"] {{ gap: 14px; padding-bottom: 5px; }}
     
     .stTabs [data-baseweb="tab"] {{ 
@@ -160,9 +144,7 @@ custom_css = f"""
         z-index: 10;
     }}
     
-    /* --------------------------------------------------- */
-    /* KHUNG HIỂN THỊ KẾT QUẢ AI                           */
-    /* --------------------------------------------------- */
+    /* KHUNG HIỂN THỊ KẾT QUẢ AI */
     .vip-card {{ 
         background-color: {element_bg} !important; border: 2px solid #D4AF37 !important; 
         border-radius: 0px 15px 15px 15px; padding: 30px; 
@@ -182,7 +164,7 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. KHỐI NHẬP LIỆU
+# 2. KHỐI NHẬP LIỆU (ĐÃ SỬA LỖI & NỔI KHỐI 3D)
 # ---------------------------------------------------------
 player_info = st.text_input("Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos hoặc 4-2-1-3")
 ecosystem = st.selectbox("Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"])

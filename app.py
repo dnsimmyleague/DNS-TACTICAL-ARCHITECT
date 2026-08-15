@@ -3,6 +3,7 @@ from PIL import Image
 from google import genai
 from google.genai import types
 import gc
+import re
 
 # ---------------------------------------------------------
 # 1. CẤU HÌNH GIAO DIỆN MỆNH KIM PREMIUM 
@@ -70,11 +71,15 @@ st.markdown("<p style='color: #FFD700; font-weight: bold; margin-bottom: 0px;'>�
 uploaded_manager = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="manager_img")
 
 # ---------------------------------------------------------
-# 3. BỘ NÃO AI LOGIC VIP (XỬ LÝ ĐA KỊCH BẢN & LÕI CHIẾN THUẬT)
+# 3. BỘ NÃO AI LOGIC VIP (XỬ LÝ ĐA KỊCH BẢN & LÕI CHIẾN THUẬT V6.0.0)
 # ---------------------------------------------------------
 def clean_text(raw_text):
-    text = raw_text.replace("**", "").replace("*", "").replace("$", "").replace("#", "")
-    return text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
+    text = raw_text.replace("$", "").replace("#", "")
+    text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
+    # Biến Markdown in đậm thành HTML để nổi khối trong khung VIP Card
+    text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
+    text = text.replace("> ", "🔹 ")
+    return text
 
 def execute_tactical_analysis(img_player, img_manager, p_info, eco, is_comp):
     try:
@@ -86,30 +91,42 @@ def execute_tactical_analysis(img_player, img_manager, p_info, eco, is_comp):
         system_instruction = """
         Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Phân tích Chiến thuật eFootball VIP.
 
-        QUY TẮC ĐỊNH DẠNG: KHÔNG ký tự Markdown (*, #, $, \\rightarrow). Cấm tiếng lóng (đè C, phế, ngáo...). Chia 3 phần bằng ===.
+        QUY TẮC CỐT TỦ VỀ INDIVIDUAL INSTRUCTIONS:
+        - Giới hạn cứng 4 slot: Max 2 Tấn công (Defensive, Attacking, Anchoring...), Max 2 Phòng ngự (Counter Target, Deep Line...).
+        - TUYỆT ĐỐI KHÔNG đề xuất vượt quá. Phải kết hợp triết lý HLV + Sơ đồ + Playstyle để khóa hành vi cầu thủ không bị gãy đội hình.
 
-        QUY TẮC CỐT TỦ VỀ INDIVIDUAL INSTRUCTIONS (CHỈ ĐẠO CÁ NHÂN):
-        Game bị giới hạn cứng tối đa 4 slot:
-        - Tấn Công (Max 2 Slot): Defensive, Attacking, Anchoring, False No.9, Hug the Touchline, Centering Targets.
-        - Phòng Ngự (Max 2 Slot): Counter Target, Deep Line, Man Marking, Tight Marking.
-        TUYỆT ĐỐI KHÔNG đề xuất vượt quá giới hạn này.
-        Lệnh cài đặt PHẢI LÀ SỰ TỔNG HÒA của: Triết lý HLV + Sơ đồ + Playstyle cầu thủ. 
-        (VD: Không tốn slot 'Defensive' cho DMF 'Anchor Man' vì bản năng đã tự giữ vị trí. HLV đá Possession thì hạn chế 'Counter Target' làm gãy Link-up).
+        QUY TẮC ĐỊNH DẠNG BẮT BUỘC:
+        - KHÔNG dùng dấu gạch Markdown (#, *, -, |). Thay vào đó dùng ký hiệu (🔹, 🔴, 🔵, ⚔️, 🛡️, 👉).
+        - BẮT BUỘC CHIA VĂN BẢN THÀNH 4 PHẦN CHÍNH.
+        - Ngăn cách giữa các phần bằng CHÍNH XÁC 3 dấu bằng: "===" (Mỗi cụm === nằm riêng trên 1 dòng).
 
-        KỊCH BẢN A: CHỈ CÓ ẢNH HLV - KIẾN TẠO DREAM TEAM
-        - PHẦN 1 (Trước ===): TỔNG QUAN TRIẾT LÝ. Đọc vị lối chơi HLV, Link-up Play, đề xuất Sơ đồ.
-        - PHẦN 2 (Giữa ===): QUY HOẠCH 23 NHÂN SỰ. Chỉ định vị trí và Playstyle chuẩn (VD: CF - Goal Poacher).
-        - PHẦN 3 (Sau ===): INDIVIDUAL INSTRUCTIONS. Đề xuất tuân thủ luật 4 Slot ở trên. Ghi rõ giải pháp cho Kịch bản Tấn công tất tay và Thủ bảo toàn.
+        PHẦN 1: HỒ SƠ THẨM ĐỊNH & SA BÀN (Trước === thứ nhất)
+        🔹 Thẩm định phôi: Tên, Vị trí, Thể hình, Sải chân.
+        🔹 Phân tích Dual Styles: 🔴 Trạng thái Đỏ (Khi tấn công/Có bóng) & 🔵 Trạng thái Xanh (Khi phòng ngự/Mất bóng).
+        🔹 TƯ DUY FLUID FORMATION & STYLE HLV: Bóc tách rõ Sơ đồ Công (Ví dụ 3-2-4-1: Vị trí/Vận hành) và Sơ đồ Thủ (Ví dụ 4-1-4-1: Lùi khối/Bọc lót). Từ sự co giãn đội hình này, hãy Đề xuất Style HLV bắt buộc (LBC/QC/Possession...) để đảm bảo không bị đứt gãy cự ly khi cầu thủ chuyển đổi trạng thái.
 
-        KỊCH BẢN B: CÓ ẢNH CẦU THỦ
-        - Nếu kèm HLV: Trừ hao điểm PP bị buff, thiết kế lối chơi cộng hưởng Link-up.
-        - ẢNH SO SÁNH (Trái Auto, Phải Manual): Phản biện Auto, bảo vệ Manual.
-        - Thẻ Level 1: Đánh giá thực chiến, vị trí tối ưu (Không Build).
-        - Thẻ Level > 1: Công thức Build. 1 Booster (+1). TOP 5 SKILL BỔ SUNG (Xếp thứ tự ưu tiên 1-5).
+        ===
+        PHẦN 2: NÂNG CẤP CHỈ SỐ PP (Giữa === 1 và 2)
+        🔹 LUẬT TÍNH PP CỨNG: Nấc 1-4 = 1PP; Nấc 5-8 = 2PP; Nấc 9-12 = 3PP; Nấc 13-16 = 4PP.
+        🔹 Phân bổ nấc nâng dựa trên áp lực di chuyển của Fluid Formation. Bắt buộc song ngữ Anh-Việt: Shooting (Sút), Passing (Chuyền), Dribbling (Rê bóng), Dexterity (Linh hoạt), Lower Body Strength (Sức mạnh thân dưới), Aerial Strength (Không chiến), Defending (Phòng ngự).
+        👉 TỔNG KẾT TIÊU HAO: Phải cộng dồn chính xác tổng PP tiêu tốn so với quỹ điểm tối đa của thẻ. Không để dư PP.
+        ⚡ ĐỀ XUẤT BOOSTER SLOT 2: Chọn 1 cái và giải thích.
+
+        ===
+        PHẦN 3: SO SÁNH AUTO vs DNS MANUAL (Giữa === 2 và 3)
+        🔹 QUY TẮC ĐỐI ĐẦU: CỘT TRÁI là Auto-pick (Mặc định). CỘT PHẢI là DNS Manual (Chỉnh tay). Tính Delta (+/-) lấy cột phải làm chuẩn.
+        🔹 ĐỌC CHUẨN MANAGER BOOSTS: CHỈ lấy chữ màu Vàng/Cam dưới tên HLV. BỎ QUA các icon lục giác của cầu thủ. Đọc kỹ Link-up Tactic.
+        🏆 TỔNG KẾT TÁC CHIẾN: Vạch trần điểm mù của bản Auto (yếu thể lực/di chuyển khi đổi sơ đồ) và nêu rõ ưu thế của bản build DNS Manual.
+
+        ===
+        PHẦN 4: CÀI ĐẶT & KỸ NĂNG (Sau === thứ 3)
+        🎯 INDIVIDUAL INSTRUCTIONS: Đưa ra lệnh theo 3 trạng thái (Mặc định, Tấn công, Phòng ngự).
+        🧩 TOP 5 SKILL BỔ SUNG: Dùng số thứ tự từ 1️⃣ đến 5️⃣, nêu tên Tiếng Anh & Lý do chiến thuật.
+        🎙️ INSIGHT CHUYÊN MÔN: Đoạn kết luận đanh thép để phát biểu trên Stream.
         """
-        config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.3)
+        config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.2)
         
-        comp_text = "ĐÂY LÀ ẢNH SO SÁNH (TRÁI AUTO, PHẢI MANUAL). Tập trung phản biện." if is_comp else ""
+        comp_text = "ĐÂY LÀ ẢNH SO SÁNH. (TRÁI LÀ AUTO, PHẢI LÀ DNS MANUAL)." if is_comp else ""
         context_prompt = f"Thông tin/Sơ đồ: {p_info} | Chế độ: {eco}. {comp_text}"
         
         contents = [context_prompt]
@@ -145,10 +162,12 @@ if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
 if 'analysis_report' in st.session_state:
     parts = st.session_state['analysis_report'].split("===")
     tab1_c = parts[0] if len(parts) > 0 else "Đang xử lý..."
-    tab2_c = parts[1] if len(parts) > 1 else "Xem Tab Tổng Quan."
-    tab3_c = parts[2] if len(parts) > 2 else "Xem Tab Tổng Quan."
+    tab2_c = parts[1] if len(parts) > 1 else "Không có dữ liệu PP (Vui lòng kiểm tra lại ảnh)."
+    tab3_c = parts[2] if len(parts) > 2 else "Không có dữ liệu So sánh."
+    tab4_c = parts[3] if len(parts) > 3 else "Không có dữ liệu Cài đặt."
     
-    t1, t2, t3 = st.tabs(["📋 TỔNG QUAN", "⚙️ CHIẾN THUẬT / NHÂN SỰ", "🚀 ĐÁNH GIÁ / CHỈ ĐẠO CÁ NHÂN"])
+    # GIAO DIỆN HIỂN THỊ ĐỦ 4 TAB
+    t1, t2, t3, t4 = st.tabs(["🪪 HỒ SƠ THẨM ĐỊNH", "🛠️ NÂNG CẤP CHỈ SỐ (PP)", "⚖️ SO SÁNH AUTO vs DNS", "🎯 CÀI ĐẶT & KỸ NĂNG"])
     
     def format_tab(content):
         return f"""<div class="vip-card">
@@ -160,6 +179,9 @@ if 'analysis_report' in st.session_state:
     with t1: st.markdown(format_tab(tab1_c), unsafe_allow_html=True)
     with t2: st.markdown(format_tab(tab2_c), unsafe_allow_html=True)
     with t3: st.markdown(format_tab(tab3_c), unsafe_allow_html=True)
+    with t4: st.markdown(format_tab(tab4_c), unsafe_allow_html=True)
     
     with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-        st.text_area("Văn bản gốc:", value=st.session_state['analysis_report'].replace("===", "\n\n"), height=200)
+        # Dọn sạch các thẻ in đậm <b> để copy dán vào Word/Facebook sạch sẽ nhất
+        raw_text_clean = st.session_state['analysis_report'].replace("<b>", "").replace("</b>", "").replace("===", "\n\n")
+        st.text_area("Văn bản gốc:", value=raw_text_clean, height=200)

@@ -7,25 +7,26 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM V7.0: SÁNG/TỐI TỰ ĐỘNG (FIX TẬN GỐC TAB & SPINNER)
+# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM: SÁNG/TỐI TỰ ĐỘNG & 3D TABS VẬT LÝ
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
-# Lấy giờ thực tế tại Việt Nam (UTC+7) để tự động đổi Theme Sáng/Tối
-current_hour = (datetime.datetime.utcnow() + datetime.timedelta(hours=7)).hour
+# Lấy giờ thực tế tại Việt Nam (UTC+7)
+vn_time_now = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
+current_hour = vn_time_now.hour
 is_daytime = 6 <= current_hour < 18
 
 if is_daytime:
-    # BAN NGÀY: Soft Off-White (Trắng sứ nhẹ), phối vàng Champagne
+    # BAN NGÀY: Soft Off-White (Trắng sứ nhẹ)
     app_bg = "#F4F6F9"         
     element_bg = "#FFFFFF"      
     text_color = "#1E293B"      # Chữ xám đen đậm
     label_color = "#E5C058"     
     slogan_color = "#64748B"
     border_color = "#D4AF37"    
-    shadow_3d_form = "10px 10px 20px rgba(0, 0, 0, 0.08), -10px -10px 20px rgba(255, 255, 255, 0.9)"
-    tab_inactive_bg = "linear-gradient(145deg, #E2E8F0, #FFFFFF)" 
-    tab_inactive_color = "#374151" # ÉP MÀU CHỮ TAB KHÔNG HOẠT ĐỘNG (Xám than cực rõ trên nền trắng)
+    shadow_3d_form = "8px 8px 16px rgba(0,0,0,0.06), -8px -8px 16px rgba(255,255,255,0.8)"
+    tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)" 
+    tab_inactive_color = "#374151" # Chữ tab không hoạt động: Xám than đậm (Chống tàng hình)
 else:
     # BAN ĐÊM: Dark Knight Titan (Xám Titan đậm)
     app_bg = "#1E222A"         
@@ -33,10 +34,10 @@ else:
     text_color = "#F1F5F9"      # Chữ trắng bạc
     label_color = "#E5C058"     
     slogan_color = "#94A3B8"
-    border_color = "#FFD700"    
-    shadow_3d_form = "10px 10px 20px rgba(0, 0, 0, 0.4), -8px -8px 16px rgba(255, 255, 255, 0.05)"
-    tab_inactive_bg = "linear-gradient(145deg, #1E222A, #2D333F)" 
-    tab_inactive_color = "#9CA3AF" # MÀU CHỮ TAB KHÔNG HOẠT ĐỘNG BAN ĐÊM (Xám bạc)
+    border_color = "#D4AF37"    
+    shadow_3d_form = "8px 8px 16px rgba(0,0,0,0.3), -4px -4px 10px rgba(255,255,255,0.03)"
+    tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)" 
+    tab_inactive_color = "#9CA3AF" # Chữ tab không hoạt động: Xám bạc sáng
 
 # TIÊM BIẾN CSS VÀO GIAO DIỆN (CAN THIỆP SÂU VÀO LÕI HTML)
 custom_css = f"""
@@ -48,7 +49,7 @@ custom_css = f"""
     .title-brand {{ 
         text-align: center; color: {border_color} !important; font-size: 2.5rem; 
         font-weight: 900; margin-bottom: 5px; letter-spacing: 2px;
-        text-shadow: 0px 4px 15px rgba(229, 192, 88, 0.4);
+        text-shadow: 0px 4px 15px rgba(212, 175, 55, 0.4);
     }}
     .slogan {{ 
         text-align: center; color: {slogan_color} !important; font-size: 1.1rem; 
@@ -57,33 +58,22 @@ custom_css = f"""
 
     /* NHÃN (LABELS) VÀ CHECKBOX */
     label, .stCheckbox > label > div > p {{ 
-        color: {label_color} !important; 
-        font-weight: bold !important; 
-        font-size: 15px !important; 
-        letter-spacing: 0.5px;
-        visibility: visible !important; 
-        display: block !important;
+        color: {label_color} !important; font-weight: bold !important; font-size: 15px !important; letter-spacing: 0.5px;
+        visibility: visible !important; display: block !important;
     }}
-    
     .stCheckbox > label > span {{ background-color: {element_bg} !important; border-color: {border_color} !important; }}
     {f'.stCheckbox > label > span::after {{ border-color: #121418 !important; }}' if is_daytime else ''}
 
-    /* Ô NHẬP LIỆU & DROPDOWN */
+    /* Ô NHẬP LIỆU & DROPDOWN - XÓA SẠCH LỖI KHỐI ĐEN */
     .stTextInput > div > div > input, .stSelectbox > div > div > div, .stSelectbox > div > div > [role="combobox"] {{
         background-color: {element_bg} !important; color: {text_color} !important;
         font-weight: 600 !important; border-radius: 12px !important; 
-        border: 1px solid {border_color} !important;
-        box-shadow: {shadow_3d_form} !important; 
-        padding: 12px !important;
-        transition: all 0.3s ease;
+        border: 1px solid {border_color} !important; box-shadow: {shadow_3d_form} !important; 
+        padding: 12px !important; transition: all 0.3s ease;
     }}
-    .stTextInput > div > div > input:focus {{
-        box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.7) !important;
-    }}
+    .stTextInput > div > div > input:focus {{ box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.1) !important; }}
     
-    ul[data-baseweb="menu"] {{
-        background-color: {element_bg} !important; border: 1px solid {border_color} !important; border-radius: 8px !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
-    }}
+    ul[data-baseweb="menu"] {{ background-color: {element_bg} !important; border: 1px solid {border_color} !important; border-radius: 8px !important; box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important; }}
     ul[data-baseweb="menu"] li {{ color: {text_color} !important; background-color: transparent !important; }}
 
     /* KHỐI KÉO THẢ UPLOAD & FILE ĐÃ TẢI */
@@ -109,7 +99,7 @@ custom_css = f"""
     .stButton > button:active {{ transform: translateY(4px); box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4) !important; }}
 
     /* =================================================== */
-    /* CHỐT HẠ: ÉP MÀU VÒNG XOAY VÀ CHỮ SPINNER            */
+    /* VÒNG XOAY SPINNER VÀNG MỆNH KIM                     */
     /* =================================================== */
     [data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     [data-testid="stSpinner"] p, [data-testid="stSpinner"] span {{
@@ -117,38 +107,33 @@ custom_css = f"""
     }}
 
     /* =================================================== */
-    /* CHỐT HẠ: CHỮ TRONG TAB KHÔNG THỂ BỊ TÀNG HÌNH NỮA   */
+    /* CHỐT HẠ LỖI TAB TÀNG HÌNH (CAN THIỆP SÂU THẺ P VÀ SPAN) */
     /* =================================================== */
     .stTabs [data-baseweb="tab-list"] {{ gap: 14px; padding-bottom: 5px; }}
     
-    /* Ép găm thẳng vào thẻ <p> bên trong Tab chưa chọn */
     .stTabs button[data-baseweb="tab"] p, 
     .stTabs button[data-baseweb="tab"] span {{ 
-        color: {tab_inactive_color} !important; 
-        font-weight: 700 !important;
-        transition: all 0.3s ease; 
+        color: {tab_inactive_color} !important; font-weight: 700 !important; transition: all 0.3s ease; 
     }}
     .stTabs button[data-baseweb="tab"]:hover p {{ color: {text_color} !important; }}
 
-    /* Ép găm thẳng vào thẻ <p> bên trong Tab ĐANG CHỌN (Luôn đen nhánh để nổi trên nền vàng) */
     .stTabs button[aria-selected="true"] p, 
     .stTabs button[aria-selected="true"] span {{ 
-        color: #121418 !important; 
-        font-weight: 900 !important;
+        color: #121418 !important; font-weight: 900 !important;
     }}
 
     .stTabs button[data-baseweb="tab"] {{ 
         background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 16px 16px 0px 0px !important; padding: 14px 22px !important; 
-        box-shadow: inset 4px 4px 10px rgba(0,0,0,0.1), inset -4px -4px 10px rgba(255,255,255,0.7), 2px -2px 6px rgba(0,0,0,0.2) !important; transition: all 0.2s ease-in-out;
+        box-shadow: inset 4px 4px 10px rgba(0,0,0,0.05), inset -4px -4px 10px rgba(255,255,255,0.1), 2px -2px 6px rgba(0,0,0,0.1) !important; transition: all 0.2s ease-in-out;
     }}
     .stTabs button[data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
 
     .stTabs button[aria-selected="true"] {{ 
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important;
-        transform: translateY(-8px); box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.6), inset 3px 3px 6px rgba(255,255,255,0.5), inset -3px -3px 6px rgba(0,0,0,0.2) !important; z-index: 10;
+        transform: translateY(-8px); box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.4), inset 3px 3px 6px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(0,0,0,0.2) !important; z-index: 10;
     }}
     
-    /* KHUNG HIỂN THỊ KẾT QUẢ AI (CARD VIP MỆNH KIM) */
+    /* KHUNG HIỂN THỊ KẾT QUẢ AI (CARD VIP) */
     .vip-card {{ 
         background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 30px; box-shadow: {shadow_3d_form} !important;
     }}
@@ -156,7 +141,7 @@ custom_css = f"""
     .vip-footer {{ 
         text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
     }}
-    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #FF4D4D !important; font-weight: bold; box-shadow: 0 4px 10px rgba(255,77,77,0.2); }}
+    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #FF4D4D !important; font-weight: bold; }}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -184,7 +169,7 @@ def clean_text(raw_text):
     text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
     text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
     text = text.replace("> ", "🔹 ")
-    if "🚨" in text or "CẢNH BÁO TỬ HUYỆT" in text:
+    if "🚨" in text or "⚠️" in text:
         text = f"<div class='warning-box'>{text}</div>"
     return text
 
@@ -196,39 +181,44 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp):
         client = genai.Client(api_key=api_key)
         
         system_instruction = """
-        Bạn là DNS TACTICAL ARCHITECT.
-        🛑 QUY TẮC KILL SWITCH (KIỂM DUYỆT ĐẦU VÀO):
-        - Quét tất cả ảnh. Nếu có ảnh Cầu thủ nhưng KHÔNG THẤY ảnh màn hình in-game hiển thị Playing Style Đỏ và Xanh (Dual Styles), BẠN PHẢI TỪ CHỐI PHÂN TÍCH.
-        - Chỉ in ra đúng 1 câu: "🚨 CẢNH BÁO TỬ HUYỆT: Không phát hiện ảnh in-game hiển thị Dual Styles (Đỏ/Xanh). Để tránh rủi ro Build sai điểm PP làm gãy cự ly Fluid Formation, Bot đình chỉ phân tích. Boss vui lòng upload bổ sung ảnh in-game nhé!". (Không xuất các phần khác).
-        - Nếu ĐÃ CÓ đủ ảnh, thì tiếp tục phân tích 4 Phần.
+        Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Phân tích Chiến thuật eFootball.
         
-        ĐỊNH DẠNG ĐẦU RA: Chia thành đúng 4 phần ngăn cách bởi "===" (trên 1 dòng riêng).
+        🛑 PHÂN LOẠI KỊCH BẢN PHÂN TÍCH (QUY TẮC SỐNG CÒN):
+        1. NẾU ẢNH CUNG CẤP CHỈ CÓ ẢNH HLV (Không có ảnh cầu thủ): 
+           - KHÔNG YÊU CẦU ẢNH ĐỎ/XANH. 
+           - Phân tích trực diện Lối chơi, Manager Boosts, Link-Up Tactic và quy hoạch 23 nhân sự. Vẫn xuất đủ 4 Phần.
+        2. NẾU CÓ ẢNH CẦU THỦ NHƯNG THIẾU ẢNH IN-GAME ĐỎ/XANH (Dual Styles):
+           - KHÔNG ĐƯỢC TỪ CHỐI PHÂN TÍCH.
+           - Bắt buộc chèn dòng cảnh báo này ở ngay đầu Phần 1: "⚠️ LƯU Ý MỎNG: Không phát hiện ảnh Dual Styles Đỏ/Xanh. Bot sẽ build PP dựa trên chỉ số mặc định, Boss nhớ tự canh chỉnh lại cự ly Fluid Formation nhé!".
+           - SAU ĐÓ VẪN TIẾP TỤC phân tích và build điểm PP, xuất đủ 4 Phần như bình thường.
         
+        ĐỊNH DẠNG ĐẦU RA: Bắt buộc chia 4 Phần, ngăn cách bởi đúng 3 dấu bằng "===" trên 1 dòng riêng.
+
         PHẦN 1: HỒ SƠ THẨM ĐỊNH & SA BÀN (Trước === thứ 1)
-        - Thẩm định phôi & Phân tích Dual Styles (Đỏ/Xanh).
-        - Fluid Formation: Bóc tách sơ đồ Công / Thủ. Đề xuất Style HLV bắt buộc.
+        - Thẩm định phôi, Thể hình, Sải chân.
+        - Dual Styles (Nếu có ảnh).
+        - Fluid Formation: Bóc tách sơ đồ Công / Thủ. Đề xuất Style HLV bắt buộc (LBC/QC/Poss...).
         
         ===
         PHẦN 2: NÂNG CẤP CHỈ SỐ PP (Giữa === 1 và 2)
-        - Luật PP lũy tiến: 1-4=1PP, 5-8=2PP, 9-12=3PP, 13-16=4PP.
-        - Phân bổ nấc nâng song ngữ. Tính tổng tiêu hao PP không được dư.
-        - 1 Booster Slot 2 đề xuất.
+        - Luật PP lũy tiến: 1-4=1PP, 5-8=2PP, 9-12=3PP, 13-16=4PP. Tính chính xác 100% không dư điểm.
+        - Phân bổ nấc nâng song ngữ (Speed (Tốc độ), Stamina (Thể lực)...). Đề xuất 1 Booster Slot 2.
         
         ===
         PHẦN 3: SO SÁNH AUTO vs DNS MANUAL (Giữa === 2 và 3)
-        - Cột Phải làm chuẩn tính Delta +/- theo mẫu: Speed (Tốc độ): Auto 103 👉 DNS 101 (-2)
-        - HLV: Chỉ lấy chữ màu Vàng/Cam dưới tên HLV làm Manager Boosts. Đọc Link-up Tactic.
+        - Nếu là Cầu thủ: So sánh Cột Phải làm chuẩn tính Delta +/- (Ví dụ: Speed (Tốc độ): Auto 103 👉 DNS 101 (-2)).
+        - Manager Boosts: Chỉ lấy chữ màu Vàng/Cam dưới tên HLV. Không lấy Booster lục giác của cầu thủ. Đọc Link-up Tactic.
         
         ===
         PHẦN 4: CÀI ĐẶT & KỸ NĂNG (Sau === thứ 3)
-        - Individual Instructions (Max 2 slot Tấn Công, Tối đa 2 slot Phòng Ngự).
+        - Individual Instructions (Max 2 slot Tấn Công, Tối đa 2 slot Phòng Ngự) khóa cự ly đội hình.
         - Top 5 Skill bổ sung ưu tiên (Dùng số thứ tự 1️⃣ đến 5️⃣).
         - Insight chốt hạ dành cho Streamer.
         """
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
         
         comp_text = "ĐÂY LÀ ẢNH SO SÁNH (TRÁI: AUTO, PHẢI: DNS MANUAL)." if is_comp else ""
-        context_prompt = f"Thông tin: {p_info} | Hệ: {eco}. {comp_text}"
+        context_prompt = f"Thông tin/Sơ đồ: {p_info} | Hệ sinh thái: {eco}. {comp_text}"
         
         contents = [context_prompt] + img_list
         response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
@@ -256,29 +246,23 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
                 
             st.session_state['analysis_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, is_comparison)
             
-            # Ghi nhận thời gian thực
-            vn_time = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
-            st.session_state['report_time'] = vn_time.strftime("%d/%m/%Y | %H:%M:%S")
-            
+            # Lưu vết thời gian
+            st.session_state['report_time'] = vn_time_now.strftime("%d/%m/%Y | %H:%M:%S")
             images_to_send.clear()
             gc.collect()
 
 if 'analysis_report' in st.session_state:
     parts = st.session_state['analysis_report'].split("===")
     
-    if len(parts) == 1 and ("🚨" in parts[0] or "CẢNH BÁO TỬ HUYỆT" in parts[0]):
-        tab1_c = parts[0]
-        tab2_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ tính toán PP do thiếu dữ liệu in-game.</div>"
-        tab3_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ so sánh do rủi ro sai lệch dữ liệu.</div>"
-        tab4_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ tư vấn cài đặt cá nhân.</div>"
-    else:
-        tab1_c = parts[0] if len(parts) > 0 else "Đang xử lý..."
-        tab2_c = parts[1] if len(parts) > 1 else "Không có dữ liệu PP."
-        tab3_c = parts[2] if len(parts) > 2 else "Không có dữ liệu So sánh."
-        tab4_c = parts[3] if len(parts) > 3 else "Không có dữ liệu Cài đặt."
+    # Safe indexing phân bổ vào 4 Tab
+    tab1_c = parts[0] if len(parts) > 0 else "Đang xử lý..."
+    tab2_c = parts[1] if len(parts) > 1 else "Không có dữ liệu PP."
+    tab3_c = parts[2] if len(parts) > 2 else "Không có dữ liệu So sánh."
+    tab4_c = parts[3] if len(parts) > 3 else "Không có dữ liệu Cài đặt."
     
     report_time = st.session_state.get('report_time', 'Chưa xác định')
     
+    # Render 4 Tabs
     t1, t2, t3, t4 = st.tabs(["🪪 HỒ SƠ THẨM ĐỊNH", "🛠️ NÂNG CẤP CHỈ SỐ", "⚖️ SO SÁNH ĐỐI ĐẦU", "🎯 CÀI ĐẶT KỸ NĂNG"])
     
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
@@ -299,5 +283,6 @@ if 'analysis_report' in st.session_state:
     with t4: st.markdown(format_tab(tab4_c), unsafe_allow_html=True)
     
     with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+        # Dọn sạch các thẻ HTML để Copy/Paste sạch sẽ
         raw_text_clean = st.session_state['analysis_report'].replace("<b>", "").replace("</b>", "").replace("<div class='warning-box'>", "").replace("</div>", "").replace("===", "\n\n")
         st.text_area("Văn bản gốc:", value=raw_text_clean, height=200)

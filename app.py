@@ -7,25 +7,22 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. KHỞI TẠO HỆ THỐNG
+# 1. CẤU HÌNH TRANG & TỰ ĐỘNG THEME SÁNG/TỐI
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
-# Tính toán giờ thực tế tại Việt Nam (UTC+7)
+# Lấy giờ thực tế tại Việt Nam (UTC+7)
 vn_time_now = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
 default_is_daytime = 6 <= vn_time_now.hour < 18
 
 if 'manual_theme' not in st.session_state:
     st.session_state['manual_theme'] = "Ban Ngày ☀️" if default_is_daytime else "Ban Đêm 🌙"
 
-# ---------------------------------------------------------
-# 2. TOP BAR: TIÊU ĐỀ & NÚT GẠT THEME (BỐ CỤC CHUẨN)
-# ---------------------------------------------------------
-# Khôi phục hệ thống cột để không phá vỡ Layout của ứng dụng
-col1, col2 = st.columns([7, 3])
-with col2:
+# NÚT GẠT THEME GÓC TRÊN BÊN PHẢI (BỐ CỤC CHUẨN)
+col_head, col_switch = st.columns([7, 3])
+with col_switch:
     selected_theme = st.radio(
-        "Chế độ hiển thị:",
+        "Theme Switcher",
         ["Ban Ngày ☀️", "Ban Đêm 🌙"],
         index=0 if st.session_state['manual_theme'] == "Ban Ngày ☀️" else 1,
         horizontal=True,
@@ -36,158 +33,119 @@ with col2:
 is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
 
 # ---------------------------------------------------------
-# 3. CẤU HÌNH BIẾN MÀU & CSS (WATERMARK CHÌM GÓC PHẢI)
+# 2. HỆ MÀU MỆNH KIM & WATERMARK HÒA TRỘN TỰ NHIÊN
 # ---------------------------------------------------------
+logo_url = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
+
 if is_daytime:
+    # BAN NGÀY: Soft Off-White (Trắng sứ nhẹ)
     app_bg = "#F4F6F9"         
     element_bg = "#FFFFFF"      
     text_color = "#1E293B"      
-    label_color = "#E5C058"     
+    label_color = "#D4AF37"     
     slogan_color = "#64748B"
     border_color = "#D4AF37"    
-    shadow_3d_form = "8px 8px 18px rgba(0,0,0,0.06), -8px -8px 18px rgba(255,255,255,0.9)"
+    shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)" 
     tab_inactive_color = "#374151" 
-    watermark_opacity = "0.04"
-    watermark_blend = "multiply"
+    bg_overlay = f"linear-gradient(rgba(244, 246, 249, 0.95), rgba(244, 246, 249, 0.95)), url('{logo_url}')"
 else:
+    # BAN ĐÊM: Dark Knight Titan (Xám Titan đậm)
     app_bg = "#1E222A"         
     element_bg = "#252A34"      
     text_color = "#F1F5F9"      
     label_color = "#E5C058"     
     slogan_color = "#94A3B8"
     border_color = "#D4AF37"    
-    shadow_3d_form = "8px 8px 18px rgba(0,0,0,0.35), -4px -4px 12px rgba(255,255,255,0.03)"
+    shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)" 
     tab_inactive_color = "#9CA3AF" 
-    watermark_opacity = "0.06"
-    watermark_blend = "screen"
+    bg_overlay = f"linear-gradient(rgba(30, 34, 42, 0.94), rgba(30, 34, 42, 0.94)), url('{logo_url}')"
 
 custom_css = f"""
 <style>
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
     
-    .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; position: relative; }}
-    
-    /* WATERMARK LOGO TẢN SÁNG Ở GÓC DƯỚI BÊN PHẢI (HẾT CREEPY) */
-    .stApp::before {{
-        content: "";
-        position: fixed;
-        bottom: -20px; right: -20px;
-        width: 380px; height: 380px;
-        background-image: url('https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        opacity: {watermark_opacity};
-        mix-blend-mode: {watermark_blend};
-        pointer-events: none; 
-        z-index: 0;
-        /* Áp dụng mặt nạ tản mờ xung quanh để xóa sạch viền vuông đen của ảnh gốc */
-        -webkit-mask-image: radial-gradient(circle, black 35%, transparent 70%);
-        mask-image: radial-gradient(circle, black 35%, transparent 70%);
+    /* Gán nền Watermark mờ trực tiếp, không dùng thẻ giả lập gây che khuất */
+    .stApp {{ 
+        background-color: {app_bg} !important; 
+        background-image: {bg_overlay} !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        background-size: 380px !important;
+        background-attachment: fixed !important;
     }}
-
-    /* CSS CHO NÚT GẠT THEME DẠNG CAPSULE */
+    
+    /* Nút gạt Theme 3D */
     div[data-testid="stRadio"] {{
         background-color: {element_bg} !important;
-        border: 2px solid {border_color} !important;
-        border-radius: 50px !important;
-        padding: 5px 15px !important;
-        box-shadow: {shadow_3d_form} !important;
-        display: flex; justify-content: flex-end;
+        border: 1.5px solid {border_color} !important;
+        border-radius: 30px !important;
+        padding: 4px 12px !important;
+        box-shadow: {shadow_3d} !important;
     }}
-    div[data-testid="stRadio"] div[data-baseweb="radio"] div {{ color: {text_color} !important; font-weight: 800 !important; font-size: 13px !important; }}
+    div[data-testid="stRadio"] label p {{ color: {text_color} !important; font-weight: bold !important; font-size: 13px !important; }}
 
-    /* TITLE & SLOGAN */
+    /* Tiêu đề & Slogan */
     .title-brand {{ 
-        text-align: center; color: {border_color} !important; font-size: 2.6rem; 
-        font-weight: 900; margin-top: -30px; margin-bottom: 5px; letter-spacing: 2px;
-        text-shadow: 0px 4px 15px rgba(212, 175, 55, 0.4);
+        text-align: center; color: {border_color} !important; font-size: 2.5rem; 
+        font-weight: 900; margin-top: -15px; margin-bottom: 5px; letter-spacing: 2px;
+        text-shadow: 0px 4px 12px rgba(212, 175, 55, 0.35);
     }}
-    .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.1rem; font-style: italic; margin-bottom: 25px; }}
+    .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.05rem; font-style: italic; margin-bottom: 25px; }}
 
-    /* NHÃN & CHECKBOX */
+    /* Nhãn & Ô nhập liệu 3D */
     label, .stCheckbox > label > div > p {{ 
         color: {label_color} !important; font-weight: bold !important; font-size: 15px !important;
-        visibility: visible !important; display: block !important;
     }}
-    .stCheckbox > label > span {{ background-color: {element_bg} !important; border-color: {border_color} !important; }}
-    {f'.stCheckbox > label > span::after {{ border-color: #121418 !important; }}' if is_daytime else ''}
-
-    /* KHUNG NHẬP LIỆU & SELECTBOX */
     .stTextInput > div > div > input, .stSelectbox > div > div > div, .stSelectbox > div > div > [role="combobox"] {{
         background-color: {element_bg} !important; color: {text_color} !important;
         font-weight: 600 !important; border-radius: 12px !important; 
-        border: 1px solid {border_color} !important; box-shadow: {shadow_3d_form} !important; 
-        padding: 12px !important; transition: all 0.3s ease;
+        border: 1px solid {border_color} !important; box-shadow: {shadow_3d} !important; 
+        padding: 12px !important;
     }}
-    .stTextInput > div > div > input:focus {{ box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.1) !important; }}
-    ul[data-baseweb="menu"] {{ background-color: {element_bg} !important; border: 1px solid {border_color} !important; border-radius: 8px !important; }}
-    ul[data-baseweb="menu"] li {{ color: {text_color} !important; background-color: transparent !important; }}
+    ul[data-baseweb="menu"] {{ background-color: {element_bg} !important; border: 1px solid {border_color} !important; }}
+    ul[data-baseweb="menu"] li {{ color: {text_color} !important; }}
 
-    /* KHU VỰC KÉO THẢ ẢNH MƯỢT MÀ */
+    /* Khung tải ảnh 3D */
     [data-testid="stFileUploader"] section {{
-        background-color: {element_bg} !important; border: 1.5px dashed {border_color} !important; border-radius: 15px !important; box-shadow: {shadow_3d_form} !important; padding: 20px !important;
+        background-color: {element_bg} !important; border: 1.5px dashed {border_color} !important; border-radius: 15px !important; box-shadow: {shadow_3d} !important; padding: 20px !important;
     }}
-    [data-testid="stFileUploader"] section:hover {{ border: 1.5px solid {label_color} !important; transform: translateY(-2px); }}
     [data-testid="stFileUploader"] section span, [data-testid="stFileUploader"] section small {{ color: {text_color} !important; font-weight: bold; }}
     [data-testid="stFileUploader"] button, [data-testid="stUploadedFile"] {{ 
-        background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; font-weight: bold !important; border: none !important; box-shadow: 0 2px 5px rgba(184, 134, 11, 0.4) !important;
+        background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; font-weight: bold !important; border: none !important;
     }}
     [data-testid="stUploadedFile"] {{ border-radius: 8px !important; }}
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
-    [data-testid="stUploadedFile"] button {{ color: #FF4D4D !important; }}
 
-    /* NÚT BẤM CHÍNH NỔI KHỐI */
+    /* Nút bấm Phân tích VIP */
     .stButton > button {{ 
-        width: 100%; height: 60px; font-size: 20px; font-weight: 900; 
+        width: 100%; height: 58px; font-size: 19px; font-weight: 900; 
         background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; 
         color: #121418 !important; border: 1px solid #F7E08B !important; border-radius: 12px !important;
-        box-shadow: 0 8px 20px rgba(184, 134, 11, 0.4), inset 0px 2px 5px rgba(255,255,255,0.5) !important; transition: all 0.2s ease; margin-top: 15px;
+        box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px;
     }}
-    .stButton > button:active {{ transform: translateY(4px); box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4) !important; }}
 
-    /* VÒNG XOAY SPINNER VÀNG MỆNH KIM */
+    /* Vòng xoay Spinner */
     [data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
-    [data-testid="stSpinner"] p, [data-testid="stSpinner"] span {{
-        color: {border_color} !important; font-weight: 900 !important; font-size: 17px !important; text-shadow: 0px 1px 4px rgba(0,0,0,0.2) !important;
-    }}
+    [data-testid="stSpinner"] p, [data-testid="stSpinner"] span {{ color: {border_color} !important; font-weight: 900 !important; font-size: 17px !important; }}
 
-    /* TABS 3D VẬT LÝ VÀ CHUẨN HOÁ ICON */
-    .stTabs [data-baseweb="tab-list"] {{ gap: 14px; padding-bottom: 5px; }}
-    .stTabs button[data-baseweb="tab"] p, .stTabs button[data-baseweb="tab"] span {{ 
-        color: {tab_inactive_color} !important; font-weight: 700 !important; transition: all 0.3s ease; 
-        filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1));
-    }}
-    .stTabs button[data-baseweb="tab"]:hover p {{ color: {text_color} !important; }}
-    
-    .stTabs button[aria-selected="true"] p, .stTabs button[aria-selected="true"] span {{ 
-        color: #121418 !important; font-weight: 900 !important; filter: drop-shadow(0px 2px 2px rgba(255,255,255,0.4));
-    }}
-
+    /* Tabs 3D */
+    .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
+    .stTabs button[data-baseweb="tab"] p, .stTabs button[data-baseweb="tab"] span {{ color: {tab_inactive_color} !important; font-weight: 700 !important; }}
+    .stTabs button[aria-selected="true"] p, .stTabs button[aria-selected="true"] span {{ color: #121418 !important; font-weight: 900 !important; }}
     .stTabs button[data-baseweb="tab"] {{ 
-        background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; 
-        box-shadow: inset 3px 3px 6px rgba(0,0,0,0.05), inset -3px -3px 6px rgba(255,255,255,0.1), 2px -2px 5px rgba(0,0,0,0.1) !important; transition: all 0.2s ease-in-out;
+        background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; box-shadow: {shadow_3d} !important;
     }}
-    .stTabs button[data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
-
     .stTabs button[aria-selected="true"] {{ 
-        background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important;
-        transform: translateY(-8px); box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.45), inset 3px 3px 6px rgba(255,255,255,0.5), inset -3px -3px 6px rgba(0,0,0,0.2) !important; z-index: 10;
+        background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px);
     }}
     
-    /* CARD VIP & LOGO THƯƠNG HIỆU 3D ĐA GÓC NHÌN */
+    /* Khung hiển thị Báo Cáo VIP */
     .vip-card {{ 
-        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 28px; box-shadow: {shadow_3d_form} !important; position: relative; z-index: 2;
+        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important;
     }}
-    .vip-logo-3d {{
-        max-width: 95px; border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.25), inset 0 0 10px rgba(212,175,55,0.5);
-        border: 2px solid {border_color}; transition: transform 0.3s ease;
-    }}
-    .vip-logo-3d:hover {{ transform: scale(1.05) rotate(1deg); }}
-    
+    .vip-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; }}
     .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: {text_color} !important; }}
     .vip-footer {{ 
         text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 20px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
@@ -200,27 +158,26 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. KHỐI NHẬP LIỆU GIAO DIỆN
+# 3. KHỐI NHẬP LIỆU GIAO DIỆN
 # ---------------------------------------------------------
 player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos, Frank Lampard hoặc 4-2-1-3")
 ecosystem = st.selectbox("🌐 Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"], index=1)
 is_comparison = st.checkbox("✅ ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (Trái: AUTO | Phải: THỦ CÔNG DNS)")
 
-st.markdown("<p style='color: #E5C058; font-weight: 900; margin-bottom: 0px;'>📸 1. Tải ảnh Cầu thủ (eFHUB và Ảnh Dual Styles in-game):</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #D4AF37; font-weight: 900; margin-bottom: 0px;'>📸 1. Tải ảnh Cầu thủ (eFHUB và Ảnh Dual Styles in-game):</p>", unsafe_allow_html=True)
 uploaded_players = st.file_uploader("Quét chọn nhiều ảnh cùng lúc", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="player_imgs")
 
-st.markdown("<p style='color: #E5C058; font-weight: 900; margin-bottom: 0px; margin-top: 15px;'>📸 2. Tải ảnh HLV (Link-up / Manager Buff):</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #D4AF37; font-weight: 900; margin-bottom: 0px; margin-top: 15px;'>📸 2. Tải ảnh HLV (Link-up / Manager Buff):</p>", unsafe_allow_html=True)
 uploaded_managers = st.file_uploader("Quét chọn nhiều ảnh HLV", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 5. LÕI TƯ DUY AI (TÁCH BIỆT THÔNG MINH - CHỐNG MÁY MÓC)
+# 4. LÕI TƯ DUY AI (TÁCH BIỆT THÔNG MINH - CHỐNG MÁY MÓC)
 # ---------------------------------------------------------
 def clean_text(raw_text):
     text = raw_text.replace("$", "").replace("#", "")
     text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
     text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
     text = text.replace("> ", "🔹 ")
-    # Triệt tiêu khoảng trống thừa xuống dòng
     text = re.sub(r'\n{3,}', '\n\n', text)
     if "🚨" in text or "⚠️" in text:
         text = f"<div class='warning-box'>{text}</div>"
@@ -238,10 +195,8 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp, is_only_manager):
         
         KỊCH BẢN HIỆN TẠI: {"[CHỈ CÓ ẢNH HLV - ĐỊNH HÌNH SA BÀN & LỐI CHƠI]" if is_only_manager else "[CÓ ẢNH CẦU THỦ - THẨM ĐỊNH & NÂNG CẤP]"}
         
-        KỶ LUẬT TRÌNH BÀY: 
-        - Viết liền mạch, súc tích, dùng danh sách bullet. 
-        - TUYỆT ĐỐI KHÔNG sử dụng các khoảng trắng (xuống dòng liên tục) gây loãng giao diện. 
-        - BẮT BUỘC CHIA VĂN BẢN THÀNH 4 PHẦN NGĂN CÁCH BỞI "===" (NẰM TRÊN 1 DÒNG RIÊNG).
+        KỶ LUẬT TRÌNH BÀY: Viết liền mạch, súc tích, dùng danh sách bullet. KHÔNG xuống dòng trống thừa thãi.
+        BẮT BUỘC CHIA VĂN BẢN THÀNH 4 PHẦN NGĂN CÁCH BỞI "===" TRÊN 1 DÒNG RIÊNG.
 
         === NẾU LÀ KỊCH BẢN CHỈ CÓ ẢNH HLV ===
         PHẦN 1: ĐỌC VỊ TRIẾT LÝ & LINK-UP (Trước === thứ 1)
@@ -252,7 +207,7 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp, is_only_manager):
         ===
         PHẦN 2: QUY HOẠCH SƠ ĐỒ & NHÂN SỰ (Giữa === 1 và 2)
         🔹 Đề xuất Sơ đồ Tối ưu nhất để kích hoạt Link-up.
-        🔹 Quy hoạch Playstyle: Chỉ định Playstyle bắt buộc cho các vị trí trọng yếu (ví dụ Creative Playmaker ở cánh).
+        🔹 Quy hoạch Playstyle: Chỉ định Playstyle bắt buộc cho các vị trí trọng yếu.
         ⚠️ TUYỆT ĐỐI KHÔNG ĐỀ XUẤT BOOSTER SLOT 2 HOẶC NÂNG PP CHO HLV.
         
         ===
@@ -260,7 +215,7 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp, is_only_manager):
         🔹 Triển khai bóng từ tuyến dưới lên.
         🔹 Phương án tấn công, khoét nách & kết liễu.
         🔹 Tổ chức phòng ngự & lùi khối sa bàn.
-        ⚠️ TUYỆT ĐỐI KHÔNG TỰ CHẾ BẢNG SO SÁNH CHỈ SỐ ẢO.
+        ⚠️ TUYỆT ĐỐI KHÔNG TỰ SO SÁNH CHỈ SỐ ẢO.
         
         ===
         PHẦN 4: CÀI ĐẶT SA BÀN & INSIGHT STREAM (Sau === thứ 3)
@@ -271,7 +226,7 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp, is_only_manager):
         === NẾU LÀ KỊCH BẢN CÓ ẢNH CẦU THỦ ===
         PHẦN 1: THẨM ĐỊNH & TRIẾT LÝ (Trước === thứ 1)
         🔹 Thẩm định phôi, Thể hình, Sải chân. Dual Styles (Đỏ/Xanh).
-        ⚠️ NẾU CHỈ CÓ ẢNH eFHUB (Thiếu ảnh Dual Styles in-game): Bắt buộc chèn dòng "⚠️ LƯU Ý: Không phát hiện ảnh Dual Styles Đỏ/Xanh. Bot sẽ build PP dựa trên chỉ số mặc định, Boss tự canh chỉnh cự ly nhé!". SAU ĐÓ VẪN TIẾP TỤC PHÂN TÍCH.
+        ⚠️ NẾU CHỈ CÓ ẢNH eFHUB: Chèn dòng "⚠️ LƯU Ý: Không phát hiện ảnh Dual Styles Đỏ/Xanh. Bot sẽ build PP dựa trên chỉ số mặc định, Boss tự canh chỉnh cự ly nhé!". SAU ĐÓ VẪN TIẾP TỤC PHÂN TÍCH.
         🔹 Fluid Formation: Bóc tách sơ đồ Công/Thủ và Style HLV bắt buộc.
         
         ===
@@ -302,7 +257,7 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp, is_only_manager):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 6. XỬ LÝ SỰ KIỆN & HIỂN THỊ KẾT QUẢ
+# 5. XỬ LÝ SỰ KIỆN & HIỂN THỊ KẾT QUẢ
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
     if not uploaded_players and not uploaded_managers: 
@@ -349,7 +304,7 @@ if 'analysis_report' in st.session_state:
     def format_tab(content):
         return f"""<div class="vip-card">
             <div style="text-align:center; margin-bottom: 18px;">
-                <img src="https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg" class="vip-logo-3d">
+                <img src="{logo_url}" class="vip-logo-3d">
             </div>
             <div class="vip-text">{content.strip()}</div>
             <div class="vip-footer">

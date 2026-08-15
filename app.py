@@ -7,7 +7,7 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM TITANIUM 3D: SÁNG/TỐI TỰ ĐỘNG (BẢN V5.4 - FIX SPINNER & TƯƠNG PHẢN CHỮ)
+# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM V6.0: SÁNG/TỐI TỰ ĐỘNG (CHỐT HẠ GIAO DIỆN SPINNER & 3D TABS PRO NHẤT)
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
@@ -16,25 +16,27 @@ current_hour = (datetime.datetime.utcnow() + datetime.timedelta(hours=7)).hour
 is_daytime = 6 <= current_hour < 18
 
 if is_daytime:
-    # BAN NGÀY: Trắng xám nhẹ dịu mắt, bóng đổ 3D sáng nổi khối
-    app_bg = "#F4F7F6"         # Nền tổng thể 
-    element_bg = "#FFFFFF"      # Nền ô nhập liệu, dropdown, thẻ file
-    text_color = "#1E293B"      # Chữ xám đen đậm (Tương phản cao trên nền sáng)
+    # BAN NGÀY: Soft Off-White (Trắng sứ nhẹ), phối vàng Champagne nổi khối mạnh
+    app_bg = "#F4F6F9"         # Nền tổng thể
+    element_bg = "#FFFFFF"      # Nền ô nhập liệu, card nổi lên
+    text_color = "#1E293B"      # Chữ xám đen đậm
     label_color = "#E5C058"     # Màu nhãn (Vàng Mệnh Kim Champagne)
     slogan_color = "#64748B"
-    shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.08), -6px -6px 14px rgba(255, 255, 255, 0.9)"
-    tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)"
-    tab_inactive_color = "#374151"  # Xám than đậm (Dễ đọc trên nền tab sáng)
+    border_color = "#D4AF37"    # Viền vàng Champagne
+    shadow_3d_form = "10px 10px 20px rgba(0, 0, 0, 0.08), -10px -10px 20px rgba(255, 255, 255, 0.9)"
+    tab_inactive_bg = "linear-gradient(145deg, #E2E8F0, #FFFFFF)" # Chìm tro kim loại sáng
+    tab_inactive_color = "#4B5563" # Chữ tab không hoạt động (Xám tro)
 else:
-    # BAN ĐÊM: Xám Titan, bóng đổ 3D tối chìm
-    app_bg = "#202531"         # Nền tổng thể (Xám Titan)
-    element_bg = "#2B3242"      # Nền ô nhập liệu
-    text_color = "#F1F5F9"      # Chữ trắng bạc (Tương phản cao trên nền tối)
+    # BAN ĐÊM: Dark Knight Titan (Xám Titan đậm), phối vàng dập nổi metallic chìm
+    app_bg = "#1E222A"         # Nền tổng thể (Xám Titan đậm)
+    element_bg = "#252A34"      # Nền ô nhập liệu, card nổi lên
+    text_color = "#F1F5F9"      # Chữ trắng bạc (Tương phản tốt trên nền tối)
     label_color = "#E5C058"     # Màu nhãn (Vàng Mệnh Kim Champagne)
     slogan_color = "#94A3B8"
-    shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.05)"
-    tab_inactive_bg = "linear-gradient(145deg, #323A4C, #252B38)"
-    tab_inactive_color = "#9CA3AF"  # Xám bạc (Dễ đọc trên nền tab tối)
+    border_color = "#FFD700"    # Viền vàng Titan
+    shadow_3d_form = "10px 10px 20px rgba(0, 0, 0, 0.4), -8px -8px 16px rgba(255, 255, 255, 0.05)"
+    tab_inactive_bg = "linear-gradient(145deg, #1E222A, #2D333F)" # Chìm xám titan đậm dập dập
+    tab_inactive_color = "#9CA3AF" # Chữ tab không hoạt động (Xám titan bạc)
 
 # TIÊM BIẾN CSS VÀO GIAO DIỆN (ĐỒNG BỘ 100% TRÊN NỀN MỆNH KIM)
 custom_css = f"""
@@ -45,7 +47,7 @@ custom_css = f"""
     .stApp {{ background-color: {app_bg} !important; transition: background-color 0.5s ease; }}
     
     .title-brand {{ 
-        text-align: center; color: #E5C058 !important; font-size: 2.5rem; 
+        text-align: center; color: {border_color} !important; font-size: 2.5rem; 
         font-weight: 900; margin-bottom: 5px; letter-spacing: 2px;
         text-shadow: 0px 4px 15px rgba(229, 192, 88, 0.4);
     }}
@@ -64,15 +66,15 @@ custom_css = f"""
         display: block !important;
     }}
     
-    .stCheckbox > label > span {{ background-color: {element_bg} !important; border-color: #D4AF37 !important; }}
+    .stCheckbox > label > span {{ background-color: {element_bg} !important; border-color: {border_color} !important; }}
     {f'.stCheckbox > label > span::after {{ border-color: #121418 !important; }}' if is_daytime else ''}
 
-    /* Ô NHẬP LIỆU & DROPDOWN */
-    .stTextInput > div > div > input, .stSelectbox > div > div > div {{
+    /* Ô NHẬP LIỆU & DROPDOWN - SỬA LỖI KHỐI ĐEN & SELECTBOX MỞ SẠCH SẼ */
+    .stTextInput > div > div > input, .stSelectbox > div > div > div, .stSelectbox > div > div > [role="combobox"] {{
         background-color: {element_bg} !important; color: {text_color} !important;
         font-weight: 600 !important; border-radius: 12px !important; 
-        border: 1px solid #D4AF37 !important;
-        box-shadow: {shadow_3d} !important; 
+        border: 1px solid {border_color} !important;
+        box-shadow: {shadow_3d_form} !important; 
         padding: 12px !important;
         transition: all 0.3s ease;
     }}
@@ -80,41 +82,45 @@ custom_css = f"""
         box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.7) !important;
     }}
     
-    div[role="listbox"] {{ background-color: {element_bg} !important; border: 1px solid #D4AF37 !important; }}
-    div[role="listbox"] ul li {{ color: {text_color} !important; }}
+    /* Ép khung Menu xổ xuống của Dropdown sạch sẽ, viền vàng */
+    ul[data-baseweb="menu"] {{
+        background-color: {element_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+    }}
+    ul[data-baseweb="menu"] li {{
+        color: {text_color} !important;
+        background-color: transparent !important;
+    }}
 
-    /* KHỐI KÉO THẢ UPLOAD & FILE ĐÃ TẢI */
+    /* KHỐI KÉO THẢ UPLOAD & FILE ĐÃ TẢI - SỬA LỖI KHỐI ĐEN */
     [data-testid="stFileUploader"] section {{
         background-color: {element_bg} !important; 
-        border: 1.5px dashed #D4AF37 !important;
+        border: 1.5px dashed {border_color} !important;
         border-radius: 15px !important;
-        box-shadow: {shadow_3d} !important; 
+        box-shadow: {shadow_3d_form} !important; 
         padding: 20px !important;
         transition: all 0.3s ease;
     }}
     [data-testid="stFileUploader"] section:hover {{
-        border: 1.5px solid #E5C058 !important;
+        border: 1.5px solid {label_color} !important;
         transform: translateY(-2px);
     }}
     [data-testid="stFileUploader"] section span, [data-testid="stFileUploader"] section small {{
         color: {text_color} !important; font-weight: bold;
     }}
     
-    /* Đổi màu Nút browse file */
-    [data-testid="stFileUploader"] button {{ 
+    /* Đổi màu Nút browse file, multi-download và CARD TÊN FILE ĐÃ UP */
+    [data-testid="stFileUploader"] button, 
+    [data-testid="stFileUploader"] a[download], 
+    [data-testid="stUploadedFile"] {{ 
         background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; 
         color: #121418 !important; font-weight: bold !important; border: none !important;
+        box-shadow: 0 2px 5px rgba(184, 134, 11, 0.4) !important;
     }}
-
-    /* Đổi màu Thẻ hiển thị File đã Upload */
-    [data-testid="stUploadedFile"] {{
-        background-color: {element_bg} !important;
-        color: {text_color} !important;
-        border: 1px solid #D4AF37 !important;
-        border-radius: 8px !important;
-    }}
-    [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: {text_color} !important; }}
-    [data-testid="stUploadedFile"] button {{ background-color: transparent !important; color: #FF4D4D !important; }}
+    [data-testid="stUploadedFile"] {{ border-radius: 8px !important; }}
+    [data-testid="stUploadedFile"] button {{ color: #FF4D4D !important; }}
 
     /* NÚT BẤM CHÍNH 3D MẠ VÀNG CHAMPAGNE */
     .stButton > button {{ 
@@ -127,53 +133,52 @@ custom_css = f"""
     .stButton > button:active {{ transform: translateY(4px); box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4) !important; }}
 
     /* =================================================== */
-    /* FIX MÀU VÒNG XOAY (SPINNER) & CHỮ TRONG LÚC CHỜ     */
+    /* CHỐT HẠ SỬA LỖI: MÀU VÒNG XOAY (SPINNER) & CHỮ TRONG LÚC CHỜ */
     /* =================================================== */
-    [data-testid="stSpinner"] svg circle {{
-        stroke: #E5C058 !important; /* Vòng xoay màu Vàng Mệnh Kim */
-    }}
     [data-testid="stSpinner"] p {{
-        color: #E5C058 !important; /* Chữ màu Vàng */
+        color: {border_color} !important; /* Chữ màu Vàng */
         font-weight: 900 !important;
         font-size: 17px !important;
         text-shadow: 0px 1px 4px rgba(0,0,0,0.2) !important;
     }}
+    /* Ép vòng xoay SVG của st.spinner thành màu Vàng Mệnh Kim Champagne chốt hạ */
+    [data-testid="stSpinner"] svg circle {{
+        stroke: {border_color} !important; 
+    }}
 
-    /* THANH TAB 3D NỔI KHỐI RÕ RỆT */
+    /* THANH TAB 3D NỔI KHỐI RÕ RỆT VẬT LÝ (TABS 3D DẬP NỔI) */
     .stTabs [data-baseweb="tab-list"] {{ gap: 14px; padding-bottom: 5px; }}
     
-    .stTabs [data-baseweb="tab"] > * {{ color: {tab_inactive_color} !important; transition: all 0.3s ease; }}
-
+    /* Tab không hoạt động - Hiệu ứng chìm chìm khối metallic */
     .stTabs [data-baseweb="tab"] {{ 
         background: {tab_inactive_bg} !important; 
-        border: 1px solid #D4AF37 !important; border-bottom: none !important; 
+        border: 1px solid {border_color} !important; border-bottom: none !important; 
         border-radius: 16px 16px 0px 0px !important; padding: 14px 22px !important; 
-        box-shadow: {shadow_3d} !important;
+        color: {tab_inactive_color} !important; 
+        box-shadow: inset 4px 4px 10px rgba(0,0,0,0.1), inset -4px -4px 10px rgba(255,255,255,0.7), 2px -2px 6px rgba(0,0,0,0.2) !important;
         transition: all 0.2s ease-in-out;
     }}
-    .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
-    .stTabs [data-baseweb="tab"]:hover > * {{ color: {text_color} !important; }}
+    .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); color: {text_color} !important; }}
 
-    .stTabs [aria-selected="true"] > * {{ color: #121418 !important; }}
-
+    /* Tab đang chọn - Hiệu ứng vàng khối nhô cao 3D rực rỡ mạnh mẽ */
     .stTabs [aria-selected="true"] {{ 
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important; 
-        font-weight: 900 !important; 
+        color: #121418 !important; font-weight: 900 !important; 
         border: 1px solid #F7E08B !important; border-bottom: none !important;
         transform: translateY(-8px); 
         box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.6), inset 3px 3px 6px rgba(255,255,255,0.5), inset -3px -3px 6px rgba(0,0,0,0.2) !important;
         z-index: 10;
     }}
     
-    /* KHUNG HIỂN THỊ KẾT QUẢ AI */
+    /* KHUNG HIỂN THỊ KẾT QUẢ AI (CARD VIP MỆNH KIM) */
     .vip-card {{ 
-        background-color: {element_bg} !important; border: 2px solid #D4AF37 !important; 
+        background-color: {element_bg} !important; border: 2px solid {border_color} !important; 
         border-radius: 0px 15px 15px 15px; padding: 30px; 
-        box-shadow: {shadow_3d} !important;
+        box-shadow: {shadow_3d_form} !important;
     }}
     .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; white-space: pre-wrap; color: {text_color} !important; }}
     .vip-footer {{ 
-        text-align: center; border-top: 1px dashed #D4AF37; padding-top: 15px; 
+        text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; 
         margin-top: 25px; color: {slogan_color}; font-size: 13px; 
         display: flex; justify-content: space-between; align-items: center;
     }}
@@ -185,10 +190,10 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. KHỐI NHẬP LIỆU
+# 2. KHỐI NHẬP LIỆU (ĐÃ SỬA LỖI & NỔI KHỐI 3D)
 # ---------------------------------------------------------
-player_info = st.text_input("Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos hoặc 4-2-1-3")
-ecosystem = st.selectbox("Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"])
+player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos hoặc 4-2-1-3")
+ecosystem = st.selectbox("🌐 Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"], index=1) # PvP mặc định như trong hình ảnh của Boss
 is_comparison = st.checkbox("✅ ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (Trái: AUTO | Phải: MANUAL DNS)")
 
 st.markdown("<p style='color: #E5C058; font-weight: 900; margin-bottom: 0px;'>📸 1. Tải ảnh Cầu thủ (eFHUB và Ảnh Dual Styles in-game):</p>", unsafe_allow_html=True)
@@ -203,8 +208,10 @@ uploaded_managers = st.file_uploader("Quét chọn nhiều ảnh HLV", type=['pn
 def clean_text(raw_text):
     text = raw_text.replace("$", "").replace("#", "")
     text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
+    # Biến Markdown in đậm thành thẻ HTML <b>
     text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
     text = text.replace("> ", "🔹 ")
+    # Bọc đỏ khung cảnh báo
     if "🚨" in text or "CẢNH BÁO TỬ HUYỆT" in text:
         text = f"<div class='warning-box'>{text}</div>"
     return text
@@ -218,29 +225,24 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp):
         
         system_instruction = """
         Bạn là DNS TACTICAL ARCHITECT.
-        
         🛑 QUY TẮC KILL SWITCH (KIỂM DUYỆT ĐẦU VÀO):
         - Quét tất cả ảnh. Nếu có ảnh Cầu thủ nhưng KHÔNG THẤY ảnh màn hình in-game hiển thị Playing Style Đỏ và Xanh (Dual Styles), BẠN PHẢI TỪ CHỐI PHÂN TÍCH.
-        - Chỉ in ra đúng 1 câu: "🚨 CẢNH BÁO TỬ HUYỆT: Không phát hiện ảnh in-game hiển thị Dual Styles (Đỏ/Xanh). Để tránh rủi ro Build sai điểm PP làm gãy cự ly Fluid Formation, Bot đình chỉ phân tích. Boss vui lòng upload bổ sung ảnh in-game nhé!". (Không xuất các phần khác).
-        - Nếu ĐÃ CÓ đủ ảnh, thì tiếp tục phân tích 4 Phần.
-        
+        - Chỉ in ra đúng 1 câu duy nhất: "🚨 CẢNH BÁO TỬ HUYỆT: Không phát hiện ảnh in-game hiển thị Dual Styles (Đỏ/Xanh). Để tránh rủi ro Build sai điểm PP làm gãy cự ly Fluid Formation, Bot đình chỉ phân tích. Boss vui lòng upload bổ sung ảnh in-game nhé!". (Không xuất các phần khác).
+        - Nếu ĐÃ CÓ đủ ảnh Dual Styles (hoặc đây chỉ là ảnh HLV), thì tiếp tục phân tích 4 Phần bên dưới.
         ĐỊNH DẠNG ĐẦU RA: Chia thành đúng 4 phần ngăn cách bởi "===" (trên 1 dòng riêng).
-        
         PHẦN 1: HỒ SƠ THẨM ĐỊNH & SA BÀN (Trước === thứ 1)
         - Thẩm định phôi & Phân tích Dual Styles (Đỏ/Xanh).
-        - Fluid Formation: Bóc tách sơ đồ Công / Thủ. Đề xuất Style HLV bắt buộc.
-        
+        - Fluid Formation: Bóc tách sơ đồ Công / Thủ. Đề xuất Style HLV bắt buộc (LBC/QC/Poss...).
         ===
         PHẦN 2: NÂNG CẤP CHỈ SỐ PP (Giữa === 1 và 2)
         - Luật PP lũy tiến: 1-4=1PP, 5-8=2PP, 9-12=3PP, 13-16=4PP.
         - Phân bổ nấc nâng song ngữ. Tính tổng tiêu hao PP không được dư.
         - 1 Booster Slot 2 đề xuất.
-        
         ===
         PHẦN 3: SO SÁNH AUTO vs DNS MANUAL (Giữa === 2 và 3)
-        - Cột Phải làm chuẩn tính Delta +/- theo mẫu: Speed (Tốc độ): Auto 103 👉 DNS 101 (-2)
-        - HLV: Chỉ lấy chữ màu Vàng/Cam dưới tên HLV làm Manager Boosts. Đọc Link-up.
-        
+        - ĐỊNH DẠNG BẮT BUỘC ĐỂ SO SÁNH (Lấy Cột Phải làm chuẩn tính Delta +/-): 
+          Ví dụ: Speed (Tốc độ): Auto 103 👉 DNS 101 (-2)
+        - ĐỌC HLV: Chỉ lấy chữ màu Vàng/Cam dưới tên HLV làm Manager Boosts. Đọc Link-up Tactic.
         ===
         PHẦN 4: CÀI ĐẶT & KỸ NĂNG (Sau === thứ 3)
         - Individual Instructions (Max 2 slot Tấn Công, Tối đa 2 slot Phòng Ngự).
@@ -261,10 +263,11 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp):
 # ---------------------------------------------------------
 # 4. TRÍCH XUẤT VÀ HIỂN THỊ
 # ---------------------------------------------------------
-if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
+if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
     if not uploaded_players and not uploaded_managers: 
         st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ hoặc HLV!")
     else:
+        # CHỐT HẠ SPINNER VÀNG Champagne CHUYÊN NGHIỆP BẤT KỂ NGÀY ĐÊM
         with st.spinner("Đang trích xuất Báo cáo Sa bàn..."):
             images_to_send = []
             if uploaded_players:
@@ -278,6 +281,7 @@ if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
                 
             st.session_state['analysis_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, is_comparison)
             
+            # Ghi nhận thời gian thực
             vn_time = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
             st.session_state['report_time'] = vn_time.strftime("%d/%m/%Y | %H:%M:%S")
             
@@ -287,21 +291,25 @@ if st.button("BẮT ĐẦU PHÂN TÍCH VIP"):
 if 'analysis_report' in st.session_state:
     parts = st.session_state['analysis_report'].split("===")
     
+    # Kịch bản nếu AI kích hoạt Kill Switch (Từ chối xuất vì thiếu ảnh)
     if len(parts) == 1 and ("🚨" in parts[0] or "CẢNH BÁO TỬ HUYỆT" in parts[0]):
         tab1_c = parts[0]
         tab2_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ tính toán PP do thiếu dữ liệu in-game.</div>"
         tab3_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ so sánh do rủi ro sai lệch dữ liệu.</div>"
         tab4_c = "<div class='warning-box'>⚠️ Hệ thống đình chỉ tư vấn cài đặt cá nhân.</div>"
     else:
-        tab1_c = parts[part_index] if (part_index := 0) < len(parts) else "Đang xử lý..."
-        tab2_c = parts[part_index] if (part_index := 1) < len(parts) else "Không có dữ liệu PP."
-        tab3_c = parts[part_index] if (part_index := 2) < len(parts) else "Không có dữ liệu So sánh."
-        tab4_c = parts[part_index] if (part_index := 3) < len(parts) else "Không có dữ liệu Cài đặt."
+        # Hỗ trợ safe indexing cho các phần
+        tab1_c = parts[0] if len(parts) > 0 else "Đang xử lý..."
+        tab2_c = parts[1] if len(parts) > 1 else "Không có dữ liệu PP."
+        tab3_c = parts[2] if len(parts) > 2 else "Không có dữ liệu So sánh."
+        tab4_c = parts[3] if len(parts) > 3 else "Không có dữ liệu Cài đặt."
     
     report_time = st.session_state.get('report_time', 'Chưa xác định')
     
+    # Tabs 3D VẬT LÝ DẬP NỔI PHÍM KIM LOẠI
     t1, t2, t3, t4 = st.tabs(["🪪 HỒ SƠ THẨM ĐỊNH", "🛠️ NÂNG CẤP CHỈ SỐ", "⚖️ SO SÁNH ĐỐI ĐẦU", "🎯 CÀI ĐẶT KỸ NĂNG"])
     
+    # Text color phụ thuộc vào giao diện sáng/tối cho footer
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab(content):
@@ -310,7 +318,7 @@ if 'analysis_report' in st.session_state:
             <div class="vip-text">{content.strip()}</div>
             <div class="vip-footer">
                 <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
-                <span style="color: #D4AF37; font-weight: bold;">© 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+                <span style="color: {label_color}; font-weight: 900; text-shadow: 0px 1px 2px rgba(184, 134, 11, 0.4);">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
             </div>
         </div>"""
 
@@ -320,5 +328,6 @@ if 'analysis_report' in st.session_state:
     with t4: st.markdown(format_tab(tab4_c), unsafe_allow_html=True)
     
     with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+        # Dọn sạch các thẻ HTML để Copy/Paste sạch sẽ
         raw_text_clean = st.session_state['analysis_report'].replace("<b>", "").replace("</b>", "").replace("<div class='warning-box'>", "").replace("</div>", "").replace("===", "\n\n")
         st.text_area("Văn bản gốc:", value=raw_text_clean, height=200)

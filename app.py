@@ -7,7 +7,7 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & TỰ ĐỘNG THEME SÁNG/TỐI
+# 1. CẤU HÌNH TRANG & NÚT GẠT THEME GÓC PHẢI TUYỆT ĐỐI
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
@@ -18,27 +18,23 @@ default_is_daytime = 6 <= vn_time_now.hour < 18
 if 'manual_theme' not in st.session_state:
     st.session_state['manual_theme'] = "Ban Ngày ☀️" if default_is_daytime else "Ban Đêm 🌙"
 
-# NÚT GẠT THEME GÓC TRÊN BÊN PHẢI (BỐ CỤC CHUẨN)
-col_head, col_switch = st.columns([7, 3])
-with col_switch:
-    selected_theme = st.radio(
-        "Theme Switcher",
-        ["Ban Ngày ☀️", "Ban Đêm 🌙"],
-        index=0 if st.session_state['manual_theme'] == "Ban Ngày ☀️" else 1,
-        horizontal=True,
-        label_visibility="collapsed"
-    )
-    st.session_state['manual_theme'] = selected_theme
-
+# Nút gạt Theme (Được CSS ghim sát góc phải màn hình)
+selected_theme = st.radio(
+    "Theme Switcher",
+    ["Ban Ngày ☀️", "Ban Đêm 🌙"],
+    index=0 if st.session_state['manual_theme'] == "Ban Ngày ☀️" else 1,
+    horizontal=True,
+    label_visibility="collapsed"
+)
+st.session_state['manual_theme'] = selected_theme
 is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
 
 # ---------------------------------------------------------
-# 2. HỆ MÀU MỆNH KIM & WATERMARK HÒA TRỘN TỰ NHIÊN
+# 2. HỆ MÀU MỆNH KIM & WATERMARK PNG TRONG SUỐT
 # ---------------------------------------------------------
 logo_url = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
 
 if is_daytime:
-    # BAN NGÀY: Soft Off-White (Trắng sứ nhẹ)
     app_bg = "#F4F6F9"         
     element_bg = "#FFFFFF"      
     text_color = "#1E293B"      
@@ -48,9 +44,9 @@ if is_daytime:
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)" 
     tab_inactive_color = "#374151" 
-    bg_overlay = f"linear-gradient(rgba(244, 246, 249, 0.95), rgba(244, 246, 249, 0.95)), url('{logo_url}')"
+    watermark_opacity = "0.035"
+    watermark_blend = "multiply"
 else:
-    # BAN ĐÊM: Dark Knight Titan (Xám Titan đậm)
     app_bg = "#1E222A"         
     element_bg = "#252A34"      
     text_color = "#F1F5F9"      
@@ -60,24 +56,43 @@ else:
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)" 
     tab_inactive_color = "#9CA3AF" 
-    bg_overlay = f"linear-gradient(rgba(30, 34, 42, 0.94), rgba(30, 34, 42, 0.94)), url('{logo_url}')"
+    watermark_opacity = "0.05"
+    watermark_blend = "screen"
 
 custom_css = f"""
 <style>
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
     
-    /* Gán nền Watermark mờ trực tiếp, không dùng thẻ giả lập gây che khuất */
-    .stApp {{ 
-        background-color: {app_bg} !important; 
-        background-image: {bg_overlay} !important;
-        background-position: center center !important;
-        background-repeat: no-repeat !important;
-        background-size: 380px !important;
-        background-attachment: fixed !important;
+    .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; position: relative; }}
+    
+    /* WATERMARK LOGO PNG TRONG SUỐT (KHÔNG CÒN VIỀN VUÔNG) */
+    .stApp::before {{
+        content: "";
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 380px; height: 380px;
+        background-image: url('{logo_url}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: {watermark_opacity};
+        mix-blend-mode: {watermark_blend};
+        pointer-events: none;
+        z-index: 0;
+        border-radius: 50%;
+        -webkit-mask-image: radial-gradient(circle at center, black 35%, transparent 70%);
+        mask-image: radial-gradient(circle at center, black 35%, transparent 70%);
     }}
     
-    /* Nút gạt Theme 3D */
+    .block-container {{ position: relative; z-index: 1; padding-top: 2rem !important; }}
+
+    /* GHIM NÚT GẠT THEME SÁT MÉP TRÊN CÙNG BÊN PHẢI */
     div[data-testid="stRadio"] {{
+        position: fixed !important;
+        top: 12px !important;
+        right: 15px !important;
+        z-index: 999999 !important;
         background-color: {element_bg} !important;
         border: 1.5px solid {border_color} !important;
         border-radius: 30px !important;
@@ -86,15 +101,15 @@ custom_css = f"""
     }}
     div[data-testid="stRadio"] label p {{ color: {text_color} !important; font-weight: bold !important; font-size: 13px !important; }}
 
-    /* Tiêu đề & Slogan */
+    /* TIÊU ĐỀ & SLOGAN */
     .title-brand {{ 
         text-align: center; color: {border_color} !important; font-size: 2.5rem; 
-        font-weight: 900; margin-top: -15px; margin-bottom: 5px; letter-spacing: 2px;
+        font-weight: 900; margin-bottom: 5px; letter-spacing: 2px;
         text-shadow: 0px 4px 12px rgba(212, 175, 55, 0.35);
     }}
-    .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.05rem; font-style: italic; margin-bottom: 25px; }}
+    .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.05rem; font-style: italic; margin-bottom: 20px; }}
 
-    /* Nhãn & Ô nhập liệu 3D */
+    /* NHÃN & FORM NHẬP LIỆU 3D */
     label, .stCheckbox > label > div > p {{ 
         color: {label_color} !important; font-weight: bold !important; font-size: 15px !important;
     }}
@@ -107,7 +122,7 @@ custom_css = f"""
     ul[data-baseweb="menu"] {{ background-color: {element_bg} !important; border: 1px solid {border_color} !important; }}
     ul[data-baseweb="menu"] li {{ color: {text_color} !important; }}
 
-    /* Khung tải ảnh 3D */
+    /* KHUNG UPLOAD ẢNH 3D */
     [data-testid="stFileUploader"] section {{
         background-color: {element_bg} !important; border: 1.5px dashed {border_color} !important; border-radius: 15px !important; box-shadow: {shadow_3d} !important; padding: 20px !important;
     }}
@@ -118,7 +133,7 @@ custom_css = f"""
     [data-testid="stUploadedFile"] {{ border-radius: 8px !important; }}
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
 
-    /* Nút bấm Phân tích VIP */
+    /* NÚT BẤM PHÂN TÍCH VIP */
     .stButton > button {{ 
         width: 100%; height: 58px; font-size: 19px; font-weight: 900; 
         background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; 
@@ -126,11 +141,11 @@ custom_css = f"""
         box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px;
     }}
 
-    /* Vòng xoay Spinner */
+    /* VÒNG XOAY SPINNER */
     [data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     [data-testid="stSpinner"] p, [data-testid="stSpinner"] span {{ color: {border_color} !important; font-weight: 900 !important; font-size: 17px !important; }}
 
-    /* Tabs 3D */
+    /* TABS 3D */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     .stTabs button[data-baseweb="tab"] p, .stTabs button[data-baseweb="tab"] span {{ color: {tab_inactive_color} !important; font-weight: 700 !important; }}
     .stTabs button[aria-selected="true"] p, .stTabs button[aria-selected="true"] span {{ color: #121418 !important; font-weight: 900 !important; }}
@@ -141,7 +156,7 @@ custom_css = f"""
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px);
     }}
     
-    /* Khung hiển thị Báo Cáo VIP */
+    /* CARD VIP */
     .vip-card {{ 
         background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important;
     }}

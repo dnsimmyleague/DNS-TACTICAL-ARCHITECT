@@ -59,6 +59,7 @@ else:
     watermark_opacity = "0.05"
     watermark_blend = "screen"
 
+# LƯU Ý: Đã fix lỗi CSS nhắm sai đối tượng (Xóa thẻ button trong css của stTabs)
 custom_css = f"""
 <style>
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
@@ -85,13 +86,13 @@ custom_css = f"""
         mask-image: radial-gradient(circle at center, black 35%, transparent 70%);
     }}
     
-    .block-container {{ position: relative; z-index: 1; padding-top: 2rem !important; }}
+    .block-container {{ position: relative; z-index: 1; padding-top: 2.5rem !important; }}
 
     /* GHIM NÚT GẠT THEME SÁT MÉP TRÊN CÙNG BÊN PHẢI */
     div[data-testid="stRadio"] {{
         position: fixed !important;
-        top: 12px !important;
-        right: 15px !important;
+        top: 15px !important;
+        right: 20px !important;
         z-index: 999999 !important;
         background-color: {element_bg} !important;
         border: 1.5px solid {border_color} !important;
@@ -107,7 +108,7 @@ custom_css = f"""
         font-weight: 900; margin-bottom: 5px; letter-spacing: 2px;
         text-shadow: 0px 4px 12px rgba(212, 175, 55, 0.35);
     }}
-    .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.05rem; font-style: italic; margin-bottom: 20px; }}
+    .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.05rem; font-style: italic; margin-bottom: 25px; }}
 
     /* NHÃN & FORM NHẬP LIỆU 3D */
     label, .stCheckbox > label > div > p {{ 
@@ -145,20 +146,30 @@ custom_css = f"""
     [data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     [data-testid="stSpinner"] p, [data-testid="stSpinner"] span {{ color: {border_color} !important; font-weight: 900 !important; font-size: 17px !important; }}
 
-    /* TABS 3D */
+    /* TABS 3D - ĐÃ FIX SẠCH LỖI TÀNG HÌNH DO SELECTOR BUTTON */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
-    .stTabs button[data-baseweb="tab"] p, .stTabs button[data-baseweb="tab"] span {{ color: {tab_inactive_color} !important; font-weight: 700 !important; }}
-    .stTabs button[aria-selected="true"] p, .stTabs button[aria-selected="true"] span {{ color: #121418 !important; font-weight: 900 !important; }}
-    .stTabs button[data-baseweb="tab"] {{ 
-        background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; box-shadow: {shadow_3d} !important;
+    
+    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span, .stTabs [data-baseweb="tab"] div {{ 
+        color: {tab_inactive_color} !important; font-weight: 700 !important; transition: all 0.3s ease; 
     }}
-    .stTabs button[aria-selected="true"] {{ 
-        background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px);
+    .stTabs [data-baseweb="tab"]:hover p {{ color: {text_color} !important; }}
+    
+    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span, .stTabs [aria-selected="true"] div {{ 
+        color: #121418 !important; font-weight: 900 !important; 
+    }}
+
+    .stTabs [data-baseweb="tab"] {{ 
+        background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; box-shadow: {shadow_3d} !important; transition: all 0.2s ease-in-out;
+    }}
+    .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
+    
+    .stTabs [aria-selected="true"] {{ 
+        background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px); box-shadow: 0px -8px 15px rgba(200, 155, 43, 0.4) !important; z-index: 10;
     }}
     
     /* CARD VIP */
     .vip-card {{ 
-        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important;
+        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative;
     }}
     .vip-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; }}
     .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: {text_color} !important; }}

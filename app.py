@@ -7,7 +7,7 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. KHỞI TẠO HỆ THỐNG & NÚT GẠT THEME CAPSULE 3D GÓC PHẢI
+# 1. KHỞI TẠO HỆ THỐNG
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
@@ -18,18 +18,25 @@ default_is_daytime = 6 <= vn_time_now.hour < 18
 if 'manual_theme' not in st.session_state:
     st.session_state['manual_theme'] = "Ban Ngày ☀️" if default_is_daytime else "Ban Đêm 🌙"
 
-# Khởi tạo Nút Radio ẩn, sau đó dùng CSS kéo nó lên góc phải
-selected_theme = st.radio(
-    "Theme Switcher",
-    ["Ban Ngày ☀️", "Ban Đêm 🌙"],
-    index=0 if st.session_state['manual_theme'] == "Ban Ngày ☀️" else 1,
-    horizontal=True
-)
-st.session_state['manual_theme'] = selected_theme
+# ---------------------------------------------------------
+# 2. TOP BAR: TIÊU ĐỀ & NÚT GẠT THEME (BỐ CỤC CHUẨN)
+# ---------------------------------------------------------
+# Khôi phục hệ thống cột để không phá vỡ Layout của ứng dụng
+col1, col2 = st.columns([7, 3])
+with col2:
+    selected_theme = st.radio(
+        "Chế độ hiển thị:",
+        ["Ban Ngày ☀️", "Ban Đêm 🌙"],
+        index=0 if st.session_state['manual_theme'] == "Ban Ngày ☀️" else 1,
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+    st.session_state['manual_theme'] = selected_theme
+
 is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
 
 # ---------------------------------------------------------
-# 2. CẤU HÌNH BIẾN MÀU & CSS 3D VẬT LÝ (WATERMARK CHÌM)
+# 3. CẤU HÌNH BIẾN MÀU & CSS (WATERMARK CHÌM GÓC PHẢI)
 # ---------------------------------------------------------
 if is_daytime:
     app_bg = "#F4F6F9"         
@@ -38,10 +45,10 @@ if is_daytime:
     label_color = "#E5C058"     
     slogan_color = "#64748B"
     border_color = "#D4AF37"    
-    shadow_3d_form = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
+    shadow_3d_form = "8px 8px 18px rgba(0,0,0,0.06), -8px -8px 18px rgba(255,255,255,0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)" 
     tab_inactive_color = "#374151" 
-    watermark_opacity = "0.035"
+    watermark_opacity = "0.04"
     watermark_blend = "multiply"
 else:
     app_bg = "#1E222A"         
@@ -50,10 +57,10 @@ else:
     label_color = "#E5C058"     
     slogan_color = "#94A3B8"
     border_color = "#D4AF37"    
-    shadow_3d_form = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
+    shadow_3d_form = "8px 8px 18px rgba(0,0,0,0.35), -4px -4px 12px rgba(255,255,255,0.03)"
     tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)" 
     tab_inactive_color = "#9CA3AF" 
-    watermark_opacity = "0.055"
+    watermark_opacity = "0.06"
     watermark_blend = "screen"
 
 custom_css = f"""
@@ -62,46 +69,40 @@ custom_css = f"""
     
     .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; position: relative; }}
     
-    /* BACKGROUND LOGO WATERMARK CHÌM GIỮA MÀN HÌNH */
+    /* WATERMARK LOGO TẢN SÁNG Ở GÓC DƯỚI BÊN PHẢI (HẾT CREEPY) */
     .stApp::before {{
         content: "";
         position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        width: 500px; height: 500px;
+        bottom: -20px; right: -20px;
+        width: 380px; height: 380px;
         background-image: url('https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg');
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
         opacity: {watermark_opacity};
         mix-blend-mode: {watermark_blend};
-        pointer-events: none; /* Tránh click dính logo */
+        pointer-events: none; 
         z-index: 0;
+        /* Áp dụng mặt nạ tản mờ xung quanh để xóa sạch viền vuông đen của ảnh gốc */
+        -webkit-mask-image: radial-gradient(circle, black 35%, transparent 70%);
+        mask-image: radial-gradient(circle, black 35%, transparent 70%);
     }}
-    
-    /* Đẩy Content lên trên logo */
-    .block-container {{ position: relative; z-index: 1; }}
 
-    /* CỐ ĐỊNH NÚT GẠT THEME GÓC PHẢI DẠNG CAPSULE 3D */
+    /* CSS CHO NÚT GẠT THEME DẠNG CAPSULE */
     div[data-testid="stRadio"] {{
-        position: fixed !important;
-        top: 15px !important;
-        right: 20px !important;
-        z-index: 9999 !important;
         background-color: {element_bg} !important;
         border: 2px solid {border_color} !important;
         border-radius: 50px !important;
         padding: 5px 15px !important;
         box-shadow: {shadow_3d_form} !important;
-        width: auto !important;
+        display: flex; justify-content: flex-end;
     }}
-    div[data-testid="stRadio"] > label {{ display: none !important; }} /* Ẩn title radio */
     div[data-testid="stRadio"] div[data-baseweb="radio"] div {{ color: {text_color} !important; font-weight: 800 !important; font-size: 13px !important; }}
 
     /* TITLE & SLOGAN */
     .title-brand {{ 
         text-align: center; color: {border_color} !important; font-size: 2.6rem; 
-        font-weight: 900; margin-bottom: 5px; letter-spacing: 2px;
+        font-weight: 900; margin-top: -30px; margin-bottom: 5px; letter-spacing: 2px;
         text-shadow: 0px 4px 15px rgba(212, 175, 55, 0.4);
     }}
     .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.1rem; font-style: italic; margin-bottom: 25px; }}
@@ -121,6 +122,7 @@ custom_css = f"""
         border: 1px solid {border_color} !important; box-shadow: {shadow_3d_form} !important; 
         padding: 12px !important; transition: all 0.3s ease;
     }}
+    .stTextInput > div > div > input:focus {{ box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.1) !important; }}
     ul[data-baseweb="menu"] {{ background-color: {element_bg} !important; border: 1px solid {border_color} !important; border-radius: 8px !important; }}
     ul[data-baseweb="menu"] li {{ color: {text_color} !important; background-color: transparent !important; }}
 
@@ -198,7 +200,7 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 3. KHỐI NHẬP LIỆU GIAO DIỆN
+# 4. KHỐI NHẬP LIỆU GIAO DIỆN
 # ---------------------------------------------------------
 player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos, Frank Lampard hoặc 4-2-1-3")
 ecosystem = st.selectbox("🌐 Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"], index=1)
@@ -211,7 +213,7 @@ st.markdown("<p style='color: #E5C058; font-weight: 900; margin-bottom: 0px; mar
 uploaded_managers = st.file_uploader("Quét chọn nhiều ảnh HLV", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (TÁCH BIỆT THÔNG MINH - CHỐNG MÁY MÓC)
+# 5. LÕI TƯ DUY AI (TÁCH BIỆT THÔNG MINH - CHỐNG MÁY MÓC)
 # ---------------------------------------------------------
 def clean_text(raw_text):
     text = raw_text.replace("$", "").replace("#", "")
@@ -300,7 +302,7 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp, is_only_manager):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. XỬ LÝ SỰ KIỆN & HIỂN THỊ KẾT QUẢ
+# 6. XỬ LÝ SỰ KIỆN & HIỂN THỊ KẾT QUẢ
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
     if not uploaded_players and not uploaded_managers: 

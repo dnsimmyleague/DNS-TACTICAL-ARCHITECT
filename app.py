@@ -7,26 +7,43 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM: SÁNG/TỐI TỰ ĐỘNG & 3D TABS VẬT LÝ
+# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM TITANIUM 3D & NÚT GẠT THEME CHỦ ĐỘNG
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
-# Lấy giờ thực tế tại Việt Nam (UTC+7)
+# Tính toán giờ thực tế tại Việt Nam (UTC+7) làm mặc định
 vn_time_now = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
-current_hour = vn_time_now.hour
-is_daytime = 6 <= current_hour < 18
+default_is_daytime = 6 <= vn_time_now.hour < 18
+
+# Khởi tạo Session State cho Theme nếu chưa có
+if 'manual_theme' not in st.session_state:
+    st.session_state['manual_theme'] = "Ban Ngày ☀️" if default_is_daytime else "Ban Đêm 🌙"
+
+# NÚT GẠT THEME Ở GÓC PHẢI TRÊN MÀN HÌNH
+top_col1, top_col2 = st.columns([7, 3])
+with top_col2:
+    selected_theme = st.radio(
+        "Chế độ hiển thị:",
+        ["Ban Ngày ☀️", "Ban Đêm 🌙"],
+        index=0 if st.session_state['manual_theme'] == "Ban Ngày ☀️" else 1,
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+    st.session_state['manual_theme'] = selected_theme
+
+is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
 
 if is_daytime:
-    # BAN NGÀY: Soft Off-White (Trắng sứ nhẹ)
+    # BAN NGÀY: Soft Off-White (Trắng sứ nhẹ), phối vàng Champagne nổi khối
     app_bg = "#F4F6F9"         
     element_bg = "#FFFFFF"      
     text_color = "#1E293B"      # Chữ xám đen đậm
     label_color = "#E5C058"     
     slogan_color = "#64748B"
     border_color = "#D4AF37"    
-    shadow_3d_form = "8px 8px 16px rgba(0,0,0,0.06), -8px -8px 16px rgba(255,255,255,0.8)"
+    shadow_3d_form = "8px 8px 18px rgba(0,0,0,0.06), -8px -8px 18px rgba(255,255,255,0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)" 
-    tab_inactive_color = "#374151" # Chữ tab không hoạt động: Xám than đậm (Chống tàng hình)
+    tab_inactive_color = "#374151" # Chữ tab không hoạt động: Xám than đậm
 else:
     # BAN ĐÊM: Dark Knight Titan (Xám Titan đậm)
     app_bg = "#1E222A"         
@@ -35,16 +52,16 @@ else:
     label_color = "#E5C058"     
     slogan_color = "#94A3B8"
     border_color = "#D4AF37"    
-    shadow_3d_form = "8px 8px 16px rgba(0,0,0,0.3), -4px -4px 10px rgba(255,255,255,0.03)"
+    shadow_3d_form = "8px 8px 18px rgba(0,0,0,0.35), -4px -4px 12px rgba(255,255,255,0.03)"
     tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)" 
     tab_inactive_color = "#9CA3AF" # Chữ tab không hoạt động: Xám bạc sáng
 
-# TIÊM BIẾN CSS VÀO GIAO DIỆN (CAN THIỆP SÂU VÀO LÕI HTML)
+# TIÊM CSS GIAO DIỆN 3D ĐA GÓC NHÌN & KHỬ SẠCH LỖI KHỐI ĐEN
 custom_css = f"""
 <style>
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
     
-    .stApp {{ background-color: {app_bg} !important; transition: background-color 0.5s ease; }}
+    .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; }}
     
     .title-brand {{ 
         text-align: center; color: {border_color} !important; font-size: 2.5rem; 
@@ -53,7 +70,21 @@ custom_css = f"""
     }}
     .slogan {{ 
         text-align: center; color: {slogan_color} !important; font-size: 1.1rem; 
-        font-style: italic; margin-bottom: 30px; letter-spacing: 0.5px;
+        font-style: italic; margin-bottom: 25px; letter-spacing: 0.5px;
+    }}
+
+    /* NÚT GẠT THEME GÓC PHẢI */
+    div[data-testid="stRadio"] > div {{
+        background-color: {element_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 20px !important;
+        padding: 4px 8px !important;
+        box-shadow: {shadow_3d_form} !important;
+    }}
+    div[data-testid="stRadio"] label p {{
+        color: {text_color} !important;
+        font-weight: bold !important;
+        font-size: 13px !important;
     }}
 
     /* NHÃN (LABELS) VÀ CHECKBOX */
@@ -64,7 +95,7 @@ custom_css = f"""
     .stCheckbox > label > span {{ background-color: {element_bg} !important; border-color: {border_color} !important; }}
     {f'.stCheckbox > label > span::after {{ border-color: #121418 !important; }}' if is_daytime else ''}
 
-    /* Ô NHẬP LIỆU & DROPDOWN - XÓA SẠCH LỖI KHỐI ĐEN */
+    /* Ô NHẬP LIỆU & DROPDOWN 3D */
     .stTextInput > div > div > input, .stSelectbox > div > div > div, .stSelectbox > div > div > [role="combobox"] {{
         background-color: {element_bg} !important; color: {text_color} !important;
         font-weight: 600 !important; border-radius: 12px !important; 
@@ -98,18 +129,14 @@ custom_css = f"""
     }}
     .stButton > button:active {{ transform: translateY(4px); box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4) !important; }}
 
-    /* =================================================== */
-    /* VÒNG XOAY SPINNER VÀNG MỆNH KIM                     */
-    /* =================================================== */
+    /* VÒNG XOAY SPINNER VÀNG MỆNH KIM */
     [data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     [data-testid="stSpinner"] p, [data-testid="stSpinner"] span {{
         color: {border_color} !important; font-weight: 900 !important; font-size: 17px !important; text-shadow: 0px 1px 4px rgba(0,0,0,0.2) !important;
     }}
 
-    /* =================================================== */
-    /* CHỐT HẠ LỖI TAB TÀNG HÌNH (CAN THIỆP SÂU THẺ P VÀ SPAN) */
-    /* =================================================== */
-    .stTabs [data-baseweb="tab-list"] {{ gap: 14px; padding-bottom: 5px; }}
+    /* THANH TAB 3D NỔI KHỐI & ICON CHIỀU SÂU QUANG HỌC */
+    .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     
     .stTabs button[data-baseweb="tab"] p, 
     .stTabs button[data-baseweb="tab"] span {{ 
@@ -123,25 +150,33 @@ custom_css = f"""
     }}
 
     .stTabs button[data-baseweb="tab"] {{ 
-        background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 16px 16px 0px 0px !important; padding: 14px 22px !important; 
-        box-shadow: inset 4px 4px 10px rgba(0,0,0,0.05), inset -4px -4px 10px rgba(255,255,255,0.1), 2px -2px 6px rgba(0,0,0,0.1) !important; transition: all 0.2s ease-in-out;
+        background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; 
+        box-shadow: inset 3px 3px 6px rgba(0,0,0,0.05), inset -3px -3px 6px rgba(255,255,255,0.1), 2px -2px 5px rgba(0,0,0,0.1) !important; transition: all 0.2s ease-in-out;
     }}
     .stTabs button[data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
 
     .stTabs button[aria-selected="true"] {{ 
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important;
-        transform: translateY(-8px); box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.4), inset 3px 3px 6px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(0,0,0,0.2) !important; z-index: 10;
+        transform: translateY(-8px); box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.45), inset 3px 3px 6px rgba(255,255,255,0.5), inset -3px -3px 6px rgba(0,0,0,0.2) !important; z-index: 10;
     }}
     
-    /* KHUNG HIỂN THỊ KẾT QUẢ AI (CARD VIP) */
+    /* KHUNG HIỂN THỊ KẾT QUẢ AI & LOGO 3D */
     .vip-card {{ 
-        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 30px; box-shadow: {shadow_3d_form} !important;
+        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 28px; box-shadow: {shadow_3d_form} !important;
     }}
-    .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; white-space: pre-wrap; color: {text_color} !important; }}
+    .vip-logo-3d {{
+        max-width: 95px; border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25), inset 0 0 10px rgba(212,175,55,0.5);
+        border: 2px solid {border_color};
+        transition: transform 0.3s ease;
+    }}
+    .vip-logo-3d:hover {{ transform: scale(1.05) rotate(1deg); }}
+    
+    .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: {text_color} !important; }}
     .vip-footer {{ 
-        text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
+        text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 20px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
     }}
-    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #FF4D4D !important; font-weight: bold; }}
+    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; margin-bottom: 12px; color: #FF4D4D !important; font-weight: bold; }}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -151,9 +186,9 @@ st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiế
 # ---------------------------------------------------------
 # 2. KHỐI NHẬP LIỆU
 # ---------------------------------------------------------
-player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos hoặc 4-2-1-3")
+player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos, Frank Lampard hoặc 4-2-1-3")
 ecosystem = st.selectbox("🌐 Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"], index=1)
-is_comparison = st.checkbox("✅ ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (Trái: AUTO | Phải: MANUAL DNS)")
+is_comparison = st.checkbox("✅ ĐÂY LÀ ẢNH SO SÁNH CẦU THỦ (Trái: AUTO | Phải: THỦ CÔNG DNS)")
 
 st.markdown("<p style='color: #E5C058; font-weight: 900; margin-bottom: 0px;'>📸 1. Tải ảnh Cầu thủ (eFHUB và Ảnh Dual Styles in-game):</p>", unsafe_allow_html=True)
 uploaded_players = st.file_uploader("Quét chọn nhiều ảnh cùng lúc", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="player_imgs")
@@ -162,63 +197,86 @@ st.markdown("<p style='color: #E5C058; font-weight: 900; margin-bottom: 0px; mar
 uploaded_managers = st.file_uploader("Quét chọn nhiều ảnh HLV", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. LÕI TƯ DUY AI (BỘ NÃO)
+# 3. LÕI TƯ DUY AI (BỘ NÃO PHÂN TÁCH 2 KỊCH BẢN CHỐNG MÁY MÓC)
 # ---------------------------------------------------------
 def clean_text(raw_text):
     text = raw_text.replace("$", "").replace("#", "")
     text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
     text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
     text = text.replace("> ", "🔹 ")
+    # Loại bỏ khoảng trống thừa xuống dòng liên tục
+    text = re.sub(r'\n{3,}', '\n\n', text)
     if "🚨" in text or "⚠️" in text:
         text = f"<div class='warning-box'>{text}</div>"
     return text
 
-def execute_tactical_analysis(img_list, p_info, eco, is_comp):
+def execute_tactical_analysis(img_list, p_info, eco, is_comp, is_only_manager):
     try:
         api_key = st.secrets.get("GEMINI_API_KEY")
         if not api_key: return "[LỖI CẤU HÌNH]: Không tìm thấy GEMINI_API_KEY!"
             
         client = genai.Client(api_key=api_key)
         
-        system_instruction = """
-        Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Phân tích Chiến thuật eFootball.
+        system_instruction = f"""
+        Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Phân tích Chiến thuật eFootball Cấp Cao.
         
-        🛑 PHÂN LOẠI KỊCH BẢN PHÂN TÍCH (QUY TẮC SỐNG CÒN):
-        1. NẾU ẢNH CUNG CẤP CHỈ CÓ ẢNH HLV (Không có ảnh cầu thủ): 
-           - KHÔNG YÊU CẦU ẢNH ĐỎ/XANH. 
-           - Phân tích trực diện Lối chơi, Manager Boosts, Link-Up Tactic và quy hoạch 23 nhân sự. Vẫn xuất đủ 4 Phần.
-        2. NẾU CÓ ẢNH CẦU THỦ NHƯNG THIẾU ẢNH IN-GAME ĐỎ/XANH (Dual Styles):
-           - KHÔNG ĐƯỢC TỪ CHỐI PHÂN TÍCH.
-           - Bắt buộc chèn dòng cảnh báo này ở ngay đầu Phần 1: "⚠️ LƯU Ý MỎNG: Không phát hiện ảnh Dual Styles Đỏ/Xanh. Bot sẽ build PP dựa trên chỉ số mặc định, Boss nhớ tự canh chỉnh lại cự ly Fluid Formation nhé!".
-           - SAU ĐÓ VẪN TIẾP TỤC phân tích và build điểm PP, xuất đủ 4 Phần như bình thường.
-        
-        ĐỊNH DẠNG ĐẦU RA: Bắt buộc chia 4 Phần, ngăn cách bởi đúng 3 dấu bằng "===" trên 1 dòng riêng.
+        QUY TẮC PHÂN LOẠI KỊCH BẢN:
+        Đang ở kịch bản: {"[CHỈ CÓ ẢNH HLV - ĐỊNH HÌNH SA BÀN]" if is_only_manager else "[CÓ ẢNH CẦU THỦ - THẨM ĐỊNH & NÂNG CẤP]"}.
 
-        PHẦN 1: HỒ SƠ THẨM ĐỊNH & SA BÀN (Trước === thứ 1)
-        - Thẩm định phôi, Thể hình, Sải chân.
-        - Dual Styles (Nếu có ảnh).
-        - Fluid Formation: Bóc tách sơ đồ Công / Thủ. Đề xuất Style HLV bắt buộc (LBC/QC/Poss...).
+        KỶ LUẬT TRÌNH BÀY: Viết liền mạch, súc tích, dùng gạch đầu dòng bullet. TUYỆT ĐỐI KHÔNG xuống dòng trống thừa thãi gây loãng giao diện.
+
+        BẮT BUỘC CHIA VĂN BẢN THÀNH 4 PHẦN NGĂN CÁCH BỞI "===" (NẰM TRÊN 1 DÒNG RIÊNG).
+
+        === NẾU LÀ KỊCH BẢN CHỈ CÓ ẢNH HLV ===
+        PHẦN 1: ĐỌC VỊ TRIẾT LÝ & LINK-UP (Trước === thứ 1)
+        🔹 Triết lý & Điểm lối chơi: Nhận diện Lối chơi chính (LBC, QC, Possession...), điểm số phong cách.
+        🔹 Manager Boosts: Nhận diện chính xác chỉ số buff màu vàng/cam dưới tên HLV.
+        🔹 Bóc tách Link-Up Tactic: Phân tích cơ chế Link-up, vai trò Center Piece và Key Man, điều kiện kích hoạt.
         
         ===
-        PHẦN 2: NÂNG CẤP CHỈ SỐ PP (Giữa === 1 và 2)
-        - Luật PP lũy tiến: 1-4=1PP, 5-8=2PP, 9-12=3PP, 13-16=4PP. Tính chính xác 100% không dư điểm.
-        - Phân bổ nấc nâng song ngữ (Speed (Tốc độ), Stamina (Thể lực)...). Đề xuất 1 Booster Slot 2.
+        PHẦN 2: QUY HOẠCH SƠ ĐỒ & NHÂN SỰ (Giữa === 1 và 2)
+        🔹 Đề xuất Sơ đồ Tối ưu: Sơ đồ tương thích nhất để kích hoạt tối đa Link-up và triết lý HLV.
+        🔹 Quy hoạch Playstyle 23 Nhân sự: Chỉ định Playstyle bắt buộc cho các vị trí trọng yếu (Ví dụ: Cần Creative Playmaker ở LMF/RMF, Fox in the Box ở CF...).
+        ⚠️ TUYỆT ĐỐI KHÔNG ĐƯỢC ĐỀ XUẤT BOOSTER SLOT 2 HOẶC NÂNG PP CHO HLV!
         
         ===
-        PHẦN 3: SO SÁNH AUTO vs DNS MANUAL (Giữa === 2 và 3)
-        - Nếu là Cầu thủ: So sánh Cột Phải làm chuẩn tính Delta +/- (Ví dụ: Speed (Tốc độ): Auto 103 👉 DNS 101 (-2)).
-        - Manager Boosts: Chỉ lấy chữ màu Vàng/Cam dưới tên HLV. Không lấy Booster lục giác của cầu thủ. Đọc Link-up Tactic.
+        PHẦN 3: VẬN HÀNH BÀI ĐÁNH THỰC CHIẾN (Giữa === 2 và 3)
+        🔹 Triển khai bóng: Mảng miếng thoát pressing từ tuyến dưới lên tuyến giữa.
+        🔹 Phương án kết liễu: Cách khai thác đường chuyền Link-up để xé toang hàng thủ đối phương.
+        🔹 Tổ chức phòng ngự: Cách giữ cự ly khối và bọc lót khi mất bóng.
+        ⚠️ TUYỆT ĐỐI KHÔNG TỰ SO SÁNH CHỈ SỐ ẢO!
         
         ===
-        PHẦN 4: CÀI ĐẶT & KỸ NĂNG (Sau === thứ 3)
-        - Individual Instructions (Max 2 slot Tấn Công, Tối đa 2 slot Phòng Ngự) khóa cự ly đội hình.
-        - Top 5 Skill bổ sung ưu tiên (Dùng số thứ tự 1️⃣ đến 5️⃣).
-        - Insight chốt hạ dành cho Streamer.
+        PHẦN 4: CÀI ĐẶT SA BÀN & INSIGHT STREAM (Sau === thứ 3)
+        🎯 Individual Instructions Sa bàn: Đề xuất các lệnh khóa cự ly quan trọng cho đội hình (Ví dụ: Defensive cho Fullback, Anchoring cho DMF...).
+        🎙️ Insight Chốt Hạ: 2-3 câu đanh thép đúc kết sức mạnh bộ khung HLV dành cho Streamer.
+        ⚠️ TUYỆT ĐỐI KHÔNG GÁN TOP 5 SKILL CÁ NHÂN CHO HLV!
+
+        === NẾU LÀ KỊCH BẢN CÓ ẢNH CẦU THỦ ===
+        PHẦN 1: THẨM ĐỊNH & TRIẾT LÝ (Trước === thứ 1)
+        🔹 Thẩm định phôi, Thể hình, Sải chân. Phân tích Dual Styles (Đỏ/Xanh). Nếu thiếu ảnh in-game, chỉ ghi 1 dòng lưu ý nhỏ rồi vẫn tiếp tục.
+        🔹 Fluid Formation: Sơ đồ Công / Sơ đồ Thủ và Style HLV bắt buộc để không gãy cự ly.
+        
+        ===
+        PHẦN 2: PHÂN BỔ PP & QUY HOẠCH (Giữa === 1 và 2)
+        🔹 Luật PP lũy tiến: 1-4=1PP, 5-8=2PP, 9-12=3PP, 13-16=4PP. Tính chuẩn 100% không dư điểm.
+        🔹 Phân bổ nấc nâng song ngữ. Đề xuất 1 Booster Slot 2 phù hợp.
+        
+        ===
+        PHẦN 3: SO SÁNH AUTO & THỦ CÔNG (Giữa === 2 và 3)
+        🔹 Bảng đối đầu (Lấy Thủ công làm chuẩn tính Delta +/-): Speed (Tốc độ): Auto 103 👉 Thủ công 101 (-2).
+        🔹 Manager Boosts: Chỉ lấy chữ màu Vàng/Cam dưới tên HLV.
+        
+        ===
+        PHẦN 4: CÀI ĐẶT & KỸ NĂNG SA BÀN (Sau === thứ 3)
+        🎯 Individual Instructions (Tối đa 4 slot: 2 Công, 2 Thủ).
+        🧩 Top 5 Skill bổ sung ưu tiên (Đánh số 1️⃣ đến 5️⃣).
+        🎙️ Insight Chốt Hạ dành cho Streamer.
         """
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
         
-        comp_text = "ĐÂY LÀ ẢNH SO SÁNH (TRÁI: AUTO, PHẢI: DNS MANUAL)." if is_comp else ""
-        context_prompt = f"Thông tin/Sơ đồ: {p_info} | Hệ sinh thái: {eco}. {comp_text}"
+        comp_text = "ĐÂY LÀ ẢNH SO SÁNH (TRÁI: AUTO, PHẢI: THỦ CÔNG DNS)." if is_comp else ""
+        context_prompt = f"Thông tin: {p_info} | Hệ sinh thái: {eco}. {comp_text}"
         
         contents = [context_prompt] + img_list
         response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
@@ -227,7 +285,7 @@ def execute_tactical_analysis(img_list, p_info, eco, is_comp):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 4. TRÍCH XUẤT VÀ HIỂN THỊ
+# 4. TRÍCH XUẤT VÀ HIỂN THỊ KẾT QUẢ
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
     if not uploaded_players and not uploaded_managers: 
@@ -235,6 +293,8 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
     else:
         with st.spinner("Đang trích xuất Báo cáo Sa bàn..."):
             images_to_send = []
+            is_only_manager = (len(uploaded_managers) > 0 and len(uploaded_players) == 0)
+            
             if uploaded_players:
                 for f in uploaded_players:
                     img = Image.open(f); img.thumbnail((1000, 1000))
@@ -244,9 +304,9 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
                     img = Image.open(f); img.thumbnail((1000, 1000))
                     images_to_send.append(img)
                 
-            st.session_state['analysis_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, is_comparison)
+            st.session_state['analysis_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, is_comparison, is_only_manager)
             
-            # Lưu vết thời gian
+            # Ghi nhận thời gian thực
             st.session_state['report_time'] = vn_time_now.strftime("%d/%m/%Y | %H:%M:%S")
             images_to_send.clear()
             gc.collect()
@@ -254,22 +314,28 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
 if 'analysis_report' in st.session_state:
     parts = st.session_state['analysis_report'].split("===")
     
-    # Safe indexing phân bổ vào 4 Tab
     tab1_c = parts[0] if len(parts) > 0 else "Đang xử lý..."
-    tab2_c = parts[1] if len(parts) > 1 else "Không có dữ liệu PP."
-    tab3_c = parts[2] if len(parts) > 2 else "Không có dữ liệu So sánh."
+    tab2_c = parts[1] if len(parts) > 1 else "Không có dữ liệu Quy hoạch."
+    tab3_c = parts[2] if len(parts) > 2 else "Không có dữ liệu Vận hành / So sánh."
     tab4_c = parts[3] if len(parts) > 3 else "Không có dữ liệu Cài đặt."
     
-    report_time = st.session_state.get('report_time', 'Chưa xác định')
+    report_time = st.session_state.get('report_time', vn_time_now.strftime("%d/%m/%Y | %H:%M:%S"))
     
-    # Render 4 Tabs
-    t1, t2, t3, t4 = st.tabs(["🪪 HỒ SƠ THẨM ĐỊNH", "🛠️ NÂNG CẤP CHỈ SỐ", "⚖️ SO SÁNH ĐỐI ĐẦU", "🎯 CÀI ĐẶT KỸ NĂNG"])
+    # 4 TABS 3D ĐÃ ĐƯỢC CHUẨN HÓA TIÊU ĐỀ
+    t1, t2, t3, t4 = st.tabs([
+        "🪪 THẨM ĐỊNH & TRIẾT LÝ", 
+        "🛠️ PHÂN BỔ PP & QUY HOẠCH", 
+        "⚖️ SO SÁNH AUTO & THỦ CÔNG", 
+        "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"
+    ])
     
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab(content):
         return f"""<div class="vip-card">
-            <div style="text-align:center; margin-bottom: 15px;"><img src="https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg" style="max-width: 90px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);"></div>
+            <div style="text-align:center; margin-bottom: 18px;">
+                <img src="https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg" class="vip-logo-3d">
+            </div>
             <div class="vip-text">{content.strip()}</div>
             <div class="vip-footer">
                 <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
@@ -283,6 +349,5 @@ if 'analysis_report' in st.session_state:
     with t4: st.markdown(format_tab(tab4_c), unsafe_allow_html=True)
     
     with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-        # Dọn sạch các thẻ HTML để Copy/Paste sạch sẽ
         raw_text_clean = st.session_state['analysis_report'].replace("<b>", "").replace("</b>", "").replace("<div class='warning-box'>", "").replace("</div>", "").replace("===", "\n\n")
         st.text_area("Văn bản gốc:", value=raw_text_clean, height=200)

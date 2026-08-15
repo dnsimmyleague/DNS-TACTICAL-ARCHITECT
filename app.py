@@ -7,7 +7,7 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM 3D: SÁNG/TỐI TỰ ĐỘNG
+# 1. HỆ THỐNG GIAO DIỆN MỆNH KIM TITANIUM 3D: SÁNG/TỐI TỰ ĐỘNG (BẢN V5.0)
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
@@ -20,19 +20,23 @@ if is_daytime:
     app_bg = "#F4F7F6"         # Nền tổng thể (Trắng xám nhẹ)
     element_bg = "#FFFFFF"      # Nền ô nhập liệu nổi lên
     text_color = "#1E293B"      # Chữ xám đen đậm
+    label_color = "#E5C058"     # Màu nhãn (Vàng Mệnh Kim)
     slogan_color = "#64748B"
     shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.08), -6px -6px 14px rgba(255, 255, 255, 0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)"
+    tab_inactive_color = "#4B5563"  # Đổi màu chữ tab không hoạt động sang sẫm hơn
 else:
     # BAN ĐÊM: Xám Titan, bóng đổ 3D tối
     app_bg = "#202531"         # Nền tổng thể (Xám Titan)
     element_bg = "#2B3242"      # Nền ô nhập liệu
     text_color = "#F1F5F9"      # Chữ trắng bạc
+    label_color = "#E5C058"     # Màu nhãn (Vàng Mệnh Kim)
     slogan_color = "#94A3B8"
     shadow_3d = "6px 6px 14px rgba(0, 0, 0, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.05)"
     tab_inactive_bg = "linear-gradient(145deg, #323A4C, #252B38)"
+    tab_inactive_color = "#9CA3AF"  # Màu chữ tab không hoạt động ban đêm
 
-# TIÊM BIẾN CSS VÀO GIAO DIỆN
+# TIÊM BIẾN CSS VÀO GIAO DIỆN (SỬA LỖI MẤT TIÊU ĐỀ & KHỐI ĐEN)
 custom_css = f"""
 <style>
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
@@ -51,10 +55,23 @@ custom_css = f"""
     }}
 
     /* --------------------------------------------------- */
-    /* HIỆU ỨNG 3D CHO Ô NHẬP LIỆU & DROPDOWN              */
+    /* SỬA LỖI MẤT TIÊU ĐỀ (LABELS)                        */
+    /* --------------------------------------------------- */
+    label, .stCheckbox > label > div > p {{ 
+        color: {label_color} !important; 
+        font-weight: bold !important; 
+        font-size: 15px !important; 
+        letter-spacing: 0.5px;
+        visibility: visible !important; /* Đảm bảo nhãn luôn hiển thị */
+        display: block !important;
+    }}
+
+    /* --------------------------------------------------- */
+    /* SỬA LỖI KHỐI ĐEN (Ô NHẬP LIỆU & DROPDOWN)          */
     /* --------------------------------------------------- */
     .stTextInput > div > div > input, .stSelectbox > div > div > div {{
-        background-color: {element_bg} !important; color: {text_color} !important;
+        background-color: {element_bg} !important; /* Đổi màu nền về sáng hơn */
+        color: {text_color} !important; /* Đổi màu chữ */
         font-weight: 600 !important; border-radius: 12px !important; 
         border: 1px solid #D4AF37 !important;
         box-shadow: {shadow_3d} !important; /* Đổ bóng nổi khối 3D */
@@ -66,10 +83,10 @@ custom_css = f"""
     }}
 
     /* --------------------------------------------------- */
-    /* HIỆU ỨNG 3D CHO KHUNG KÉO THẢ UPLOAD ẢNH            */
+    /* SỬA LỖI KHỐI ĐEN & HIỆU ỨNG 3D KHỐI KÉO THẢ UPLOAD   */
     /* --------------------------------------------------- */
     [data-testid="stFileUploader"] section {{
-        background-color: {element_bg} !important;
+        background-color: {element_bg} !important; /* Đổi màu nền về sáng hơn */
         border: 1.5px dashed #D4AF37 !important;
         border-radius: 15px !important;
         box-shadow: {shadow_3d} !important; /* Đổ bóng khối 3D */
@@ -84,10 +101,8 @@ custom_css = f"""
         color: {text_color} !important; font-weight: bold;
     }}
 
-    label, .stCheckbox > label > div > p {{ color: #E5C058 !important; font-weight: 900 !important; font-size: 16px !important; letter-spacing: 0.5px;}}
-
     /* --------------------------------------------------- */
-    /* NÚT BẤM CHÍNH                                       */
+    /* NÚT BẤM CHÍNH 3D MẠ VÀNG CHAMPAGNE                */
     /* --------------------------------------------------- */
     .stButton > button {{ 
         width: 100%; height: 60px; font-size: 20px; font-weight: 900; 
@@ -99,24 +114,28 @@ custom_css = f"""
     .stButton > button:active {{ transform: translateY(4px); box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4) !important; }}
 
     /* --------------------------------------------------- */
-    /* THANH TAB 3D                                        */
+    /* THANH TAB 3D NỔI KHỐI RÕ RỆT                       */
     /* --------------------------------------------------- */
-    .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
+    .stTabs [data-baseweb="tab-list"] {{ gap: 14px; padding-bottom: 5px; }}
     
+    /* Tab không hoạt động - Hiệu ứng chìm chìm khối metallic */
     .stTabs [data-baseweb="tab"] {{ 
         background: {tab_inactive_bg} !important; 
         border: 1px solid #D4AF37 !important; border-bottom: none !important; 
-        border-radius: 14px 14px 0px 0px !important; padding: 12px 20px !important; color: {slogan_color} !important;
+        border-radius: 16px 16px 0px 0px !important; padding: 14px 22px !important; 
+        color: {tab_inactive_color} !important; /* Đổi màu chữ tab không hoạt động */
         box-shadow: {shadow_3d} !important;
         transition: all 0.2s ease-in-out;
     }}
+    .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); color: {text_color} !important; }}
 
+    /* Tab đang chọn - Hiệu ứng vàng khối nhô cao 3D mạnh mẽ */
     .stTabs [aria-selected="true"] {{ 
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important; 
         color: #121418 !important; font-weight: 900 !important; 
         border: 1px solid #F7E08B !important; border-bottom: none !important;
-        transform: translateY(-6px); 
-        box-shadow: 0px -6px 15px rgba(200, 155, 43, 0.5), inset 2px 2px 4px rgba(255,255,255,0.4) !important;
+        transform: translateY(-8px); 
+        box-shadow: 0px -10px 20px rgba(200, 155, 43, 0.6), inset 3px 3px 6px rgba(255,255,255,0.5), inset -3px -3px 6px rgba(0,0,0,0.2) !important;
         z-index: 10;
     }}
     
@@ -142,7 +161,7 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. KHỐI NHẬP LIỆU
+# 2. KHỐI NHẬP LIỆU (ĐÃ SỬA LỖI & NỔI KHỐI 3D)
 # ---------------------------------------------------------
 player_info = st.text_input("Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos hoặc 4-2-1-3")
 ecosystem = st.selectbox("Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"])

@@ -18,7 +18,7 @@ default_is_daytime = 6 <= vn_time_now.hour < 18
 if 'manual_theme' not in st.session_state:
     st.session_state['manual_theme'] = "Ban Ngày ☀️" if default_is_daytime else "Ban Đêm 🌙"
 
-# Nút gạt Theme (Được CSS ghim sát góc phải màn hình)
+# Nút gạt Theme (Sẽ được CSS ghim sát mép ngoài cùng góc phải)
 selected_theme = st.radio(
     "Theme Switcher",
     ["Ban Ngày ☀️", "Ban Đêm 🌙"],
@@ -30,7 +30,7 @@ st.session_state['manual_theme'] = selected_theme
 is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
 
 # ---------------------------------------------------------
-# 2. HỆ MÀU MỆNH KIM & WATERMARK PNG TRONG SUỐT
+# 2. HỆ MÀU MỆNH KIM & WATERMARK GỌT SẠCH NỀN VUÔNG
 # ---------------------------------------------------------
 logo_url = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
 
@@ -44,7 +44,7 @@ if is_daytime:
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)" 
     tab_inactive_color = "#374151" 
-    watermark_opacity = "0.035"
+    watermark_opacity = "0.03"
     watermark_blend = "multiply"
 else:
     app_bg = "#1E222A"         
@@ -56,17 +56,17 @@ else:
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)" 
     tab_inactive_color = "#9CA3AF" 
-    watermark_opacity = "0.05"
+    watermark_opacity = "0.06"
     watermark_blend = "screen"
 
-# LƯU Ý: Đã fix lỗi CSS nhắm sai đối tượng (Xóa thẻ button trong css của stTabs)
+# CHÍNH THỨC SỬA LỖI TÀNG HÌNH TAB & BỐ CỤC NÚT THEME
 custom_css = f"""
 <style>
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
     
     .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; position: relative; }}
     
-    /* WATERMARK LOGO PNG TRONG SUỐT (KHÔNG CÒN VIỀN VUÔNG) */
+    /* WATERMARK LOGO 100% TRÒN (ÉP MẶT NẠ GỌT 4 GÓC VUÔNG) */
     .stApp::before {{
         content: "";
         position: fixed;
@@ -74,25 +74,26 @@ custom_css = f"""
         transform: translate(-50%, -50%);
         width: 380px; height: 380px;
         background-image: url('{logo_url}');
-        background-size: contain;
+        background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
         opacity: {watermark_opacity};
         mix-blend-mode: {watermark_blend};
         pointer-events: none;
         z-index: 0;
-        border-radius: 50%;
-        -webkit-mask-image: radial-gradient(circle at center, black 35%, transparent 70%);
-        mask-image: radial-gradient(circle at center, black 35%, transparent 70%);
+        border-radius: 50% !important;
+        -webkit-mask-image: radial-gradient(circle closest-side, black 75%, transparent 100%);
+        mask-image: radial-gradient(circle closest-side, black 75%, transparent 100%);
     }}
     
-    .block-container {{ position: relative; z-index: 1; padding-top: 2.5rem !important; }}
+    .block-container {{ position: relative; z-index: 1; padding-top: 3rem !important; }}
 
-    /* GHIM NÚT GẠT THEME SÁT MÉP TRÊN CÙNG BÊN PHẢI */
+    /* NÚT GẠT THEME NẰM ĐÚNG GÓC PHẢI TRÊN CÙNG (WIDTH ÔM SÁT) */
     div[data-testid="stRadio"] {{
         position: fixed !important;
         top: 15px !important;
-        right: 20px !important;
+        right: 15px !important;
+        width: max-content !important;
         z-index: 999999 !important;
         background-color: {element_bg} !important;
         border: 1.5px solid {border_color} !important;
@@ -146,15 +147,17 @@ custom_css = f"""
     [data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     [data-testid="stSpinner"] p, [data-testid="stSpinner"] span {{ color: {border_color} !important; font-weight: 900 !important; font-size: 17px !important; }}
 
-    /* TABS 3D - ĐÃ FIX SẠCH LỖI TÀNG HÌNH DO SELECTOR BUTTON */
+    /* ======================================================== */
+    /* CHỐT HẠ FIX LỖI TÀNG HÌNH TAB (XÓA CHỮ BUTTON)           */
+    /* ======================================================== */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     
-    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span, .stTabs [data-baseweb="tab"] div {{ 
+    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{ 
         color: {tab_inactive_color} !important; font-weight: 700 !important; transition: all 0.3s ease; 
     }}
     .stTabs [data-baseweb="tab"]:hover p {{ color: {text_color} !important; }}
     
-    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span, .stTabs [aria-selected="true"] div {{ 
+    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {{ 
         color: #121418 !important; font-weight: 900 !important; 
     }}
 
@@ -164,14 +167,16 @@ custom_css = f"""
     .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
     
     .stTabs [aria-selected="true"] {{ 
-        background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px); box-shadow: 0px -8px 15px rgba(200, 155, 43, 0.4) !important; z-index: 10;
+        background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px); box-shadow: 0px -6px 15px rgba(200, 155, 43, 0.4) !important; z-index: 10;
     }}
     
-    /* CARD VIP */
+    /* CARD VIP & LOGO THƯƠNG HIỆU 3D ĐA GÓC NHÌN */
     .vip-card {{ 
-        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative;
+        background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2;
     }}
-    .vip-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; }}
+    .vip-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; transition: transform 0.3s ease; }}
+    .vip-logo-3d:hover {{ transform: scale(1.05) rotate(1deg); }}
+    
     .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: {text_color} !important; }}
     .vip-footer {{ 
         text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 20px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
@@ -204,6 +209,7 @@ def clean_text(raw_text):
     text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
     text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
     text = text.replace("> ", "🔹 ")
+    # Triệt tiêu khoảng trống thừa xuống dòng
     text = re.sub(r'\n{3,}', '\n\n', text)
     if "🚨" in text or "⚠️" in text:
         text = f"<div class='warning-box'>{text}</div>"

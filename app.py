@@ -99,7 +99,7 @@ custom_css = f"""
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
     .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; border: 1px solid #F7E08B !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px; }}
     
-    /* CSS TAB CHÍNH */
+    /* GIAO DIỆN TAB SÁNG/TỐI CỰC NÉT */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {{
         color: {tab_inactive_color} !important;
@@ -130,10 +130,10 @@ custom_css = f"""
         z-index: 10;
     }}
     
-    /* CSS SUB-TABS 3D */
+    /* SUB-TABS 3D RỘNG RÃI VÀ CÂN XỨNG HƠN */
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ display: flex; justify-content: space-between; background: transparent; padding: 15px 0; border: none; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{
-        flex: 1; margin: 0 6px; border-radius: 12px !important; padding: 14px 8px !important; text-align: center;
+        flex: 1; margin: 0 8px; border-radius: 12px !important; padding: 16px 10px !important; text-align: center;
         background: {subtab_bg} !important;
         box-shadow: {subtab_shadow} !important;
         border: 1.5px solid rgba(212, 175, 55, 0.3) !important;
@@ -149,7 +149,6 @@ custom_css = f"""
     }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] p {{ color: #121418 !important; }}
 
-    /* Khung kết quả */
     .dns-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; margin-bottom: 20px; }}
     .dns-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }}
     .dns-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; color: {text_color} !important; }}
@@ -267,8 +266,8 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         
         hard_rules = """
         [QUY TẮC BẮT BUỘC CHUNG]:
-        1. Tuyệt đối không dùng HTML. Không dùng các từ ngữ như 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' vào nội dung phân tích.
-        2. Tôn trọng Style Cơ bản In-game gốc. Bám sát cơ chế eFootball/eFHUB.
+        1. Tuyệt đối không dùng HTML. Không xuất hiện chữ 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' trong nội dung phân tích.
+        2. Tôn trọng Style Cơ bản In-game gốc. Bám sát cơ chế eFootball/eFHUB. 100% sử dụng THUẬT NGỮ TIẾNG ANH cho chỉ số (Speed, Acceleration, Defensive Awareness, Physical Contact...). Không dịch ra tiếng Việt.
         """
 
         if "1" in mode:
@@ -287,17 +286,18 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "2" in mode:
             tab1_cmd = """
             1. Thẩm định vai trò cầu thủ trên sân theo đúng Sơ đồ & Triết lý của HLV.
-            2. Nhận diện Slot Booster: Thẻ có Booster mặc định nào? Đề xuất gán Booster thứ 2 tối ưu nhất (Ví dụ: Agility +1, Shutting Down +1, Defending +1, Technique +1...).
+            2. Nhận diện Slot Booster: Đọc kỹ ảnh xem Thẻ có Booster mặc định nào? Đề xuất gán Booster thứ 2 tối ưu nhất (Ví dụ: Agility +1, Shutting Down +1, Defending +1, Technique +1...) để tối ưu hóa bộ chỉ số.
             """
             tab2_cmd = """
-            TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB:
+            TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB (TIẾNG ANH 100%):
             1. Bảng giá nấc PP (Lũy tiến): Nấc 1-4 (tốn 1 PP/nấc), Nấc 5-8 (tốn 2 PP/nấc), Nấc 9-12 (tốn 3 PP/nấc), Nấc 13-16 (tốn 4 PP/nấc).
-            2. Đọc chính xác Tổng PP và Level Cap trên ảnh. Phân bổ đúng 100% dung lượng PP (Không thừa, không thiếu 1 điểm).
-            3. Trình bày rõ ràng từng nhánh: Số nấc nâng -> Tốn bao nhiêu PP -> Chỉ số sau nâng (Bao gồm: Chỉ số gốc + Điểm nấc + Buff HLV + Team Playstyle Buff in-game) để chỉ số đạt các mốc ngọt (85, 88, 90, 95).
+            2. Đọc chính xác Tổng PP (Points) và Level Cap trên ảnh. Tính toán chuẩn 100% dung lượng PP (Không thừa, không thiếu 1 điểm).
+            3. ĐỌC ĐÚNG THÔNG SỐ TỪ ẢNH eFHUB (Cột ATTACKING, DEFENDING, ATHLETICISM). Thấy số nào trên ảnh phải ghi y hệt số đó.
             
             Format bắt buộc:
-            - **[Tên nhánh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính]: [Chỉ số sau khi ăn full Buff].
-            [LỆNH CẤM THÉP]: KHÔNG SO SÁNH VỚI CHỈ SỐ AUTO. KHÔNG GHI CÂU "CẢNH BÁO DỰ ÁN VIDEO" Ở ĐÂY. CHỈ IN BẢNG PP VÀ KẾT QUẢ.
+            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính Tiếng Anh]: [Chỉ số hiển thị chính xác trên ảnh].
+            (Ví dụ: - **Defending**: 13 Nấc (Tốn 28 PP) -> Defensive Awareness: 99 | Tackling: 99).
+            [LỆNH CẤM THÉP]: KHÔNG SO SÁNH VỚI CHỈ SỐ AUTO. KHÔNG GHI CÂU RÁC Ở ĐÂY. CHỈ IN BẢNG PP VÀ KẾT QUẢ.
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = """
@@ -389,7 +389,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
         contents = [context_prompt] + img_list
         
-        # Khóa cứng Model theo lệnh Boss yêu cầu
+        # Khóa cứng Model siêu việt gemini-3.6-flash
         candidate_models = ['gemini-3.6-flash']
         
         last_error = ""
@@ -441,8 +441,8 @@ if 'raw_report' in st.session_state:
     mode_selected = analysis_mode[0]
     raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
     
-    # Cắt rác thô sơ do AI bịa ra ở cuối Tab 2
-    raw_text = raw_text.replace("CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO", "")
+    # Cắt triệt để rác thô sơ do AI bịa ra ở cuối Tab 2 và các đoạn cảnh báo lạc lõng
+    raw_text = re.sub(r'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO.*?', '', raw_text, flags=re.IGNORECASE | re.DOTALL)
     parts = raw_text.split("===")
     
     tab1_c = parts[0].strip() if len(parts) > 0 else ""
@@ -454,7 +454,7 @@ if 'raw_report' in st.session_state:
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab_content(content):
-        if "CẢNH BÁO" in content:
+        if "CẢNH BÁO TỪ CHỐI" in content:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
         return f"""<div class="dns-card">
@@ -508,13 +508,13 @@ if 'raw_report' in st.session_state:
              st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
 
     else:
-        # Các chế độ cũ (1, 2, 3, 5)
+        # Chế độ 1, 2, 3, 5
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
         
-        # Diệt triệt để văn bản thừa trong Copy thô
+        # Diệt triệt để văn bản thừa trong Copy thô của Chế độ 2
         clean_raw = raw_text.replace("===", "\n\n")
         clean_raw = re.sub(r'1\.\s*Bảng so sánh thông số:.*?(?=2\. Nhận xét|$)', '', clean_raw, flags=re.DOTALL)
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):

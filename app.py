@@ -126,4 +126,296 @@ custom_css = f"""
     .dns-expander {{ margin-bottom: 12px; margin-top: 10px; border-radius: 10px; background: {element_bg}; overflow: hidden; box-shadow: {subtab_shadow}; border: 1px solid rgba(212, 175, 55, 0.3); }}
     .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; list-style: none; font-size: 14.5px; transition: all 0.2s; }}
     .dns-expander summary::-webkit-details-marker {{ display: none; }}
-    .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #1214
+    .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #121418 !important; box-shadow: {subtab_active_shadow}; }}
+    .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; line-height: 1.6; font-size: 14px; border-top: 1px solid rgba(212, 175, 55, 0.1); }}
+    .expander-content ul {{ padding-left: 20px; margin-top: 5px; margin-bottom: 5px; }}
+    .expander-content li {{ margin-bottom: 5px; }}
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=True)
+st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# 2. KHỐI NHẬP LIỆU & ĐIỀU HƯỚNG
+# ---------------------------------------------------------
+analysis_mode = st.selectbox(
+    "🎯 CHỌN CHẾ ĐỘ PHÂN TÍCH:",
+    [
+        "1. Khám Phôi Thẻ Auto Mặc định (Có sao xài vậy, Hợp/Loại)",
+        "2. Thẩm Định & Build PP (Thẻ có Level)",
+        "3. Khám HLV Tổng Quan (Chỉ phân tích Sơ đồ & Triết lý)",
+        "4. Build Dream Team 23 Người (Dựa trên HLV)",
+        "5. Dự án Video: So Sánh Auto vs Manual DNS (Dành cho Team Content)"
+    ]
+)
+
+col1, col2 = st.columns(2)
+with col1:
+    player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ (Bỏ trống nếu không cần):", placeholder="Ví dụ: Roberto Carlos, 4-2-1-3...")
+    ecosystem = st.selectbox("🌐 Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"], index=1)
+with col2:
+    uploaded_players = st.file_uploader("📸 1. Tải ảnh Cầu thủ (eFHUB/In-game):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="player_imgs")
+    uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
+
+# ---------------------------------------------------------
+# 3. HÀM RENDER UI BẰNG MỎ NEO ẨN
+# ---------------------------------------------------------
+def render_markdown_to_expander(text_block):
+    """Đọc các gạch đầu dòng Markdown và biến thành Hộp Expander 3D"""
+    lines = text_block.strip().split('\n')
+    html_output = ""
+    in_expander = False
+    
+    for line in lines:
+        line_clean = line.strip()
+        if not line_clean: continue
+        
+        # Nhận diện thẻ tiêu đề Expander
+        if line_clean.startswith('- **') or line_clean.startswith('* **'):
+            if in_expander: html_output += "</div></details>" # Đóng hộp cũ
+            
+            # Tách nội dung
+            parts = re.split(r'\*\*(.*?)\*\*(.*)', line_clean[2:])
+            if len(parts) >= 3:
+                title = parts[1].strip()
+                content = parts[2].strip()
+            else:
+                title = line_clean[2:].replace('**','').strip()
+                content = ""
+            
+            title = title.rstrip(':')
+            html_output += f'<details class="dns-expander"><summary>{title}</summary><div class="expander-content">'
+            if content:
+                content_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content.lstrip(':').strip())
+                html_output += f"<p>🔹 {content_html}</p>"
+            in_expander = True
+            
+        elif in_expander:
+            content_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line_clean)
+            if line_clean.startswith('>') or line_clean.startswith('-'):
+                html_output += f"<p style='margin-left:15px; margin-bottom:5px;'>🔹 {content_html.lstrip('>').lstrip('-').strip()}</p>"
+            else:
+                html_output += f"<p style='margin-bottom:5px;'>{content_html}</p>"
+        else:
+            content_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line_clean)
+            html_output += f"<p>{content_html}</p>"
+            
+    if in_expander: html_output += "</div></details>"
+    return html_output
+
+def extract_section(text, start_marker, end_marker):
+    """Rút ruột chính xác nội dung giữa 2 mỏ neo"""
+    try:
+        return text.split(start_marker)[1].split(end_marker)[0].strip()
+    except IndexError:
+        return ""
+
+# ---------------------------------------------------------
+# 4. LÕI TƯ DUY AI BẢO VỆ LOGIC
+# ---------------------------------------------------------
+def execute_tactical_analysis(img_list, p_info, eco, mode):
+    try:
+        api_key = st.secrets.get("GEMINI_API_KEY")
+        if not api_key: return "[LỖI CẤU HÌNH]: Không tìm thấy GEMINI_API_KEY!"
+        client = genai.Client(api_key=api_key)
+        
+        # BỘ QUY TẮC THÉP ÉP AI VÀO KHUÔN KHỔ
+        hard_rules = """
+        [QUY TẮC BẮT BUỘC - PHẠM LỖI SẼ HƯ CHƯƠNG TRÌNH]:
+        1. VĂN BẢN TRƠN: Tuyệt đối không sinh ra thẻ HTML (`<b>`, `<span>`). Chỉ dùng `**chữ**` để in đậm.
+        2. TỪ ĐIỂN STYLE: Chỉ chọn (High Line Master, Pass Disruptor, Front Line Pressure, All-action Defender, Covering Role, The Destroyer, Box-to-Box, Defensive GK, Attacking GK, Basic).
+        3. NGÔN TỪ: Khách quan, chuyên nghiệp. Không dùng từ chê bai.
+        """
+
+        # KIẾN TRÚC LỆNH TÙY BIẾN
+        if "1" in mode:
+            tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV. Kết luận: Phù hợp hay Lệch pha."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
+            tab4_cmd = "3 kịch bản Cài đặt In-game: Start Game, Tấn công tổng lực, Tử thủ."
+        elif "2" in mode:
+            tab1_cmd = "Thẩm định chỉ số, Style Đỏ/Xanh của thẻ có khớp với HLV không."
+            tab2_cmd = "TRA CỨU BẢNG PP: Cấp 4: 4PP | Cấp 5: 6PP | Cấp 6: 8PP | Cấp 7: 10PP | Cấp 8: 12PP | Cấp 9: 15PP | Cấp 10: 18PP | Cấp 11: 21PP | Cấp 12: 24PP. Tính 100% dung lượng thẻ."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab4_cmd = "3 kịch bản Cài đặt In-game. Đề xuất Top 5 Skills bổ sung."
+        elif "3" in mode:
+            tab1_cmd = "Phân tích Sơ đồ Tấn Công và Phòng Ngự theo HLV."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab4_cmd = "CẢNH BÁO TỪ CHỐI."
+        elif "4" in mode:
+            tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự."
+            tab2_cmd = """
+            QUY HOẠCH 23 VỊ TRÍ. 
+            [LỆNH CẤM NGHIÊM NGẶT]: KHÔNG NHẮC ĐẾN TỪ 'PP', KHÔNG TÍNH ĐIỂM, KHÔNG NÊU TÊN CẦU THỦ THỰC TẾ.
+            Bắt buộc phải bao bọc nội dung từng tuyến bằng các MỎ NEO ẨN dưới đây để hệ thống vẽ UI 3D:
+            
+            [START_FW]
+            - **CF (Tiền đạo cắm)**: Style Đỏ (...), Style Xanh (...). Yêu cầu: ...
+            - **LWF (Cánh trái)**: ...
+            (Tiếp tục liệt kê đủ vị trí đá chính và dự bị bằng gạch đầu dòng)
+            [END_FW]
+            
+            [START_MF]
+            - **AMF (Hộ công)**: ...
+            (Tiếp tục liệt kê)
+            [END_MF]
+            
+            [START_DF]
+            - **CB (Trung vệ)**: ...
+            (Tiếp tục liệt kê)
+            [END_DF]
+            
+            [START_GK]
+            - **GK (Thủ môn)**: ...
+            (Tiếp tục liệt kê)
+            [END_GK]
+            """
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab4_cmd = "3 kịch bản Cài đặt In-game: Start Game, All-out Attack, Park the Bus. [LỆNH CẤM]: TUYỆT ĐỐI KHÔNG ĐỀ XUẤT THÊM SKILLS NÀO."
+        else:
+            tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab3_cmd = "SO SÁNH AUTO VS MANUAL DNS. Lập luận dịch chuyển điểm. Phân tích Buff HLV. Chia mục: [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN], [KẾT LUẬN THUMBNAIL]."
+            tab4_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+
+        system_instruction = f"""
+        {hard_rules}
+        CHIA BÁO CÁO THÀNH 4 PHẦN NGĂN CÁCH NHAU BỞI DẤU "===" NẰM ĐỘC LẬP TRÊN 1 DÒNG.
+        (NẾU LÀ 'CẢNH BÁO TỪ CHỐI', CHỈ IN RA THÔNG BÁO CẢNH BÁO, KHÔNG PHÂN TÍCH THÊM GÌ CẢ).
+
+        PHẦN 1: THẨM ĐỊNH TƯƠNG THÍCH & TRIẾT LÝ
+        {tab1_cmd}
+        ===
+        PHẦN 2: PHÂN BỔ PP & QUY HOẠCH
+        {tab2_cmd}
+        ===
+        PHẦN 3: SO SÁNH AUTO VS THỦ CÔNG & BUFF HLV
+        {tab3_cmd}
+        ===
+        PHẦN 4: CẨM NANG IN-GAME
+        {tab4_cmd}
+        """
+        
+        config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
+        context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
+        
+        contents = [context_prompt] + img_list
+        response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
+        return response.text
+    except Exception as e:
+        return f"[LỖI HỆ THỐNG]: {str(e)}"
+
+# ---------------------------------------------------------
+# 5. ĐIỀU HƯỚNG TAB LOGIC (RÚT PHÍCH CẮM TRỰC TIẾP TỪ PYTHON)
+# ---------------------------------------------------------
+if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
+    if not uploaded_players and not uploaded_managers: 
+        st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ hoặc HLV!")
+    else:
+        with st.spinner("Đang trích xuất Báo cáo Sa bàn..."):
+            images_to_send = []
+            if uploaded_players:
+                for f in uploaded_players: images_to_send.append(Image.open(f).copy())
+            if uploaded_managers:
+                for f in uploaded_managers: images_to_send.append(Image.open(f).copy())
+                
+            st.session_state['raw_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, analysis_mode)
+            st.session_state['report_time'] = vn_time_now.strftime("%d/%m/%Y | %H:%M:%S")
+            images_to_send.clear(); gc.collect()
+
+if 'raw_report' in st.session_state:
+    parts = st.session_state['raw_report'].split("===")
+    tab1_c = parts[0].strip() if len(parts)> 0 else ""
+    tab2_c = parts[1].strip() if len(parts) > 1 else ""
+    tab3_c = parts[2].strip() if len(parts) > 2 else ""
+    tab4_c = parts[3].strip() if len(parts) > 3 else ""
+    
+    report_time = st.session_state.get('report_time', vn_time_now.strftime("%d/%m/%Y | %H:%M:%S"))
+    footer_text_color = "#64748B" if is_daytime else "#94A3B8"
+    
+    def format_tab_content(content):
+        if "CẢNH BÁO TỪ CHỐI" in content:
+            return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
+        html_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content).replace('\n', '<br>')
+        return f"""<div class="vip-card">
+            <img src="{logo_url}" class="vip-logo-3d">
+            <div class="vip-text">{html_content}</div>
+            <div class="vip-footer">
+                <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
+                <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+            </div>
+        </div>"""
+
+    mode_selected = analysis_mode[0] 
+    
+    if mode_selected == "1":
+        t1, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+    elif mode_selected == "2":
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+    elif mode_selected == "3":
+        t1 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ"])[0]
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        
+    elif mode_selected == "4":
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ QUY HOẠCH 23 CẦU THỦ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        
+        # XỬ LÝ SUB-TABS 3D DỰA TRÊN MỎ NEO [START_FW]
+        with t2: 
+            if "[START_FW]" in tab2_c:
+                intro = tab2_c.split("[START_FW]")[0]
+                fw_content = extract_section(tab2_c, "[START_FW]", "[END_FW]")
+                mf_content = extract_section(tab2_c, "[START_MF]", "[END_MF]")
+                df_content = extract_section(tab2_c, "[START_DF]", "[END_DF]")
+                gk_content = extract_section(tab2_c, "[START_GK]", "[END_GK]")
+                
+                if intro:
+                    st.markdown(f"""<div class="vip-card" style="margin-bottom: 10px; padding-bottom: 15px;">
+                        <img src="{logo_url}" class="vip-logo-3d">
+                        <div class="vip-text">{re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', intro).replace(chr(10), '<br>')}</div>
+                    </div>""", unsafe_allow_html=True)
+                
+                s1, s2, s3, s4 = st.tabs(["⚽ FW", "🎯 MF", "🛡️ DF", "🧤 GK"])
+                with s1: 
+                    if fw_content: st.markdown(render_markdown_to_expander(fw_content), unsafe_allow_html=True)
+                with s2:
+                    if mf_content: st.markdown(render_markdown_to_expander(mf_content), unsafe_allow_html=True)
+                with s3:
+                    if df_content: st.markdown(render_markdown_to_expander(df_content), unsafe_allow_html=True)
+                with s4:
+                    if gk_content: st.markdown(render_markdown_to_expander(gk_content), unsafe_allow_html=True)
+                
+                st.markdown(f"""<div class="vip-card" style="margin-top: 10px; padding: 15px;">
+                    <div class="vip-footer" style="margin-top: 0; padding-top:0; border:none;">
+                        <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
+                        <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+            else:
+                st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+                
+        with t4: 
+            # CHẶT ĐỨT MỤC KỸ NĂNG NẾU AI LÉN LÚT THÊM VÀO
+            clean_tab4 = tab4_c.split("Top 5")[0].split("TOP 5")[0].split("Skills")[0].split("Kỹ năng")[0]
+            st.markdown(format_tab_content(clean_tab4), unsafe_allow_html=True)
+        
+    elif mode_selected == "5":
+        t3 = st.tabs(["⚖️ SO SÁNH AUTO & THỦ CÔNG"])[0]
+        with t3: st.markdown(format_tab_content(tab3_c), unsafe_allow_html=True)
+    
+    with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+        raw = st.session_state['raw_report']
+        # Dọn rác Mỏ neo ẩn để Team Content copy sạch sẽ
+        for tag in ["[START_FW]", "[END_FW]", "[START_MF]", "[END_MF]", "[START_DF]", "[END_DF]", "[START_GK]", "[END_GK]"]:
+            raw = raw.replace(tag, "")
+        raw = raw.replace("CẢNH BÁO TỪ CHỐI.", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI.", "")
+        st.text_area("Văn bản gốc (Markdown sạch):", value=raw.replace('===', '\n\n').strip(), height=250)

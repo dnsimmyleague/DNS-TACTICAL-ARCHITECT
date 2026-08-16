@@ -191,33 +191,39 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM XỬ LÝ DỮ LIỆU
+# 3. HÀM KẾT XUẤT JSON (CHẾ ĐỘ 4) VÀ LÀM SẠCH COPY THÔ
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
         return "<p style='color: #64748B; font-style: italic; text-align: center; padding: 20px;'>Chưa có dữ liệu phân bổ cho tuyến này.</p>"
+    
     html_out = ""
     for item in items:
         title = item.get("vitri", "Vị trí")
         loai = item.get("loai", "Đá chính")
         style = item.get("style", "")
         vaitro = item.get("vaitro", "")
+        
         content = f"<strong>Phân loại:</strong> {loai}<br><strong>Style đề xuất:</strong> <span style='color:{label_color}; font-weight:800;'>{style}</span><br><strong>Vai trò chiến thuật:</strong> {vaitro}"
         html_out += f'<details class="dns-expander"><summary>{title} ({loai})</summary><div class="expander-content"><p>🔹 {content}</p></div></details>'
     return html_out
 
 def format_in_game_json(data):
     if not data: return ""
+    
     atk_list = data.get("individual_instructions", {}).get("tan_cong", [])
     def_list = data.get("individual_instructions", {}).get("phong_ngu", [])
+    
     atk_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
     def_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
+    
     if not atk_str: atk_str = "Không gán lệnh tấn công."
     if not def_str: def_str = "Không gán lệnh phòng ngự."
 
     html_out = "<strong>1. Cài đặt Lệnh Cá nhân (Individual Instructions):</strong><br><br>"
     html_out += f"🔹 <strong style='color:#FF4D4D;'>Tấn công:</strong><br><span style='margin-left: 20px; display: block;'>{atk_str}</span><br>"
     html_out += f"🔹 <strong style='color:#4D94FF;'>Phòng ngự:</strong><br><span style='margin-left: 20px; display: block;'>{def_str}</span><br><br>"
+    
     html_out += "<strong>2. Kịch bản Thay người (Mental Level):</strong><br><br>"
     html_out += f"🔹 <strong>Start Game (Cân bằng):</strong> {data.get('k1', '')}<br>"
     html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
@@ -233,12 +239,15 @@ def translate_json_to_markdown(json_23, json_ingame):
                 for item in json_23[tuyen]:
                     md_out += f"- {item.get('vitri', '')} ({item.get('loai', '')}): Style {item.get('style', '')}. Vai trò: {item.get('vaitro', '')}\n"
                 md_out += "\n"
+                
     md_out += "=== CẨM NANG IN-GAME ===\n\n"
     if json_ingame:
         atk_list = json_ingame.get("individual_instructions", {}).get("tan_cong", [])
         def_list = json_ingame.get("individual_instructions", {}).get("phong_ngu", [])
+        
         atk_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
         def_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
+        
         md_out += f"1. Individual Instructions:\n- Tấn công: {atk_str}\n- Phòng ngự: {def_str}\n\n"
         md_out += f"2. Kịch bản Thay người:\n- Mặc định: {json_ingame.get('k1', '')}\n- Nấc Xanh: {json_ingame.get('k2', '')}\n- Nấc Đỏ: {json_ingame.get('k3', '')}"
     return md_out
@@ -286,20 +295,28 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             THẨM ĐỊNH CHIẾN THUẬT & SLOT BOOSTER:
             1. Thẩm định vai trò cầu thủ theo 5 chiều (Style Đỏ + Xanh, Hitbox sải chân/va chạm, COM Skills cho SIM AI, Form/Weak Foot) trong sơ đồ HLV.
             2. Nhận diện Slot Booster 1 (Mặc định).
-            3. [LỆNH CẤM THÉP]: Đề xuất Slot Booster thứ 2 (Crafting) LUÔN LUÔN LÀ +1 (Ví dụ: Shooting +1, Technique +1, Agility +1, Shutting Down +1...). TUYỆT ĐỐI CẤM bịa ra Booster +2.
+            3. Đề xuất Slot Booster thứ 2 (Crafting) LUÔN LUÔN LÀ +1. TUYỆT ĐỐI CẤM bịa ra Booster +2.
             """
             tab2_cmd = """
             TƯ DUY SA BÀN BẬC THẦY VÀ QUY HOẠCH PP CHUẨN XÁC:
-            [LỆNH CẤM THÉP]: BẠN BỊ CẤM TỰ TÍNH TOÁN CỘNG TRỪ CHỈ SỐ. BẠN BẮT BUỘC PHẢI LÀ MÁY QUÉT OCR.
-
-            BƯỚC 1: QUÉT SỐ NẤC TỪ ẢNH TRÁI (Shooting, Passing, Dribbling, Dexterity, Lower Body Strength, Aerial Strength, Defending).
-            BƯỚC 2: TÍNH PP TIÊU TỐN (Nấc 1-4: 1 PP/nấc, Nấc 5-8: 2 PP/nấc, Nấc 9-12: 3 PP/nấc, Nấc 13-16: 4 PP/nấc).
-            BƯỚC 3: QUÉT CHỈ SỐ CUỐI CÙNG TỪ ẢNH PHẢI (Cột ATTACKING, DEFENDING, ATHLETICISM). ĐỌC CHÍNH XÁC CON SỐ TRONG Ô MÀU XANH/ĐỎ TẬN CÙNG BÊN PHẢI (Thấy 94 ghi 94, thấy 97 ghi 97, cấm tự trừ).
-            BƯỚC 4: LẬP LUẬN TACTICAL SÁT THƯƠNG (Kèm phân tích sải chân Hitbox, COM Skills cho SIM AI và khả năng đâm nách/cắt mặt/thoát pressing theo sơ đồ HLV).
+            Đầu tiên, hãy soi thông số "Points" (Ví dụ: 0 / 66 hoặc 66 / 66) hiển thị trên ảnh.
             
-            Format bắt buộc:
-            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính 1]: [Số CHUẨN quét từ ảnh] | [Tên chỉ số chính 2]: [Số CHUẨN quét từ ảnh].
-              [LẬP LUẬN TACTICAL SÁT THƯƠNG]: [Phân tích logic cực nét theo 5 chiều].
+            [TRƯỜNG HỢP 1: NẾU THẺ CHƯA NÂNG PP HOẶC CÒN DƯ PP (Ví dụ: Points 0 / 66)]
+            - TRÁCH NHIỆM CỦA BẠN LÀ TỰ ĐỘNG BUILD TỐI ƯU.
+            - Bạn PHẢI tự động thiết kế phương án nâng các nấc PP sao cho XÀI HẾT SẠCH dung lượng PP khả dụng (Ví dụ xài đủ 66 PP).
+            - [CÔNG THỨC BẮT BUỘC]: Nấc 1-4 tốn 1 PP/nấc; Nấc 5-8 tốn 2 PP/nấc; Nấc 9-12 tốn 3 PP/nấc; Nấc 13-16 tốn 4 PP/nấc.
+            - In ra con số chỉ số dự kiến đạt được sau khi nâng mức PP đó.
+            
+            [TRƯỜNG HỢP 2: NẾU THẺ ĐÃ BUILD MAX PP SẴN TRÊN ẢNH (Ví dụ: Points 66 / 66)]
+            - Bạn trở thành MÁY QUÉT OCR. Không tự tính toán. Chép chính xác số Nấc đã nâng bên trái, và ĐỌC CHÍNH XÁC chỉ số hiển thị ở cột nền Xanh/Đỏ tận cùng bên phải.
+            
+            [YÊU CẦU CỐT LÕI CHUNG CHO CẢ 2 TRƯỜNG HỢP]:
+            - BẮT BUỘC 100% tên chỉ số dùng TIẾNG ANH (Speed, Acceleration, Finishing...).
+            - BẮT BUỘC ở cuối mỗi nhánh, phải viết [LẬP LUẬN TACTICAL SÁT THƯƠNG]. Giải thích chuyên sâu vì sao mức chỉ số đó tương thích với Hitbox/COM Skills và tạo ra sự nguy hiểm trong lối đá của HLV.
+            
+            Format:
+            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Chỉ số 1]: [Số chuẩn] | [Chỉ số 2]: [Số chuẩn].
+              [LẬP LUẬN TACTICAL SÁT THƯƠNG]: [Phân tích siêu nét].
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = """
@@ -528,21 +545,12 @@ if 'raw_report' in st.session_state:
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
              st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=300)
              
-    elif mode_selected == "1":
-        t1, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+    else:
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+        clean_raw = raw_text.replace("===", "\n\n")
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             st.text_area("Văn bản gốc:", value=f"{tab1_c}\n\n{tab4_c}".strip(), height=250)
-
-    elif mode_selected == "3":
-        t1 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ"])[0]
-        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
-        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             st.text_area("Văn bản gốc:", value=tab1_c.strip(), height=250)
-
-    elif mode_selected == "5":
-        t3 = st.tabs(["⚖️ SO SÁNH AUTO & THỦ CÔNG"])[0]
-        with t3: st.markdown(format_tab_content(tab3_c), unsafe_allow_html=True)
-        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             st.text_area("Văn bản gốc:", value=tab3_c.strip(), height=250)
+             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=250)

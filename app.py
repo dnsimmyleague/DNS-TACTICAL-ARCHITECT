@@ -29,8 +29,10 @@ if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
-    tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)"; tab_inactive_color = "#374151"
+    tab_inactive_bg = "linear-gradient(145deg, #FFFFFF, #E2E8F0)"
+    tab_inactive_color = "#4B5563" # Màu xám đậm: Giúp Tab chưa click hiển thị rõ ràng vào ban ngày
     watermark_opacity = "0.04"; watermark_blend = "multiply"
+    expander_copy_bg = "#F8FAFC"
     # Màu cho Khối 3D Sub-tab (Sáng)
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
     subtab_shadow = "5px 5px 10px #bebebe, -5px -5px 10px #ffffff"
@@ -40,8 +42,10 @@ else:
     app_bg = "#1E222A"; element_bg = "#252A34"; text_color = "#F1F5F9"
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
-    tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)"; tab_inactive_color = "#9CA3AF"
+    tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)"
+    tab_inactive_color = "#D1D5DB" # Màu xám bạc: Giúp Tab chưa click hiển thị rõ ràng vào ban đêm
     watermark_opacity = "0.08"; watermark_blend = "screen"
+    expander_copy_bg = "#1A1D24"
     # Màu cho Khối 3D Sub-tab (Tối)
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
     subtab_shadow = "5px 5px 10px #15181d, -5px -5px 10px #2d323f"
@@ -55,9 +59,14 @@ custom_css = f"""
     header[data-testid="stHeader"] {{ display: none !important; }} footer {{ display: none !important; }}
     .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; }}
     
-    /* CHỈNH LẠI LOADING SPINNER */
+    /* FIX LOADING SPINNER: Màu chữ Vàng, Nền trong suốt tương thích mọi chế độ */
     .stSpinner > div > div > svg > circle {{ stroke: {border_color} !important; }}
-    .stSpinner > div > div > span {{ color: {border_color} !important; font-weight: 800; font-size: 16px; background: transparent !important; }}
+    .stSpinner > div > div > span {{ color: {label_color} !important; font-weight: 800; font-size: 16px; background-color: transparent !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }}
+    
+    /* FIX KHUNG EXPANDER COPY TEXT: Màu nền riêng biệt, chữ rõ ràng */
+    [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1px solid {border_color}; margin-top: 15px; }}
+    [data-testid="stExpander"] summary p {{ color: {text_color} !important; font-weight: 800 !important; font-size: 15px; }}
+    [data-testid="stExpander"] summary:hover p {{ color: {label_color} !important; }}
     
     .watermark-logo {{
         position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -90,10 +99,10 @@ custom_css = f"""
     /* CHỮ MÀU VÀNG - KHÔNG CAN THIỆP HTML */
     .vip-text strong, .expander-content strong, strong {{ color: {label_color} !important; font-weight: 900 !important; }}
     
-    /* TAB CHÍNH */
+    /* TAB CHÍNH: Hiện rõ chữ tab dù chưa click */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{ color: {tab_inactive_color} !important; font-weight: 700 !important; transition: all 0.3s ease; }}
-    .stTabs [data-baseweb="tab"]:hover p {{ color: {text_color} !important; }}
+    .stTabs [data-baseweb="tab"]:hover p {{ color: {label_color} !important; }}
     .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {{ color: #121418 !important; font-weight: 900 !important; }}
     .stTabs [data-baseweb="tab"] {{ background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; box-shadow: {shadow_3d} !important; transition: all 0.2s ease-in-out; }}
     .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
@@ -159,10 +168,9 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM RENDER UI BẰNG MỎ NEO ẨN
+# 3. HÀM RENDER UI & CLEAN TEXT
 # ---------------------------------------------------------
 def render_markdown_to_expander(text_block):
-    """Đọc các gạch đầu dòng Markdown và biến thành Hộp Expander 3D"""
     lines = text_block.strip().split('\n')
     html_output = ""
     in_expander = False
@@ -171,11 +179,9 @@ def render_markdown_to_expander(text_block):
         line_clean = line.strip()
         if not line_clean: continue
         
-        # Nhận diện thẻ tiêu đề Expander
         if line_clean.startswith('- **') or line_clean.startswith('* **'):
-            if in_expander: html_output += "</div></details>" # Đóng hộp cũ
+            if in_expander: html_output += "</div></details>"
             
-            # Tách nội dung
             parts = re.split(r'\*\*(.*?)\*\*(.*)', line_clean[2:])
             if len(parts) >= 3:
                 title = parts[1].strip()
@@ -205,14 +211,23 @@ def render_markdown_to_expander(text_block):
     return html_output
 
 def extract_section(text, start_marker, end_marker):
-    """Rút ruột chính xác nội dung giữa 2 mỏ neo"""
     try:
         return text.split(start_marker)[1].split(end_marker)[0].strip()
     except IndexError:
         return ""
 
+def clean_text_for_copy(raw_text):
+    text = raw_text.replace("===", "\n\n")
+    text = text.replace("⛔ ", "")
+    text = text.replace("### ", "--- ").replace(" ---", " ---")
+    text = text.replace("**", "") # LOẠI BỎ SẠCH KÝ TỰ SAO (*) TRONG BẢN COPY
+    for tag in ["[START_FW]", "[END_FW]", "[START_MF]", "[END_MF]", "[START_DF]", "[END_DF]", "[START_GK]", "[END_GK]"]:
+        text = text.replace(tag, "")
+    text = text.replace("CẢNH BÁO TỪ CHỐI.", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI.", "")
+    return text.strip()
+
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI BẢO VỆ LOGIC
+# 4. LÕI TƯ DUY AI CHIẾN THUẬT
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -220,15 +235,14 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         if not api_key: return "[LỖI CẤU HÌNH]: Không tìm thấy GEMINI_API_KEY!"
         client = genai.Client(api_key=api_key)
         
-        # BỘ QUY TẮC THÉP ÉP AI VÀO KHUÔN KHỔ
         hard_rules = """
-        [QUY TẮC BẮT BUỘC - PHẠM LỖI SẼ HƯ CHƯƠNG TRÌNH]:
+        [QUY TẮC BẮT BUỘC]:
         1. VĂN BẢN TRƠN: Tuyệt đối không sinh ra thẻ HTML (`<b>`, `<span>`). Chỉ dùng `**chữ**` để in đậm.
         2. TỪ ĐIỂN STYLE: Chỉ chọn (High Line Master, Pass Disruptor, Front Line Pressure, All-action Defender, Covering Role, The Destroyer, Box-to-Box, Defensive GK, Attacking GK, Basic).
         3. NGÔN TỪ: Khách quan, chuyên nghiệp. Không dùng từ chê bai.
         """
 
-        # KIẾN TRÚC LỆNH TÙY BIẾN
+        # CÁC CHẾ ĐỘ 1, 2, 3, 5 GIỮ NGUYÊN HIỆN TRẠNG. CHỈ SỬA LÕI CHẾ ĐỘ 4.
         if "1" in mode:
             tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV. Kết luận: Phù hợp hay Lệch pha."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
@@ -247,8 +261,8 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự."
             tab2_cmd = """
-            QUY HOẠCH 23 VỊ TRÍ. 
-            [LỆNH CẤM NGHIÊM NGẶT]: KHÔNG NHẮC ĐẾN TỪ 'PP', KHÔNG TÍNH ĐIỂM, KHÔNG NÊU TÊN CẦU THỦ THỰC TẾ.
+            QUY HOẠCH 23 VỊ TRÍ CHUẨN XÁC DỰA TRÊN SƠ ĐỒ VÀ TRIẾT LÝ Ở PHẦN 1.
+            [LỆNH CẤM NGHIÊM NGẶT]: KHÔNG NHẮC ĐẾN TỪ 'PP', KHÔNG ĐỀ XUẤT CÔNG THỨC ĐIỂM, KHÔNG NÊU TÊN CẦU THỦ THỰC TẾ.
             Bắt buộc phải bao bọc nội dung từng tuyến bằng các MỎ NEO ẨN dưới đây để hệ thống vẽ UI 3D:
             
             [START_FW]
@@ -273,7 +287,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             [END_GK]
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "3 kịch bản Cài đặt In-game: Start Game, All-out Attack, Park the Bus. [LỆNH CẤM]: TUYỆT ĐỐI KHÔNG ĐỀ XUẤT THÊM SKILLS NÀO."
+            tab4_cmd = "3 kịch bản Cài đặt In-game. Lưu ý Mental Level trong eFootball chỉ có các nấc: +1 Đỏ (Tấn công), +2 Đỏ (Tấn công tổng lực), -1 Xanh (Phòng ngự), -2 Xanh (Tử thủ). [LỆNH CẤM TUYỆT ĐỐI]: KHÔNG ĐƯỢC PHÉP ĐỀ XUẤT THÊM SKILLS KỸ NĂNG NÀO Ở ĐÂY."
         else:
             tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
@@ -283,7 +297,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         system_instruction = f"""
         {hard_rules}
         CHIA BÁO CÁO THÀNH 4 PHẦN NGĂN CÁCH NHAU BỞI DẤU "===" NẰM ĐỘC LẬP TRÊN 1 DÒNG.
-        (NẾU LÀ 'CẢNH BÁO TỪ CHỐI', CHỈ IN RA THÔNG BÁO CẢNH BÁO, KHÔNG PHÂN TÍCH THÊM GÌ CẢ).
+        (NẾU LÀ 'CẢNH BÁO TỪ CHỐI', CHỈ IN RA THÔNG BÁO CẢNH BÁO).
 
         PHẦN 1: THẨM ĐỊNH TƯƠNG THÍCH & TRIẾT LÝ
         {tab1_cmd}
@@ -308,9 +322,10 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. ĐIỀU HƯỚNG TAB LOGIC (RÚT PHÍCH CẮM TRỰC TIẾP TỪ PYTHON)
+# 5. ĐIỀU HƯỚNG TAB LOGIC
 # ---------------------------------------------------------
-if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
+# Sửa chữ Nút Bấm
+if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
         st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ hoặc HLV!")
     else:
@@ -369,7 +384,6 @@ if 'raw_report' in st.session_state:
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ QUY HOẠCH 23 CẦU THỦ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         
-        # XỬ LÝ SUB-TABS 3D DỰA TRÊN MỎ NEO [START_FW]
         with t2: 
             if "[START_FW]" in tab2_c:
                 intro = tab2_c.split("[START_FW]")[0]
@@ -404,7 +418,7 @@ if 'raw_report' in st.session_state:
                 st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
                 
         with t4: 
-            # CHẶT ĐỨT MỤC KỸ NĂNG NẾU AI LÉN LÚT THÊM VÀO
+            # CHẶT ĐỨT MỤC KỸ NĂNG (Bảo hiểm 2 lớp bằng Python)
             clean_tab4 = tab4_c.split("Top 5")[0].split("TOP 5")[0].split("Skills")[0].split("Kỹ năng")[0]
             st.markdown(format_tab_content(clean_tab4), unsafe_allow_html=True)
         
@@ -413,9 +427,5 @@ if 'raw_report' in st.session_state:
         with t3: st.markdown(format_tab_content(tab3_c), unsafe_allow_html=True)
     
     with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-        raw = st.session_state['raw_report']
-        # Dọn rác Mỏ neo ẩn để Team Content copy sạch sẽ
-        for tag in ["[START_FW]", "[END_FW]", "[START_MF]", "[END_MF]", "[START_DF]", "[END_DF]", "[START_GK]", "[END_GK]"]:
-            raw = raw.replace(tag, "")
-        raw = raw.replace("CẢNH BÁO TỪ CHỐI.", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI.", "")
-        st.text_area("Văn bản gốc (Markdown sạch):", value=raw.replace('===', '\n\n').strip(), height=250)
+        clean_raw = clean_text_for_copy(st.session_state['raw_report'])
+        st.text_area("Văn bản gốc (Markdown sạch):", value=clean_raw, height=250)

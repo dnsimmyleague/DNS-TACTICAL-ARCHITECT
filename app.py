@@ -210,19 +210,20 @@ def render_markdown_to_expander(text_block):
     if in_expander: html_output += "</div></details>"
     return html_output
 
-def extract_section(text, start_marker, end_marker):
-    try:
-        return text.split(start_marker)[1].split(end_marker)[0].strip()
-    except IndexError:
-        return ""
+def extract_section_by_header(text, header_marker):
+    """Cắt nội dung dựa trên tiêu đề Markdown thay vì mỏ neo ẩn"""
+    # Tìm nội dung từ tiêu đề này đến tiêu đề tiếp theo (hoặc hết văn bản)
+    pattern = rf"{re.escape(header_marker)}(.*?)(?=### |$)"
+    match = re.search(pattern, text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return ""
 
 def clean_text_for_copy(raw_text):
     text = raw_text.replace("===", "\n\n")
     text = text.replace("⛔ ", "")
     text = text.replace("### ", "--- ").replace(" ---", " ---")
-    text = text.replace("**", "") # LOẠI BỎ SẠCH KÝ TỰ SAO (*) TRONG BẢN COPY
-    for tag in ["[START_FW]", "[END_FW]", "[START_MF]", "[END_MF]", "[START_DF]", "[END_DF]", "[START_GK]", "[END_GK]"]:
-        text = text.replace(tag, "")
+    text = text.replace("**", "") # Dọn sạch 100% dấu sao
     text = text.replace("CẢNH BÁO TỪ CHỐI.", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI.", "")
     return text.strip()
 
@@ -242,7 +243,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         3. NGÔN TỪ: Khách quan, chuyên nghiệp. Không dùng từ chê bai.
         """
 
-        # CÁC CHẾ ĐỘ 1, 2, 3, 5 GIỮ NGUYÊN HIỆN TRẠNG. CHỈ SỬA LÕI CHẾ ĐỘ 4.
         if "1" in mode:
             tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV. Kết luận: Phù hợp hay Lệch pha."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
@@ -262,32 +262,34 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự."
             tab2_cmd = """
             QUY HOẠCH 23 VỊ TRÍ CHUẨN XÁC DỰA TRÊN SƠ ĐỒ VÀ TRIẾT LÝ Ở PHẦN 1.
-            [LỆNH CẤM NGHIÊM NGẶT]: KHÔNG NHẮC ĐẾN TỪ 'PP', KHÔNG ĐỀ XUẤT CÔNG THỨC ĐIỂM, KHÔNG NÊU TÊN CẦU THỦ THỰC TẾ.
-            Bắt buộc phải bao bọc nội dung từng tuyến bằng các MỎ NEO ẨN dưới đây để hệ thống vẽ UI 3D:
+            [LỆNH CẤM NGHIÊM NGẶT]: KHÔNG NHẮC ĐẾN TỪ 'PP' HAY BẢNG TÍNH PP, KHÔNG NÊU TÊN CẦU THỦ THỰC TẾ.
+            Bắt buộc phải sử dụng chính xác các TIÊU ĐỀ MARKDOWN dưới đây để hệ thống vẽ UI 3D:
             
-            [START_FW]
+            ### ⚽ HÀNG CÔNG (FW)
             - **CF (Tiền đạo cắm)**: Style Đỏ (...), Style Xanh (...). Yêu cầu: ...
             - **LWF (Cánh trái)**: ...
             (Tiếp tục liệt kê đủ vị trí đá chính và dự bị bằng gạch đầu dòng)
-            [END_FW]
             
-            [START_MF]
+            ### 🎯 TIỀN VỆ (MF)
             - **AMF (Hộ công)**: ...
             (Tiếp tục liệt kê)
-            [END_MF]
             
-            [START_DF]
+            ### 🛡️ HÀNG THỦ (DF)
             - **CB (Trung vệ)**: ...
             (Tiếp tục liệt kê)
-            [END_DF]
             
-            [START_GK]
+            ### 🧤 THỦ MÔN (GK)
             - **GK (Thủ môn)**: ...
             (Tiếp tục liệt kê)
-            [END_GK]
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "3 kịch bản Cài đặt In-game. Lưu ý Mental Level trong eFootball chỉ có các nấc: +1 Đỏ (Tấn công), +2 Đỏ (Tấn công tổng lực), -1 Xanh (Phòng ngự), -2 Xanh (Tử thủ). [LỆNH CẤM TUYỆT ĐỐI]: KHÔNG ĐƯỢC PHÉP ĐỀ XUẤT THÊM SKILLS KỸ NĂNG NÀO Ở ĐÂY."
+            tab4_cmd = """
+            Xây dựng 3 kịch bản Cài đặt In-game:
+            1. Start Game: Cài đặt lệnh ... cho ...
+            2. Tăng 1 nấc Đỏ (Tấn công) / Tăng 2 nấc Đỏ (Tổng lực): Cài đặt lệnh ... cho ...
+            3. Hạ 1 nấc Xanh (Phòng ngự) / Hạ 2 nấc Xanh (Tử thủ): Cài đặt lệnh ... cho ...
+            [LỆNH CẤM TUYỆT ĐỐI]: CHỈ VIẾT ĐÚNG 3 KỊCH BẢN TRÊN. TUYỆT ĐỐI KHÔNG ĐỀ XUẤT THÊM SKILLS KỸ NĂNG NÀO Ở ĐÂY.
+            """
         else:
             tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
@@ -324,7 +326,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
 # ---------------------------------------------------------
 # 5. ĐIỀU HƯỚNG TAB LOGIC
 # ---------------------------------------------------------
-# Sửa chữ Nút Bấm
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
         st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ hoặc HLV!")
@@ -341,6 +342,26 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
             images_to_send.clear(); gc.collect()
 
 if 'raw_report' in st.session_state:
+    # ---------------------------------------------------------
+    # TRẢM ĐỨT MỌI TỪ KHÓA PP & SKILLS NGAY KHI NHẬN TỪ AI (CHẾ ĐỘ 4)
+    # ---------------------------------------------------------
+    mode_selected = analysis_mode[0]
+    if mode_selected == "4":
+        # Chặt đứt tàn dư PP ở Tab 2
+        lines_2 = st.session_state['raw_report'].split("===")
+        if len(lines_2) > 1:
+            clean_tab2 = re.sub(r'Cấp \d+:\s*\d+PP\s*\|?', '', lines_2[1]) # Cắt "Cấp 4: 4PP"
+            clean_tab2 = re.sub(r'(Quy chuẩn|Bảng|Tra Cứu).*?PP.*', '', clean_tab2, flags=re.IGNORECASE)
+            lines_2[1] = clean_tab2
+            st.session_state['raw_report'] = "===".join(lines_2)
+            
+        # Chặt đứt Top 5 Skills ở Tab 4
+        lines_4 = st.session_state['raw_report'].split("===")
+        if len(lines_4) > 3:
+            clean_tab4 = lines_4[3].split("Top 5")[0].split("TOP 5")[0].split("Skills")[0].split("Kỹ năng")[0]
+            lines_4[3] = clean_tab4
+            st.session_state['raw_report'] = "===".join(lines_4)
+            
     parts = st.session_state['raw_report'].split("===")
     tab1_c = parts[0].strip() if len(parts)> 0 else ""
     tab2_c = parts[1].strip() if len(parts) > 1 else ""
@@ -363,8 +384,6 @@ if 'raw_report' in st.session_state:
             </div>
         </div>"""
 
-    mode_selected = analysis_mode[0] 
-    
     if mode_selected == "1":
         t1, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
@@ -385,14 +404,14 @@ if 'raw_report' in st.session_state:
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         
         with t2: 
-            if "[START_FW]" in tab2_c:
-                intro = tab2_c.split("[START_FW]")[0]
-                fw_content = extract_section(tab2_c, "[START_FW]", "[END_FW]")
-                mf_content = extract_section(tab2_c, "[START_MF]", "[END_MF]")
-                df_content = extract_section(tab2_c, "[START_DF]", "[END_DF]")
-                gk_content = extract_section(tab2_c, "[START_GK]", "[END_GK]")
+            if "### ⚽ HÀNG CÔNG" in tab2_c or "### ⚽" in tab2_c:
+                intro = tab2_c.split("### ⚽")[0]
+                fw_content = extract_section_by_header(tab2_c, "### ⚽ HÀNG CÔNG") or extract_section_by_header(tab2_c, "### ⚽")
+                mf_content = extract_section_by_header(tab2_c, "### 🎯 TIỀN VỆ") or extract_section_by_header(tab2_c, "### 🎯")
+                df_content = extract_section_by_header(tab2_c, "### 🛡️ HÀNG THỦ") or extract_section_by_header(tab2_c, "### 🛡️")
+                gk_content = extract_section_by_header(tab2_c, "### 🧤 THỦ MÔN") or extract_section_by_header(tab2_c, "### 🧤")
                 
-                if intro:
+                if intro.strip():
                     st.markdown(f"""<div class="vip-card" style="margin-bottom: 10px; padding-bottom: 15px;">
                         <img src="{logo_url}" class="vip-logo-3d">
                         <div class="vip-text">{re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', intro).replace(chr(10), '<br>')}</div>
@@ -418,9 +437,7 @@ if 'raw_report' in st.session_state:
                 st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
                 
         with t4: 
-            # CHẶT ĐỨT MỤC KỸ NĂNG (Bảo hiểm 2 lớp bằng Python)
-            clean_tab4 = tab4_c.split("Top 5")[0].split("TOP 5")[0].split("Skills")[0].split("Kỹ năng")[0]
-            st.markdown(format_tab_content(clean_tab4), unsafe_allow_html=True)
+            st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
         
     elif mode_selected == "5":
         t3 = st.tabs(["⚖️ SO SÁNH AUTO & THỦ CÔNG"])[0]

@@ -9,7 +9,7 @@ import datetime
 # ---------------------------------------------------------
 # 1. CẤU HÌNH TRANG & GIAO DIỆN NỀN TẢNG (HỆ KIM VIP)
 # ---------------------------------------------------------
-st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
+st.set_page_config(page_title="DN SIM MY LEAGUE |DNS", page_icon="👑", layout="centered")
 
 vn_time_now = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
 default_is_daytime = 6 <= vn_time_now.hour < 18

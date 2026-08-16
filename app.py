@@ -7,7 +7,7 @@ import re
 import datetime
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & GIAO DIỆN HỆ KIM
+# 1. CẤU HÌNH TRANG & GIAO DIỆN NỀN TẢNG
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
 
@@ -72,6 +72,10 @@ custom_css = f"""
     [data-testid="stUploadedFile"] {{ border-radius: 8px !important; }}
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
     .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; border: 1px solid #F7E08B !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px; }}
+    
+    /* CHỈNH CSS ĐỒNG BỘ CHỮ MÀU VÀNG CHUẨN MARKDOWN */
+    .vip-text strong, .expander-content strong {{ color: {label_color} !important; font-weight: 900 !important; }}
+    
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{ color: {tab_inactive_color} !important; font-weight: 700 !important; transition: all 0.3s ease; }}
     .stTabs [data-baseweb="tab"]:hover p {{ color: {text_color} !important; }}
@@ -79,6 +83,8 @@ custom_css = f"""
     .stTabs [data-baseweb="tab"] {{ background: {tab_inactive_bg} !important; border: 1px solid {border_color} !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; box-shadow: {shadow_3d} !important; transition: all 0.2s ease-in-out; }}
     .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); }}
     .stTabs [aria-selected="true"] {{ background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px); box-shadow: 0px -6px 15px rgba(200, 155, 43, 0.4) !important; z-index: 10; }}
+    
+    /* THẺ VIP BACKGROUND ĐỘC LẬP */
     .vip-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; }}
     .vip-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; }}
     .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.6; color: {text_color} !important; }}
@@ -86,7 +92,7 @@ custom_css = f"""
     .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; margin-bottom: 12px; color: #FF4D4D !important; font-weight: bold; }}
     
     /* GIAO DIỆN EXPANDER CHO 23 VỊ TRÍ */
-    .dns-expander {{ margin-bottom: 10px; border: 1px solid {border_color}; border-radius: 8px; background: {element_bg}; }}
+    .dns-expander {{ margin-bottom: 10px; margin-top: 5px; border: 1px solid {border_color}; border-radius: 8px; background: {element_bg}; }}
     .dns-expander summary {{ padding: 10px 14px; font-weight: 800; color: {label_color}; background: {tab_inactive_bg}; cursor: pointer; border-radius: 8px; list-style: none; font-size: 14.5px; }}
     .dns-expander summary::-webkit-details-marker {{ display: none; }}
     .dns-expander[open] summary {{ border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px dashed {border_color}; }}
@@ -120,33 +126,30 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. BỘ LỌC ĐỊNH DẠNG & THUẬT TOÁN BUILD UI
+# 3. THUẬT TOÁN DỌN RÁC & XÂY DỰNG GIAO DIỆN CHUẨN
 # ---------------------------------------------------------
 def clean_and_render_ui(raw_text):
-    # Loại bỏ rác định dạng HTML
     text = re.sub(r'</?b[^>]*>', '', raw_text)
     text = re.sub(r'</?span[^>]*>', '', text)
-    text = text.replace("</b", "").replace("♦", "").replace("$", "").replace("#", "")
-    text = text.replace("\\rightarrow", "->").replace("\\Rightarrow", "=>")
+    text = text.replace("♦", "")
     
-    # Nén khoảng trống thừa
-    text = re.sub(r'\n{3,}', '\n\n', text)
-    
-    # Chuyển đổi khối BOX sang Expander HTML
+    # Render Tag [BOX] -> Expander
     def box_replacer(match):
         title = match.group(1).strip()
         content = match.group(2).strip()
-        content = re.sub(r'\*\*(.*?)\*\*', r'<b style="color:#D4AF37">\1</b>', content)
         content = content.replace('\n', '<br>')
         return f'<details class="dns-expander"><summary>{title}</summary><div class="expander-content">{content}</div></details>'
     
     text = re.sub(r'\[BOX:\s*(.*?)\](.*?)\[/BOX\]', box_replacer, text, flags=re.DOTALL)
-    text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
+    
+    # Ép Markdown đậm `**` thành HTML `<strong>` để CSS bắt màu (An toàn tuyệt đối)
+    text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
     text = text.replace("> ", "🔹 ")
+    text = re.sub(r'\n{3,}', '\n\n', text)
     return text
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI CHIẾN THUẬT
+# 4. LÕI TƯ DUY AI BẢO VỆ UX
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -155,13 +158,13 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         client = genai.Client(api_key=api_key)
         
         if "1" in mode:
-            tab1_cmd = "Thẩm định toàn diện thẻ Auto này với triết lý HLV. Kết luận dứt khoát: Phù hợp (giữ lại) hoặc Lệch pha (loại bỏ)."
-            tab2_cmd = "<div class='warning-box'>⛔ Truy cập bị từ chối: Boss đang sử dụng thẻ Auto (Khóa chỉ số). Tính năng Build PP đã bị vô hiệu hóa.</div>"
+            tab1_cmd = "Thẩm định toàn diện thẻ Auto này với triết lý HLV. Kết luận: Phù hợp (giữ lại) hoặc Lệch pha (loại bỏ)."
+            tab2_cmd = "<div class='warning-box'>⛔ Truy cập bị từ chối: Đang sử dụng thẻ Auto. Tính năng Build PP đã bị vô hiệu hóa.</div>"
             tab3_cmd = "<div class='warning-box'>⛔ Truy cập bị từ chối: Thẻ Auto không hỗ trợ tính năng So sánh mốc điểm thủ công.</div>"
             tab4_cmd = "🎯 Xây dựng 3 kịch bản Cài đặt In-game cho vị trí này: Start Game, Tấn công tổng lực, Tử thủ bảo vệ tỷ số."
         elif "2" in mode:
             tab1_cmd = "Thẩm định chỉ số hiện tại, Style Đỏ/Xanh của thẻ có khớp với sơ đồ HLV không."
-            tab2_cmd = "🔹 BẮT BUỘC TRA CỨU BẢNG PP: Cấp 4: 4PP | Cấp 5: 6PP | Cấp 6: 8PP | Cấp 7: 10PP | Cấp 8: 12PP | Cấp 9: 15PP | Cấp 10: 18PP | Cấp 11: 21PP | Cấp 12: 24PP. Tính đủ 100% dung lượng thẻ, phân bổ điểm bù đắp điểm yếu."
+            tab2_cmd = "🔹 BẮT BUỘC TRA CỨU BẢNG PP: Cấp 4: 4PP | Cấp 5: 6PP | Cấp 6: 8PP | Cấp 7: 10PP | Cấp 8: 12PP | Cấp 9: 15PP | Cấp 10: 18PP | Cấp 11: 21PP | Cấp 12: 24PP. Tính đủ 100% dung lượng thẻ."
             tab3_cmd = "<div class='warning-box'>⛔ Tính năng So sánh đối đầu chuyên sâu được đề xuất sử dụng trong Chế độ 5 (Dự án Video).</div>"
             tab4_cmd = "🎯 Xây dựng 3 kịch bản Cài đặt In-game + Top 5 Kỹ năng (Skills) đề xuất bổ sung."
         elif "3" in mode:
@@ -171,50 +174,38 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             tab4_cmd = "<div class='warning-box'>⛔ Truy cập bị từ chối.</div>"
         elif "4" in mode:
             tab1_cmd = "Nhận diện triết lý HLV. Xác lập Sơ đồ Tấn công (In Possession) và Sơ đồ Phòng ngự (Out of Possession)."
-            tab2_cmd = """🔹 QUY HOẠCH 23 VỊ TRÍ SA BÀN DỰA TRÊN HLV.
-            🚫 LỆNH CẤM: TUYỆT ĐỐI KHÔNG tính toán PP, KHÔNG nhắc đến Progression Points. CẤM NÊU TÊN CẦU THỦ CỤ THỂ.
+            tab2_cmd = """🔹 QUY HOẠCH 23 VỊ TRÍ (CẤM NHẮC TỚI ĐIỂM PP VÀ CẤM NÊU TÊN CẦU THỦ THỰC TẾ).
+            ĐỂ HỆ THỐNG VẼ 4 SUB-TABS, BẠN BẮT BUỘC PHẢI CHIA LÀM 4 PHẦN CHÍNH XÁC VỚI CÁC THẺ SAU:
             
-            BẮT BUỘC BỌC TỪNG VỊ TRÍ TRONG THẺ [BOX: Vị trí - Vai trò] VÀ PHÂN CHIA RÕ 4 TUYẾN:
+            [TAB_FW]
+            (Liệt kê Tiền đạo đá chính & dự bị. Bọc từng người bằng [BOX: Vị trí - Vai trò] ... [/BOX])
             
-            **🟢 ĐỘI HÌNH ĐÁ CHÍNH (11 Vị trí)**
-            **⚽ HÀNG CÔNG (FW)**
-            [BOX: CF - Tiền đạo cắm]
-            - **Style Đỏ 🔴**: ...
-            - **Style Xanh 🔵**: ... (Dùng Basic nếu không cần đặc thù)
-            - **Yêu cầu cốt lõi**: ...
-            [/BOX]
+            [TAB_MF]
+            (Liệt kê Tiền vệ đá chính & dự bị. Bọc từng người bằng [BOX: Vị trí - Vai trò] ... [/BOX])
             
-            **🎯 TUYẾN TIỀN VỆ (MF)**
-            (Tương tự cho AMF, CMF, DMF)
+            [TAB_DF]
+            (Liệt kê Hậu vệ đá chính & dự bị. Bọc từng người bằng [BOX: Vị trí - Vai trò] ... [/BOX])
             
-            **🛡️ HÀNG PHÒNG NGỰ (DF)**
-            (Tương tự cho CB, LB, RB)
-            
-            **🧤 THỦ MÔN (GK)**
-            (Tương tự cho GK)
-            
-            **🟡 DANH SÁCH 12 CẦU THỦ DỰ BỊ (SUB SQUAD)**
-            (Tương tự chia thành 4 tuyến FW, MF, DF, GK bọc trong từng [BOX])"""
+            [TAB_GK]
+            (Liệt kê Thủ môn đá chính & dự bị. Bọc bằng [BOX: Vị trí - Vai trò] ... [/BOX])
+            """
             tab3_cmd = "<div class='warning-box'>⛔ Truy cập bị từ chối: Tab So sánh không áp dụng cho chế độ Quy hoạch Dream Team.</div>"
-            tab4_cmd = "🎯 Dựa trên 11 vị trí xuất phát, xây dựng 3 kịch bản Cài đặt In-game thay người & khóa lệnh: 1. Mặc định Start Game. 2. All-out Attack (Bị dẫn bàn). 3. Park the Bus (Tử thủ)."
+            tab4_cmd = "🎯 Xây dựng 3 kịch bản Cài đặt In-game thay người/lệnh: 1. Start Game. 2. All-out Attack. 3. Park the Bus. TUYỆT ĐỐI KHÔNG ĐỀ XUẤT THÊM KỸ NĂNG (SKILLS) Ở ĐÂY."
         else:
             tab1_cmd = "<div class='warning-box'>⛔ Chế độ Dự án Video: Đang tập trung 100% tài nguyên cho Báo cáo So Sánh.</div>"
             tab2_cmd = "<div class='warning-box'>⛔ Chế độ Dự án Video: Đang tập trung 100% tài nguyên cho Báo cáo So Sánh.</div>"
-            tab3_cmd = "🔹 SO SÁNH AUTO VS THỦ CÔNG DNS. Quét 100% chỉ số, lập luận việc dịch chuyển điểm từ mốc A sang mốc B để Tối ưu và Phù hợp với vai trò. Phân tích Manager Boosts. Bố cục: [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN], [KẾT LUẬN THUMBNAIL]."
+            tab3_cmd = "🔹 SO SÁNH AUTO VS THỦ CÔNG DNS. Quét 100% chỉ số, lập luận việc dịch chuyển điểm từ mốc A sang mốc B để Tối ưu và Phù hợp. Phân tích Manager Boosts. [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN], [KẾT LUẬN THUMBNAIL]."
             tab4_cmd = "<div class='warning-box'>⛔ Chế độ Dự án Video: Đang tập trung 100% tài nguyên cho Báo cáo So Sánh.</div>"
 
         system_instruction = f"""
         Bạn là DNS TACTICAL ARCHITECT - Chuyên gia Chiến thuật eFootball.
         
-        🚫 VĂN HÓA NGÔN TỪ:
-        - Tuyệt đối không dùng từ đả kích, chê bai (ngáo, dốt, rác, vô dụng...).
-        - Tôn trọng bản Auto là Cân bằng của Konami. Bản Manual DNS là sự tinh chỉnh TỐI ƯU và PHÙ HỢP nhất cho sa bàn.
-
-        🚫 KỶ LUẬT ĐỊNH DẠNG:
-        - KHÔNG dùng HTML <b>, <span>, </b. Chỉ dùng Markdown **.
-        - Không để khoảng trống dòng thừa thãi.
-        - STYLE XANH: Chỉ chọn từ danh mục: (High Line Master, Pass Disruptor, Front Line Pressure, All-action Defender, Covering Role, The Destroyer, Box-to-Box, Defensive GK, Attacking GK, Basic).
-        - Khi phân tích Style Xanh: In đậm 🔵 **[TÊN STYLE]** và giải thích cơ chế LIỀN TRÊN CÙNG 1 DÒNG.
+        🚫 KỶ LUẬT ĐỊNH DẠNG TUYỆT ĐỐI:
+        - KHÔNG DÙNG HTML NHƯ `<b>`, `<span>`. CHỈ DÙNG MARKDOWN `**` ĐỂ IN ĐẬM.
+        - Không để khoảng trống thừa thãi giữa các dòng liên tiếp.
+        - Tôn trọng bản Auto là Cân bằng. Bản Manual DNS là sự tinh chỉnh TỐI ƯU. Không dùng từ đả kích (ngáo, dốt, rác...).
+        - STYLE XANH: Chỉ chọn (High Line Master, Pass Disruptor, Front Line Pressure, All-action Defender, Covering Role, The Destroyer, Box-to-Box, Defensive GK, Attacking GK, Basic).
+        - In đậm 🔵 **[TÊN STYLE]** và giải thích cơ chế LIỀN TRÊN CÙNG 1 DÒNG.
 
         BẮT BUỘC CHIA BÁO CÁO THÀNH 4 PHẦN NGĂN CÁCH BỞI "===" TRÊN 1 DÒNG RIÊNG.
 
@@ -241,7 +232,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. HIỂN THỊ KẾT QUẢ
+# 5. HIỂN THỊ KẾT QUẢ VÀ RENDER SUB-TABS
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH VIP"):
     if not uploaded_players and not uploaded_managers: 
@@ -276,19 +267,54 @@ if 'analysis_report' in st.session_state:
             <div class="vip-text">{content.strip()}</div>
             <div class="vip-footer">
                 <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
-                <span style="color: {label_color}; font-weight: 900; text-shadow: 0px 1px 2px rgba(184, 134, 11, 0.4);">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE.</span>
+                <span style="color: {label_color}; font-weight: 900; text-shadow: 0px 1px 2px rgba(184, 134, 11, 0.4);">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
             </div>
         </div>"""
 
     with t1: st.markdown(format_tab(tab1_c), unsafe_allow_html=True)
-    with t2: st.markdown(format_tab(tab2_c), unsafe_allow_html=True)
+    
+    with t2: 
+        if "[TAB_FW]" in tab2_c:
+            intro = tab2_c.split("[TAB_FW]")[0]
+            fw = re.search(r'\[TAB_FW\](.*?)\[TAB_MF\]', tab2_c, re.DOTALL)
+            mf = re.search(r'\[TAB_MF\](.*?)\[TAB_DF\]', tab2_c, re.DOTALL)
+            df = re.search(r'\[TAB_DF\](.*?)\[TAB_GK\]', tab2_c, re.DOTALL)
+            gk = re.search(r'\[TAB_GK\](.*)', tab2_c, re.DOTALL)
+            
+            if intro.strip():
+                st.markdown(f"""<div class="vip-card" style="margin-bottom: 10px; padding-bottom: 15px;">
+                    <div style="text-align:center; margin-bottom: 10px;"><img src="{logo_url}" class="vip-logo-3d"></div>
+                    <div class="vip-text">{intro.strip()}</div>
+                </div>""", unsafe_allow_html=True)
+            
+            s1, s2, s3, s4 = st.tabs(["⚽ HÀNG CÔNG (FW)", "🎯 TIỀN VỆ (MF)", "🛡️ HÀNG THỦ (DF)", "🧤 THỦ MÔN (GK)"])
+            with s1: 
+                if fw: st.markdown(f'<div class="vip-card" style="margin-top:0;"><div class="vip-text">{fw.group(1).strip()}</div></div>', unsafe_allow_html=True)
+            with s2:
+                if mf: st.markdown(f'<div class="vip-card" style="margin-top:0;"><div class="vip-text">{mf.group(1).strip()}</div></div>', unsafe_allow_html=True)
+            with s3:
+                if df: st.markdown(f'<div class="vip-card" style="margin-top:0;"><div class="vip-text">{df.group(1).strip()}</div></div>', unsafe_allow_html=True)
+            with s4:
+                if gk: st.markdown(f'<div class="vip-card" style="margin-top:0;"><div class="vip-text">{gk.group(1).strip()}</div></div>', unsafe_allow_html=True)
+            
+            st.markdown(f"""<div class="vip-card" style="margin-top: 10px; padding: 15px;">
+                <div class="vip-footer" style="margin-top: 0; padding-top:0; border:none;">
+                    <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
+                    <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+                </div>
+            </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown(format_tab(tab2_c), unsafe_allow_html=True)
+            
     with t3: st.markdown(format_tab(tab3_c), unsafe_allow_html=True)
     with t4: st.markdown(format_tab(tab4_c), unsafe_allow_html=True)
     
     with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
         raw_text = st.session_state['analysis_report'].replace("<div class='warning-box'>", "").replace("</div>", "").replace("===", "\n\n")
+        raw_text = raw_text.replace("<strong>", "**").replace("</strong>", "**")
+        raw_text = raw_text.replace("[TAB_FW]", "\n\n--- ⚽ HÀNG CÔNG (FW) ---").replace("[TAB_MF]", "\n\n--- 🎯 TIỀN VỆ (MF) ---")
+        raw_text = raw_text.replace("[TAB_DF]", "\n\n--- 🛡️ HÀNG THỦ (DF) ---").replace("[TAB_GK]", "\n\n--- 🧤 THỦ MÔN (GK) ---")
         raw_text = re.sub(r'<details.*?>', '', raw_text); raw_text = re.sub(r'</details>', '', raw_text)
         raw_text = re.sub(r'<summary.*?>', '[', raw_text); raw_text = re.sub(r'</summary>', ']\n', raw_text)
         raw_text = re.sub(r'<div class="expander-content">', '', raw_text)
-        raw_text = re.sub(r'</?b[^>]*>', '**', raw_text)
         st.text_area("Văn bản gốc:", value=raw_text.replace('<br>', '\n').replace('⛔ ', ''), height=200)

@@ -191,39 +191,33 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON VÀ DỊCH MD
+# 3. HÀM XỬ LÝ DỮ LIỆU
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
         return "<p style='color: #64748B; font-style: italic; text-align: center; padding: 20px;'>Chưa có dữ liệu phân bổ cho tuyến này.</p>"
-    
     html_out = ""
     for item in items:
         title = item.get("vitri", "Vị trí")
         loai = item.get("loai", "Đá chính")
         style = item.get("style", "")
         vaitro = item.get("vaitro", "")
-        
         content = f"<strong>Phân loại:</strong> {loai}<br><strong>Style đề xuất:</strong> <span style='color:{label_color}; font-weight:800;'>{style}</span><br><strong>Vai trò chiến thuật:</strong> {vaitro}"
         html_out += f'<details class="dns-expander"><summary>{title} ({loai})</summary><div class="expander-content"><p>🔹 {content}</p></div></details>'
     return html_out
 
 def format_in_game_json(data):
     if not data: return ""
-    
     atk_list = data.get("individual_instructions", {}).get("tan_cong", [])
     def_list = data.get("individual_instructions", {}).get("phong_ngu", [])
-    
     atk_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
     def_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
-    
     if not atk_str: atk_str = "Không gán lệnh tấn công."
     if not def_str: def_str = "Không gán lệnh phòng ngự."
 
     html_out = "<strong>1. Cài đặt Lệnh Cá nhân (Individual Instructions):</strong><br><br>"
     html_out += f"🔹 <strong style='color:#FF4D4D;'>Tấn công:</strong><br><span style='margin-left: 20px; display: block;'>{atk_str}</span><br>"
     html_out += f"🔹 <strong style='color:#4D94FF;'>Phòng ngự:</strong><br><span style='margin-left: 20px; display: block;'>{def_str}</span><br><br>"
-    
     html_out += "<strong>2. Kịch bản Thay người (Mental Level):</strong><br><br>"
     html_out += f"🔹 <strong>Start Game (Cân bằng):</strong> {data.get('k1', '')}<br>"
     html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
@@ -239,21 +233,18 @@ def translate_json_to_markdown(json_23, json_ingame):
                 for item in json_23[tuyen]:
                     md_out += f"- {item.get('vitri', '')} ({item.get('loai', '')}): Style {item.get('style', '')}. Vai trò: {item.get('vaitro', '')}\n"
                 md_out += "\n"
-                
     md_out += "=== CẨM NANG IN-GAME ===\n\n"
     if json_ingame:
         atk_list = json_ingame.get("individual_instructions", {}).get("tan_cong", [])
         def_list = json_ingame.get("individual_instructions", {}).get("phong_ngu", [])
-        
         atk_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
         def_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
-        
         md_out += f"1. Individual Instructions:\n- Tấn công: {atk_str}\n- Phòng ngự: {def_str}\n\n"
         md_out += f"2. Kịch bản Thay người:\n- Mặc định: {json_ingame.get('k1', '')}\n- Nấc Xanh: {json_ingame.get('k2', '')}\n- Nấc Đỏ: {json_ingame.get('k3', '')}"
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI 
+# 4. LÕI TƯ DUY AI CHUYÊN SÂU (TỐI ƯU CƠ CHẾ SA BÀN & OCR)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -263,8 +254,8 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         
         hard_rules = """
         [QUY TẮC BẮT BUỘC CHUNG]:
-        1. Tuyệt đối không dùng HTML. Không xuất hiện chữ 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' trong nội dung phân tích.
-        2. Tôn trọng Style Cơ bản In-game gốc. Bám sát cơ chế eFootball/eFHUB. 100% sử dụng THUẬT NGỮ TIẾNG ANH cho chỉ số. Không dịch ra tiếng Việt.
+        1. Tuyệt đối không dùng HTML. Không xuất hiện chữ 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' trong nội dung phân tích xuất ra.
+        2. Tôn trọng Style Cơ bản In-game gốc. 100% sử dụng THUẬT NGỮ TIẾNG ANH cho chỉ số. Không dịch ra tiếng Việt.
         """
 
         if "1" in mode:
@@ -283,26 +274,30 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "2" in mode:
             tab1_cmd = """
             1. Thẩm định vai trò cầu thủ trên sân theo đúng Sơ đồ & Triết lý của HLV.
-            2. Nhận diện Slot Booster: Đọc kỹ ảnh xem Thẻ có Booster mặc định nào?
-            [LỆNH CẤM THÉP ĐỐI VỚI BOOSTER 2]: Đề xuất gán Booster thứ 2 tối ưu. Trong cơ chế eFootball, Slot Booster thứ 2 (Crafting) LUÔN LUÔN CHỈ ĐƯỢC CỘNG +1. AI CHỈ ĐƯỢC PHÉP ĐỀ XUẤT BOOSTER +1 (Ví dụ: Shooting +1, Technique +1, Agility +1, Duel +1, Shutting Down +1...). TUYỆT ĐỐI KHÔNG ĐƯỢC BỊA RA BOOSTER +2 HAY CAO HƠN.
+            2. Nhận diện Slot Booster: 
+            [LỆNH CẤM THÉP]: Nếu thẻ có Slot Booster thứ 2, BẠN CHỈ ĐƯỢC ĐỀ XUẤT BOOSTER +1 (Ví dụ: Shooting +1, Technique +1, Agility +1, Shutting Down +1...). TUYỆT ĐỐI CẤM bịa ra Booster +2.
             """
             tab2_cmd = """
-            TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB:
-            1. CẤM TỰ TÍNH TOÁN. Bạn phải đóng vai trò là một MÁY QUÉT OCR. Nhìn vào các cột chỉ số (ATTACKING, DEFENDING, ATHLETICISM). Ghi ra CHÍNH XÁC con số hiển thị tận cùng bên phải của mỗi dòng chỉ số (thường nằm trong ô nền màu xanh lá hoặc đỏ).
-            2. Tính tổng PP tiêu tốn chuẩn 100% dung lượng Level Cap.
-            3. TẤT CẢ TÊN CHỈ SỐ PHẢI DÙNG TIẾNG ANH 100% (Passing, Dexterity, Lower Body Strength, Aerial Strength, Defending, Speed, Acceleration, Finishing, Offensive Awareness...). KHÔNG DỊCH TIẾNG VIỆT.
-            4. [TƯ DUY SA BÀN SÁT THƯƠNG]: BẮT BUỘC ở cuối mỗi nhánh PP nâng cấp, phải kèm 1 câu "LẬP LUẬN TỐI ƯU" siêu sắc bén, giải thích ngắn gọn tại sao mức điểm này tạo ra tính đột biến/sát thương cao nhất.
+            TƯ DUY SA BÀN BẬC THẦY VÀ QUY HOẠCH PP:
+            [NẾU THẺ ĐÃ BUILD SẴN TRÊN ẢNH]:
+            1. Bạn phải đóng vai trò MÁY QUÉT OCR. Nhìn vào các thanh trượt bên trái để lấy 'Số Nấc', nhìn vào cột xanh/đỏ bên phải để lấy 'Chỉ số hiển thị thực tế'. TUYỆT ĐỐI KHÔNG TỰ TÍNH LẠI CÁC SỐ ĐÓ.
+            2. 100% TÊN CHỈ SỐ LÀ TIẾNG ANH (Speed, Acceleration, Offensive Awareness, Finishing, Passing...).
+
+            [CỐT LÕI CHUYÊN MÔN - BẮT BUỘC CÓ Ở MỖI NHÁNH]:
+            Không chỉ liệt kê con số vô hồn. Hãy chứng minh bạn là một Chuyên Gia. Dưới mỗi nhánh nâng cấp, BẮT BUỘC viết [LẬP LUẬN TACTICAL SÁT THƯƠNG]. 
+            Bạn phải giải thích vì sao mức chỉ số đó lại tạo ra độ "sát thương" cực cao cho lối đá của HLV. (Ví dụ: Possession Game cần chuyền chọt thoát pressing; Quick Counter cần Speed/Acceleration để đâm nách cắt mặt...).
+            Dùng ngôn từ sắc bén của dân làm chiến thuật.
             
-            Format bắt buộc:
-            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính 1]: [Số chuẩn trên ảnh OCR] | [Tên chỉ số chính 2]: [Số chuẩn trên ảnh OCR]. 
-              [LẬP LUẬN TỐI ƯU]: [Giải thích sát thương].
+            Format:
+            - **[Tên nhánh Tiếng Anh]**: [X] Nấc -> [Chỉ số 1]: [Số chuẩn] | [Chỉ số 2]: [Số chuẩn].
+              [LẬP LUẬN TACTICAL SÁT THƯƠNG]: [Phân tích logic cực nét theo Meta game và HLV].
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = """
             1. Gán Lệnh Cá Nhân (Individual Instructions):
             - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
             - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
-            2. Đề xuất Top 5 Skills bổ sung then chốt nhất.
+            2. Đề xuất Top 5 Skills bổ sung then chốt nhất kèm lý do chuyên môn ngắn gọn.
             """
             
         elif "3" in mode:
@@ -334,7 +329,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            CẨM NANG IN-GAME CHIẾN THUẬT. BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON.
+            CẨM NANG IN-GAME CHIẾN THUẬT. BẮT BUỘC TRẢ VỀ JSON.
             ```json
             {
               "individual_instructions": {
@@ -430,6 +425,7 @@ if 'raw_report' in st.session_state:
     raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
     
     parts = raw_text.split("===")
+    
     if mode_selected == "2" and len(parts) > 2:
         parts[2] = "\n\nCẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.\n\n"
         
@@ -438,6 +434,7 @@ if 'raw_report' in st.session_state:
     tab3_c = parts[2].strip() if len(parts) > 2 else ""
     tab4_c = parts[3].strip() if len(parts) > 3 else ""
     
+    # Rà soát lỗi AI "nhả nhầm" câu cảnh báo sang Tab 2
     if mode_selected == "2":
         tab2_c = re.sub(r'CẢNH BÁO TỪ CHỐI.*', '', tab2_c, flags=re.IGNORECASE).strip()
     
@@ -445,6 +442,7 @@ if 'raw_report' in st.session_state:
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab_content(content):
+        # Bộ lọc cực thông minh: Chỉ bắt chính xác thông báo lỗi từ chối, không "giết nhầm" tab 2
         if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')

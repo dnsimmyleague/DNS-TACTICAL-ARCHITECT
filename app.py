@@ -30,9 +30,10 @@ if is_daytime:
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
     tab_inactive_bg = "linear-gradient(145deg, #F8FAFC, #E2E8F0)"
-    tab_inactive_color = "#111827"  # CHỐT: Màu chữ Đen Đậm siêu rõ ban ngày
+    tab_inactive_color = "#000000"  # [ĐÃ FIX] Màu Đen Tuyệt Đối giúp hiển thị cực rõ Ban Ngày
     watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
+    # Màu cho Khối 3D Sub-tab (Sáng)
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
     subtab_shadow = "5px 5px 10px #bebebe, -5px -5px 10px #ffffff"
     subtab_active_bg = "linear-gradient(145deg, #D4AF37, #B8860B)"
@@ -42,9 +43,10 @@ else:
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)"
-    tab_inactive_color = "#F3F4F6"  # CHỐT: Màu Trắng Bạc siêu rõ ban đêm
+    tab_inactive_color = "#FFFFFF"  # [ĐÃ FIX] Màu Trắng Tinh giúp hiển thị cực rõ Ban Đêm
     watermark_opacity = "0.08"; watermark_blend = "screen"
     expander_copy_bg = "#1A1D24"
+    # Màu cho Khối 3D Sub-tab (Tối)
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
     subtab_shadow = "5px 5px 10px #15181d, -5px -5px 10px #2d323f"
     subtab_active_bg = "linear-gradient(145deg, #E5C058, #C89B2B)"
@@ -57,14 +59,16 @@ custom_css = f"""
     header[data-testid="stHeader"] {{ display: none !important; }} footer {{ display: none !important; }}
     .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; }}
     
+    /* [ĐÃ FIX] LOADING SPINNER TRONG SUỐT HOÀN TOÀN, CHỮ VÀNG KIM */
     div[data-testid="stSpinner"] {{ background-color: transparent !important; }}
     div[data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     div[data-testid="stSpinner"] > div > span, div[data-testid="stSpinner"] p {{
-        color: {label_color} !important; font-weight: 800 !important; font-size: 16px !important;
-        background-color: transparent !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        color: {label_color} !important; font-weight: 900 !important; font-size: 17px !important;
+        background-color: transparent !important; text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
     }}
     
-    [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1px solid {border_color}; margin-top: 15px; }}
+    /* [ĐÃ FIX] KHUNG COPY VĂN BẢN MÀU NỀN ĐỘC LẬP TƯƠNG PHẢN TỐT */
+    [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1.5px solid {border_color}; margin-top: 15px; }}
     [data-testid="stExpander"] summary p {{ color: {text_color} !important; font-weight: 800 !important; font-size: 15px; }}
     [data-testid="stExpander"] summary:hover p {{ color: {label_color} !important; }}
     
@@ -98,15 +102,16 @@ custom_css = f"""
     
     .vip-text strong, .expander-content strong, strong {{ color: {label_color} !important; font-weight: 900 !important; }}
     
-    /* FIX TAB CHÍNH: Hiện rõ chữ, Đổ bóng nổi khối 3D */
+    /* [ĐÃ FIX] TAB CHÍNH NỔI KHỐI 3D RÕ RÀNG */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
-    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{ color: {tab_inactive_color} !important; font-weight: 800 !important; transition: all 0.3s ease; }}
+    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{ color: {tab_inactive_color} !important; font-weight: 800 !important; transition: all 0.3s ease; text-shadow: 1px 1px 1px rgba(0,0,0,0.1); }}
     .stTabs [data-baseweb="tab"]:hover p {{ color: {label_color} !important; }}
-    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {{ color: #121418 !important; font-weight: 900 !important; }}
-    .stTabs [data-baseweb="tab"] {{ background: {tab_inactive_bg} !important; border: 1.5px solid rgba(212, 175, 55, 0.4) !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; box-shadow: {shadow_3d} !important; transition: all 0.2s ease-in-out; }}
+    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {{ color: #121418 !important; font-weight: 900 !important; text-shadow: none; }}
+    .stTabs [data-baseweb="tab"] {{ background: {tab_inactive_bg} !important; border: 1px solid rgba(212, 175, 55, 0.5) !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; box-shadow: {shadow_3d} !important; transition: all 0.2s ease-in-out; }}
     .stTabs [data-baseweb="tab"]:hover {{ transform: translateY(-3px); border-color: {border_color} !important; }}
     .stTabs [aria-selected="true"] {{ background: linear-gradient(145deg, #E5C058, #C89B2B) !important; border: 1px solid #F7E08B !important; border-bottom: none !important; transform: translateY(-6px); box-shadow: 0px -6px 15px rgba(200, 155, 43, 0.4) !important; z-index: 10; }}
     
+    /* [ĐÃ FIX] SUB-TABS 3D TRONG TAB 2 */
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ display: flex; justify-content: space-between; background: transparent; padding: 10px 0; border: none; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab"] {{
         flex: 1; margin: 0 5px; border-radius: 12px !important; padding: 15px 5px !important; text-align: center;
@@ -129,6 +134,7 @@ custom_css = f"""
     .vip-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }}
     .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; margin-bottom: 12px; color: #FF4D4D !important; font-weight: bold; }}
     
+    /* GIAO DIỆN EXPANDER 3D ĐỒNG BỘ */
     .dns-expander {{ margin-bottom: 12px; margin-top: 10px; border-radius: 10px; background: {element_bg}; overflow: hidden; box-shadow: {subtab_shadow}; border: 1px solid rgba(212, 175, 55, 0.3); }}
     .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; list-style: none; font-size: 14.5px; transition: all 0.2s; }}
     .dns-expander summary::-webkit-details-marker {{ display: none; }}
@@ -163,55 +169,67 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM XỬ LÝ TEXT VÀ RENDER SUB-TABS TỰ ĐỘNG (BẢN CHỐT LỖI)
+# 3. HÀM XỬ LÝ VÀ PHÂN LOẠI DANH SÁCH 23 CẦU THỦ THÔNG MINH
 # ---------------------------------------------------------
 def render_expander_from_list(items):
-    if not items: return "<p style='color: #64748B; font-style: italic;'>Không có dữ liệu cho tuyến này.</p>"
+    if not items: return "<p style='color: #64748B; font-style: italic; text-align: center; margin-top: 15px;'>Không có dữ liệu cho tuyến này.</p>"
     html_out = ""
     for item in items:
-        # Bóc tách Tên vị trí và Nội dung
-        match = re.match(r'^[\d\.\-\*]*\s*([A-Z/]+[\s\w\(\)]*?):\s*(.*)', item.strip())
-        if match:
-            title = match.group(1).strip().replace('**', '')
-            content = match.group(2).strip()
-            content_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
-            html_out += f'<details class="dns-expander"><summary>{title}</summary><div class="expander-content"><p>🔹 {content_html}</p></div></details>'
+        # Làm sạch dứt điểm ký tự số đếm hoặc gạch đầu dòng thừa
+        item_clean = re.sub(r'^[\d\.\-\*]+\s*', '', item).strip()
+        
+        if ':' in item_clean:
+            title, content = item_clean.split(':', 1)
         else:
-            # Fallback nếu không tách được dấu hai chấm
-            title = item.split('(')[0].replace('**', '').replace('-', '').strip()
-            content_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', item.replace(title, '', 1).strip())
-            if not title: title = "Phân tích vị trí"
-            html_out += f'<details class="dns-expander"><summary>{title}</summary><div class="expander-content"><p>🔹 {content_html}</p></div></details>'
+            title = "Phân tích vị trí"
+            content = item_clean
+            
+        # Loại bỏ sạch dấu * trong Title và Content
+        title = re.sub(r'\*\*(.*?)\*\*', r'\1', title).replace('*', '').strip()
+        
+        # Bôi vàng từ khóa bằng <strong> và Diệt tận gốc dấu *
+        content_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
+        content_html = content_html.replace('*', '').strip()
+        
+        html_out += f'<details class="dns-expander"><summary>{title}</summary><div class="expander-content"><p>🔹 {content_html}</p></div></details>'
     return html_out
 
 def parse_and_group_positions(text_block):
-    """Tự động gom cầu thủ vào đúng 4 Tuyến bất chấp AI viết lung tung"""
+    """Bộ não Python tự động phân loại cầu thủ vào 4 Tuyến 3D bất chấp định dạng của AI"""
     fw_list, mf_list, df_list, gk_list = [], [], [], []
-    # Dọn dẹp câu chữ PP lọt lưới
-    text_block = re.sub(r'\(Cấp \d+\s*-\s*\d+PP\)', '', text_block)
+    intro_text = ""
     
-    # Cắt văn bản theo từng gạch đầu dòng hoặc đánh số (1., 2., -, *)
-    lines = re.split(r'\n(?=[\d\-\*]+\.?\s*[A-Z]{2})', text_block.strip())
+    # 1. Quét dọn trước khi chia: Hủy diệt chữ PP, Cấp, %
+    text_block = re.sub(r'\(?Cấp \d+.*?\d*PP\)?', '', text_block, flags=re.IGNORECASE)
+    text_block = re.sub(r'\d+%\s*PP', '', text_block, flags=re.IGNORECASE)
+    
+    lines = text_block.split('\n')
+    is_intro = True
     
     for line in lines:
-        line_clean = line.strip().replace('\n', ' ')
-        if not line_clean: continue
+        line_clean = line.strip()
+        if not line_clean or line_clean.startswith('#'): continue
         
-        # Nhận diện vị trí để nhét vào rổ
-        # FW: CF, ST, SS, LWF, RWF
-        if re.search(r'\b(CF|ST|SS|LWF|RWF)\b', line_clean.split(':')[0]):
+        # Lấy Tên vị trí (Ví dụ: "CF", "LWF/RWF")
+        header_part = line_clean.split(':')[0].upper()
+        
+        if re.search(r'\b(CF|ST|SS|LWF|RWF|RW|LW)\b', header_part):
             fw_list.append(line_clean)
-        # MF: AMF, CMF, DMF, LMF, RMF
-        elif re.search(r'\b(AMF|CMF|DMF|LMF|RMF)\b', line_clean.split(':')[0]):
+            is_intro = False
+        elif re.search(r'\b(AMF|CMF|DMF|LMF|RMF|RM|LM)\b', header_part):
             mf_list.append(line_clean)
-        # DF: CB, LB, RB, LWB, RWB
-        elif re.search(r'\b(CB|LB|RB|LWB|RWB)\b', line_clean.split(':')[0]):
+            is_intro = False
+        elif re.search(r'\b(CB|LB|RB|LWB|RWB)\b', header_part):
             df_list.append(line_clean)
-        # GK: GK
-        elif re.search(r'\b(GK)\b', line_clean.split(':')[0]):
+            is_intro = False
+        elif re.search(r'\b(GK)\b', header_part):
             gk_list.append(line_clean)
-            
-    return fw_list, mf_list, df_list, gk_list
+            is_intro = False
+        else:
+            if is_intro:
+                intro_text += line_clean + "<br>"
+                
+    return intro_text, fw_list, mf_list, df_list, gk_list
 
 def clean_text_for_copy(raw_text, mode):
     if mode.startswith("4"):
@@ -220,14 +238,14 @@ def clean_text_for_copy(raw_text, mode):
             raw_text = f"{parts[0]}\n\n{parts[1]}\n\n{parts[3]}"
     
     text = raw_text.replace("===", "\n\n").replace("⛔ ", "")
-    text = re.sub(r'\*\*', '', text) # Dọn sạch sành sanh dấu sao
-    text = re.sub(r'\(Cấp \d+\s*-\s*\d+PP\)', '', text) # Xóa nốt PP trong bản copy
+    text = text.replace("*", "") # Lệnh Tối Cao: Hủy diệt mọi dấu sao trong Copy Text
+    text = re.sub(r'\(?Cấp \d+.*?\d*PP\)?', '', text, flags=re.IGNORECASE) # Hủy diệt PP
     text = text.replace("CẢNH BÁO TỪ CHỐI.", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI.", "")
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI
+# 4. LÕI TƯ DUY AI CHIẾN THUẬT
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -238,7 +256,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         hard_rules = """
         [QUY TẮC BẮT BUỘC]:
         1. Tuyệt đối không dùng HTML. Chỉ dùng `**chữ**` để in đậm.
-        2. Chỉ chọn (High Line Master, Pass Disruptor, Front Line Pressure, All-action Defender, Covering Role, The Destroyer, Box-to-Box, Defensive GK, Attacking GK, Basic).
+        2. Từ điển Style: Chỉ chọn (High Line Master, Pass Disruptor, Front Line Pressure, All-action Defender, Covering Role, The Destroyer, Box-to-Box, Defensive GK, Attacking GK, Basic).
         """
 
         if "1" in mode:
@@ -259,15 +277,12 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự."
             tab2_cmd = """
-            QUY HOẠCH ĐỦ 23 VỊ TRÍ ĐÁ CHÍNH VÀ DỰ BỊ DỰA TRÊN SƠ ĐỒ Ở PHẦN 1.
+            QUY HOẠCH ĐỦ 23 VỊ TRÍ (ĐÁ CHÍNH & DỰ BỊ) DỰA TRÊN SƠ ĐỒ Ở PHẦN 1.
             [LỆNH CẤM THÉP]: KHÔNG VIẾT TỪ 'PP' HAY 'CẤP'. KHÔNG ĐỀ XUẤT ĐIỂM SỐ. KHÔNG NÊU TÊN CẦU THỦ THỰC TẾ.
-            Bắt buộc liệt kê danh sách theo cú pháp:
-            - **[Tên Vị Trí]**: Style Đỏ (...), Style Xanh (...). Yêu cầu: ...
-            
-            Ví dụ:
-            - **CF**: Front Line Pressure. Chạy chỗ cắt mặt.
-            - **LWF**: Creative Playmaker. Rê dắt và tạt bóng.
-            (Kê khai đủ 23 người).
+            Bắt buộc liệt kê danh sách theo đúng định dạng sau, mỗi vị trí 1 dòng:
+            - **CF**: Style Đỏ (...), Style Xanh (...). Yêu cầu: ...
+            - **LWF**: Style Đỏ (...), Style Xanh (...). Yêu cầu: ...
+            (Kê khai đủ 23 người. Không chia nhóm, chỉ liệt kê).
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
@@ -310,7 +325,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER GIAO DIỆN
+# 5. RENDER GIAO DIỆN & TỔNG VỆ SINH DỮ LIỆU
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -330,17 +345,18 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
 if 'raw_report' in st.session_state:
     mode_selected = analysis_mode[0]
     
-    # BỘ LỌC CỨNG BẰNG PYTHON (LOẠI BỎ SẠCH PP & SKILLS LÉN LÚT Ở CHẾ ĐỘ 4)
+    # BỘ LỌC CỨNG (SÁT THỦ PP VÀ SKILLS CHẾ ĐỘ 4)
     if mode_selected == "4":
         lines_2 = st.session_state['raw_report'].split("===")
         if len(lines_2) > 1:
-            clean_tab2 = re.sub(r'\(?Cấp \d+\s*-\s*\d+PP\)?', '', lines_2[1]) # Chém PP
+            clean_tab2 = re.sub(r'\(?Cấp \d+.*?\d*PP\)?', '', lines_2[1], flags=re.IGNORECASE)
+            clean_tab2 = re.sub(r'\d+%\s*PP', '', clean_tab2, flags=re.IGNORECASE)
             lines_2[1] = clean_tab2
             st.session_state['raw_report'] = "===".join(lines_2)
             
         lines_4 = st.session_state['raw_report'].split("===")
         if len(lines_4) > 3:
-            clean_tab4 = lines_4[3].split("Top 5")[0].split("TOP 5")[0].split("Skills")[0] # Chém Skills
+            clean_tab4 = lines_4[3].split("Top 5")[0].split("TOP 5")[0].split("Skills")[0]
             lines_4[3] = clean_tab4
             st.session_state['raw_report'] = "===".join(lines_4)
             
@@ -356,9 +372,13 @@ if 'raw_report' in st.session_state:
     def format_tab_content(content):
         if "CẢNH BÁO TỪ CHỐI" in content:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
-        # Xóa sạch ký tự rác ở đuôi
-        content_clean = re.sub(r'(\d+\.|\*+)\s*$', '', content.strip())
-        html_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content_clean).replace('\n', '<br>')
+        
+        # Bôi vàng In đậm (Lớp 1)
+        html_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
+        # Sát thủ diệt Dấu Sao thừa (Lớp 2)
+        html_content = html_content.replace('*', '')
+        html_content = html_content.replace('\n', '<br>')
+        
         return f"""<div class="vip-card">
             <img src="{logo_url}" class="vip-logo-3d">
             <div class="vip-text">{html_content}</div>
@@ -368,6 +388,7 @@ if 'raw_report' in st.session_state:
             </div>
         </div>"""
 
+    # ĐIỀU HƯỚNG TAB LOGIC GIỮ NGUYÊN BẢN SẮC
     if mode_selected == "1":
         t1, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
@@ -388,11 +409,17 @@ if 'raw_report' in st.session_state:
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         
         with t2: 
-            # DÙNG PYTHON GOM TỰ ĐỘNG VÀO 4 TAB 3D BẤT CHẤP AI VIẾT GÌ
-            fw_list, mf_list, df_list, gk_list = parse_and_group_positions(tab2_c)
+            # PYTHON BÓC TÁCH BỎ VÀO 4 RỔ 3D
+            intro_text, fw_list, mf_list, df_list, gk_list = parse_and_group_positions(tab2_c)
             
-            # Nếu Python nhặt được cầu thủ, vẽ 4 khối 3D. Nếu không, in bình thường.
             if fw_list or mf_list or df_list or gk_list:
+                if intro_text:
+                    intro_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', intro_text).replace('*', '')
+                    st.markdown(f"""<div class="vip-card" style="margin-bottom: 10px; padding-bottom: 15px;">
+                        <img src="{logo_url}" class="vip-logo-3d">
+                        <div class="vip-text">{intro_html}</div>
+                    </div>""", unsafe_allow_html=True)
+                
                 s1, s2, s3, s4 = st.tabs(["⚽ FW", "🎯 MF", "🛡️ DF", "🧤 GK"])
                 with s1: st.markdown(render_expander_from_list(fw_list), unsafe_allow_html=True)
                 with s2: st.markdown(render_expander_from_list(mf_list), unsafe_allow_html=True)

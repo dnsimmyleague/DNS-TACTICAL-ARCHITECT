@@ -223,7 +223,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ đang chọn: {mode}"
         
         contents = [context_prompt] + img_list
-        response = client.models.generate_content(model='gemini-1.5-flash', contents=contents, config=config)
+        response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
         return clean_text_and_build_ui(response.text)
     except Exception as e:
         return f"[LỖI HỆ THỐNG]: {str(e)}"

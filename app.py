@@ -29,8 +29,8 @@ if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
-    tab_inactive_bg = "linear-gradient(145deg, #F8FAFC, #E2E8F0)"
-    tab_inactive_color = "#0F172A"  # [CHỐT FIX] Màu Đen Đậm Cực Nét
+    tab_inactive_bg = "linear-gradient(145deg, #E2E8F0, #CBD5E1)" # Đậm hơn để nổi bật ban ngày
+    tab_inactive_color = "#000000"  # Đen tuyền tuyệt đối
     watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
@@ -42,7 +42,7 @@ else:
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)"
-    tab_inactive_color = "#F8FAFC"  # [CHỐT FIX] Màu Trắng Bạc Cực Nét
+    tab_inactive_color = "#FFFFFF"  # Trắng tinh tuyệt đối
     watermark_opacity = "0.08"; watermark_blend = "screen"
     expander_copy_bg = "#1A1D24"
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
@@ -57,15 +57,13 @@ custom_css = f"""
     header[data-testid="stHeader"] {{ display: none !important; }} footer {{ display: none !important; }}
     .stApp {{ background-color: {app_bg} !important; transition: background-color 0.4s ease; }}
     
-    /* SPINNER TRONG SUỐT HOÀN TOÀN, CHỮ VÀNG KIM */
     div[data-testid="stSpinner"] {{ background-color: transparent !important; }}
     div[data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     div[data-testid="stSpinner"] > div > span, div[data-testid="stSpinner"] p {{
         color: {label_color} !important; font-weight: 900 !important; font-size: 17px !important;
-        background-color: transparent !important; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        background-color: transparent !important; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); opacity: 1 !important;
     }}
     
-    /* KHUNG COPY VĂN BẢN MÀU NỀN ĐỘC LẬP */
     [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1.5px solid {border_color}; margin-top: 15px; }}
     [data-testid="stExpander"] summary p {{ color: {text_color} !important; font-weight: 800 !important; font-size: 15px; }}
     [data-testid="stExpander"] summary:hover p {{ color: {label_color} !important; }}
@@ -100,19 +98,19 @@ custom_css = f"""
     
     .vip-text strong, .expander-content strong, strong {{ color: {label_color} !important; font-weight: 900 !important; }}
     
-    /* [CƯỠNG CHẾ CẤP CAO] BẮT TẤT CẢ TỰA TAB CÓ MÀU ĐEN RÕ BAN NGÀY / TRẮNG BAN ĐÊM */
+    /* CƯỠNG CHẾ CSS CHO TAB CHÍNH HIỂN THỊ RÕ RÀNG */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
-    button[data-baseweb="tab"] * {{
+    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {{
         color: {tab_inactive_color} !important;
-        font-weight: 800 !important;
+        font-weight: 900 !important;
+        opacity: 1 !important;
         transition: all 0.3s ease;
     }}
-    button[data-baseweb="tab"]:hover * {{
+    button[data-baseweb="tab"]:hover p, button[data-baseweb="tab"]:hover span {{
         color: {label_color} !important;
     }}
-    button[data-baseweb="tab"][aria-selected="true"] * {{
+    button[data-baseweb="tab"][aria-selected="true"] p, button[data-baseweb="tab"][aria-selected="true"] span {{
         color: #121418 !important;
-        font-weight: 900 !important;
     }}
     .stTabs [data-baseweb="tab"] {{
         background: {tab_inactive_bg} !important;
@@ -121,7 +119,7 @@ custom_css = f"""
         border-radius: 14px 14px 0px 0px !important;
         padding: 12px 18px !important;
         box-shadow: {shadow_3d} !important;
-        transition: all 0.2s ease-in-out;
+        opacity: 1 !important;
     }}
     .stTabs [aria-selected="true"] {{
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important;
@@ -132,28 +130,24 @@ custom_css = f"""
         z-index: 10;
     }}
     
-    /* SUB-TABS 3D TRONG TAB 2 (MỞ RỘNG VÀ ĐỔ BÓNG NỔI KHỐI) */
+    /* CƯỠNG CHẾ CSS SUB-TABS 3D RỘNG RÃI */
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ display: flex; justify-content: space-between; background: transparent; padding: 15px 0; border: none; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{
         flex: 1; margin: 0 6px; border-radius: 12px !important; padding: 14px 8px !important; text-align: center;
         background: {subtab_bg} !important;
         box-shadow: {subtab_shadow} !important;
-        border: 1.5px solid rgba(212, 175, 55, 0.3) !important;
-        transition: all 0.3s ease; transform: none;
+        border: 1.5px solid rgba(212, 175, 55, 0.5) !important;
+        opacity: 1 !important;
     }}
-    div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] * {{
-        color: {text_color} !important;
-        font-size: 15px !important;
-        font-weight: 900 !important;
+    div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] p {{
+        color: {text_color} !important; font-size: 15px !important; font-weight: 900 !important;
     }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] {{
         background: {subtab_active_bg} !important;
         box-shadow: {subtab_active_shadow} !important;
         border: 1.5px solid {border_color} !important;
     }}
-    div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] * {{
-        color: #121418 !important;
-    }}
+    div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] p {{ color: #121418 !important; }}
 
     .vip-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; margin-bottom: 20px; }}
     .vip-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }}
@@ -199,7 +193,7 @@ with col2:
 # ---------------------------------------------------------
 def render_expander_from_list(items):
     if not items: 
-        return "<p style='color: #64748B; font-style: italic; text-align: center; padding: 20px;'>Không có vị trí phù hợp cho tuyến này.</p>"
+        return "<p style='color: #64748B; font-style: italic; text-align: center; padding: 20px;'>Hệ thống đang tải dữ liệu...</p>"
     
     html_out = ""
     for item in items:
@@ -215,7 +209,6 @@ def render_expander_from_list(items):
         title = title.replace('*', '').strip()
         content_clean = content.replace('*', '').strip()
         
-        # Kiểm tra nếu nội dung bị rỗng thì không hiển thị bẫy rỗng
         if not content_clean or len(content_clean) < 2:
             continue
             
@@ -226,25 +219,15 @@ def render_expander_from_list(items):
     return html_out
 
 def parse_and_group_positions(text_block):
-    """Phân loại chính xác 23 vị trí vào 4 Tuyến 3D"""
     fw_list, mf_list, df_list, gk_list = [], [], [], []
     intro_text = ""
     
-    # Hủy diệt sạch văn bản rác PP / Bảng quy đổi trước khi chia
-    text_block = re.sub(r'Bảng quy đổi.*?HLV:', '', text_block, flags=re.IGNORECASE | re.DOTALL)
-    text_block = re.sub(r'Quy hoạch phân bổ PP.*?:', '', text_block, flags=re.IGNORECASE)
-    text_block = re.sub(r'\(?Cấp \d+.*?\d*PP\)?', '', text_block, flags=re.IGNORECASE)
-    text_block = re.sub(r'\d+%\s*PP', '', text_block, flags=re.IGNORECASE)
-    text_block = re.sub(r'\(Khai thác 100% dung lượng thẻ\)', '', text_block, flags=re.IGNORECASE)
-    
+    text_block = text_block.replace('*', '') # Cắt sao ngay từ đầu
     lines = text_block.split('\n')
     
     for line in lines:
         line_clean = line.strip()
-        if not line_clean or line_clean.startswith('#'): continue
-        
-        # Bỏ qua các dòng gạch ngang rác
-        if line_clean in ['-', '*', '--', '---']: continue
+        if not line_clean or line_clean.startswith('#') or line_clean.startswith('---'): continue
         
         parts = line_clean.split(':')
         header_part = parts[0].upper()
@@ -259,8 +242,7 @@ def parse_and_group_positions(text_block):
             gk_list.append(line_clean)
         else:
             if not any(lst for lst in [fw_list, mf_list, df_list, gk_list]):
-                if "PP" not in line_clean and "CẤP" not in line_clean.upper():
-                    intro_text += line_clean + "<br>"
+                intro_text += line_clean + "<br>"
                 
     return intro_text.strip(), fw_list, mf_list, df_list, gk_list
 
@@ -272,15 +254,12 @@ def clean_text_for_copy(raw_text, mode):
     
     text = raw_text.replace("===", "\n\n").replace("⛔ ", "")
     text = text.replace("*", "") 
-    text = re.sub(r'\(?Cấp \d+.*?\d*PP\)?', '', text, flags=re.IGNORECASE) 
-    text = re.sub(r'Bảng quy đổi.*?HLV:', '', text, flags=re.IGNORECASE)
-    text = re.sub(r'\d+\.\s*Đề\s*xuất.*', '', text, flags=re.IGNORECASE)
     text = text.replace("CẢNH BÁO TỪ CHỐI.", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.", "").replace("CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI.", "")
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI CHIẾN THUẬT BẬC THẦY (CHUẨN 23 CẦU THỦ)
+# 4. LÕI TƯ DUY AI (ÉP KHUÔN CỨNG 100%)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -291,7 +270,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         hard_rules = """
         [QUY TẮC BẮT BUỘC]:
         1. Tuyệt đối không dùng HTML. Chỉ dùng `**chữ**` để in đậm.
-        2. Tôn trọng Style Cơ bản In-game gốc (Goal Poacher, Build Up, Anchor Man, Orchestrator...). Style Xanh chỉ là lớp bọc lót bổ trợ.
+        2. CHỈ sử dụng Playstyle In-game chuẩn (Goal Poacher, Build Up, Anchor Man...). KHÔNG BỊA STYLE.
         """
 
         if "1" in mode:
@@ -312,34 +291,32 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự."
             tab2_cmd = """
-            QUY HOẠCH ĐỦ 23 VỊ TRÍ (11 ĐÁ CHÍNH + 12 DỰ BỊ) DỰA TRÊN SƠ ĐỒ VÀ TRIẾT LÝ Ở PHẦN 1.
-            [LỆNH CẤM THÉP]: TUYỆT ĐỐI KHÔNG VIẾT TỪ 'PP', 'CẤP', KHÔNG TÍNH TOÁN % ĐIỂM SỐ. KHÔNG BỎ TRỐNG NỘI DUNG.
+            [LỆNH CẤM THÉP]: CẤM VIẾT CHỮ 'PP', 'CẤP', 'ĐIỂM'. CHỈ ĐƯỢC PHÉP LIỆT KÊ TÊN CẦU THỦ THỰC TẾ.
+            BẮT BUỘC phải sinh ra chính xác 23 dòng cho 23 cầu thủ (11 Đá Chính + 12 Dự Bị) theo Khuôn Mẫu sau:
             
-            YÊU CẦU ĐỊNH DẠNG (BẮT BUỘC ĐỀ XUẤT CẦU THỦ THỰC TẾ TIÊU BIỂU):
-            Mỗi vị trí trình bày trên 1 dòng duy nhất theo đúng cấu trúc mẫu sau:
-            - **[Tên Vị Trí]**: Đá chính: **[Tên Cầu thủ thực tế]** ([Style Cơ bản In-game gốc] + [Style Xanh bổ trợ nếu có]) — Dự bị: **[Tên Cầu thủ dự bị]** ([Style Cơ bản]). Vai trò: [Giải thích ngắn gọn tư duy vận hành].
+            - **[Tên Vị Trí] (Đá chính)**: [Tên Cầu thủ ngoài đời] ([Style Cơ bản In-game]). Vai trò: [Nhiệm vụ trên sân]
+            - **[Tên Vị Trí] (Dự bị)**: [Tên Cầu thủ ngoài đời] ([Style Cơ bản In-game]). Vai trò: [Nhiệm vụ trên sân]
             
-            VÍ DỤ MẪU BẮT BUỘC THEO:
-            - **CF (Tiền đạo cắm)**: Đá chính: **Erling Haaland** (Goal Poacher + Front Line Pressure) — Dự bị: **Victor Osimhen** (Goal Poacher). Vai trò: Săn bàn chủ lực, đè mặt trung vệ dứt điểm 1 chạm.
-            - **CB (Lệch trái)**: Đá chính: **Virgil van Dijk** (Build Up + High Line Master) — Dự bị: **Alessandro Nesta** (Build Up). Vai trò: Thắt chặt cự ly, bọc lót không gian sau lưng.
-            - **DMF (Tiền vệ phòng ngự)**: Đá chính: **Rodri** (Anchor Man + Pass Disruptor) — Dự bị: **Casemiro** (The Destroyer). Vai trò: Đánh chặn trung lộ và thu hồi bóng.
-            
-            LƯU Ý: Phải kê khai ĐỦ 23 CẦU THỦ chia đều cho 4 tuyến (FW: 5-6, MF: 6-7, DF: 7-8, GK: 2-3).
+            VÍ DỤ BẮT BUỘC TUÂN THEO (Đủ 23 người, không thiếu 1 ai):
+            - **CF (Đá chính)**: Erling Haaland (Goal Poacher). Vai trò: Đè mặt trung vệ dứt điểm.
+            - **LWF (Đá chính)**: Vini Jr (Prolific Winger). Vai trò: Khoan phá cánh trái.
+            - **CB (Dự bị)**: Alessandro Nesta (Build Up). Vai trò: Bọc lót chống phản công.
+            (TIẾP TỤC ĐẾN KHI ĐỦ 23 NGƯỜI).
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
             CẨM NANG IN-GAME VÀ KỊCH BẢN THAY NGƯỜI CHIẾN THUẬT:
             
-            1. Gán Lệnh Cá Nhân (Individual Instructions):
-            - Tấn công (Max 2 slot): CHỈ ĐƯỢC CHỌN 'Defensive' hoặc 'Anchoring'. Gán cho vị trí nào?
-            - Phòng ngự (Max 2 slot): CHỈ ĐƯỢC CHỌN 'Tight Marking', 'Man Marking', hoặc 'Counter Target'. Gán cho vị trí nào?
+            Gán Lệnh Cá Nhân (Individual Instructions):
+            - Tấn công (Max 2 slot): CHỈ ĐƯỢC CHỌN 'Defensive' HOẶC 'Anchoring'. Gán cho ai?
+            - Phòng ngự (Max 2 slot): CHỈ ĐƯỢC CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'. Gán cho ai?
             
-            2. Kịch Bản Thay Người & Chỉnh Nấc Mental Level:
-            - Kịch bản 1 (Start Game - Cân bằng): Giữ cự ly đội hình.
-            - Kịch bản 2 (Đang dẫn bàn - Hạ 1/2 nấc Xanh): Rút vị trí nào ra, đưa ai vào (Thay bổ sung cầu thủ phòng ngự).
-            - Kịch bản 3 (Bị dẫn bàn - Tăng 1/2 nấc Đỏ): Rút vị trí nào ra, đưa ai vào (Thay bổ sung tiền đạo càn lướt).
+            3 Kịch Bản Thay Người:
+            1. Bắt đầu trận đấu: Đội hình xuất phát.
+            2. Đang dẫn bàn (Bảo toàn tỷ số): Rút ai ra? Đưa cầu thủ phòng ngự nào vào? (Ví dụ: Thêm Anchor Man).
+            3. Bị dẫn bàn (Cần bàn thắng): Rút ai ra? Đưa tiền đạo càn lướt nào vào? (Ví dụ: Thêm Goal Poacher).
             
-            [LỆNH CẤM TUYỆT ĐỐI]: KHÔNG ĐƯỢC ĐỀ XUẤT THÊM BẤT KỲ KỸ NĂNG SKILLS NÀO Ở ĐÂY.
+            [LỆNH CẤM TUYỆT ĐỐI]: KHÔNG ĐỀ XUẤT THÊM SKILLS KỸ NĂNG NÀO Ở ĐÂY.
             """
         else:
             tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
@@ -374,7 +351,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER GIAO DIỆN & BỘ LỌC TỐI CAO
+# 5. RENDER GIAO DIỆN
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -393,23 +370,6 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
 
 if 'raw_report' in st.session_state:
     mode_selected = analysis_mode[0]
-    
-    # [LỌC CỨNG] DIỆT SẠCH PP VÀ SKILLS CHẾ ĐỘ 4
-    if mode_selected == "4":
-        lines_2 = st.session_state['raw_report'].split("===")
-        if len(lines_2) > 1:
-            clean_tab2 = re.sub(r'\(?Cấp \d+.*?\d*PP\)?', '', lines_2[1], flags=re.IGNORECASE)
-            clean_tab2 = re.sub(r'\d+%\s*PP', '', clean_tab2, flags=re.IGNORECASE)
-            clean_tab2 = re.sub(r'Bảng quy đổi.*?HLV:', '', clean_tab2, flags=re.IGNORECASE)
-            lines_2[1] = clean_tab2
-            st.session_state['raw_report'] = "===".join(lines_2)
-            
-        lines_4 = st.session_state['raw_report'].split("===")
-        if len(lines_4) > 3:
-            clean_tab4 = lines_4[3].split("Top 5")[0].split("TOP 5")[0].split("Skills")[0].split("Kỹ năng")[0]
-            clean_tab4 = re.sub(r'\d+\.\s*Đề\s*xuất.*', '', clean_tab4, flags=re.IGNORECASE)
-            lines_4[3] = clean_tab4
-            st.session_state['raw_report'] = "===".join(lines_4)
             
     parts = st.session_state['raw_report'].split("===")
     tab1_c = parts[0].strip() if len(parts) > 0 else ""
@@ -424,8 +384,10 @@ if 'raw_report' in st.session_state:
         if "CẢNH BÁO TỪ CHỐI" in content:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         
-        html_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
-        html_content = html_content.replace('*', '').replace('\n', '<br>')
+        # Diệt sạch dấu sao trên toàn bộ giao diện
+        content = content.replace('*', '')
+        html_content = re.sub(r'\[(.*?)\]', r'<strong>\1</strong>', content) # Bold các vị trí
+        html_content = html_content.replace('\n', '<br>')
         
         return f"""<div class="vip-card">
             <img src="{logo_url}" class="vip-logo-3d">
@@ -436,7 +398,6 @@ if 'raw_report' in st.session_state:
             </div>
         </div>"""
 
-    # ĐIỀU HƯỚNG TAB
     if mode_selected == "1":
         t1, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
@@ -461,10 +422,9 @@ if 'raw_report' in st.session_state:
             
             if fw_list or mf_list or df_list or gk_list:
                 if intro_text and len(intro_text) > 10:
-                    intro_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', intro_text).replace('*', '')
                     st.markdown(f"""<div class="vip-card" style="margin-bottom: 10px; padding-bottom: 15px;">
                         <img src="{logo_url}" class="vip-logo-3d">
-                        <div class="vip-text">{intro_html}</div>
+                        <div class="vip-text">{intro_text.replace('*', '')}</div>
                     </div>""", unsafe_allow_html=True)
                 
                 s1, s2, s3, s4 = st.tabs(["⚽ FW", "🎯 MF", "🛡️ DF", "🧤 GK"])

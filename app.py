@@ -32,8 +32,8 @@ if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
-    tab_inactive_bg = "#E2E8F0" 
-    tab_inactive_color = "#0F172A"  # Đen đậm tuyệt đối
+    tab_inactive_bg = "#94A3B8" 
+    tab_inactive_color = "#FFFFFF"  
     watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
@@ -45,7 +45,7 @@ else:
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "#1E222A"
-    tab_inactive_color = "#FFFFFF"  # Trắng tuyệt đối
+    tab_inactive_color = "#FFFFFF"  
     watermark_opacity = "0.08"; watermark_blend = "screen"
     expander_copy_bg = "#1A1D24"
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
@@ -99,33 +99,29 @@ custom_css = f"""
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
     .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; border: 1px solid #F7E08B !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px; }}
     
-    /* GIAO DIỆN TAB SÁNG/TỐI CỰC NÉT BẰNG CSS XUYÊN GIÁP */
-    div[data-testid="stTabs"] button[data-baseweb="tab"] p, 
-    div[data-testid="stTabs"] button[data-baseweb="tab"] span, 
-    div[data-testid="stTabs"] button[data-baseweb="tab"] div {{
+    /* GIAO DIỆN TAB SÁNG/TỐI CỰC NÉT */
+    .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
+    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {{
         color: {tab_inactive_color} !important;
-        font-weight: 800 !important;
+        font-weight: 900 !important;
         opacity: 1 !important;
     }}
-    div[data-testid="stTabs"] button[data-baseweb="tab"]:hover p, 
-    div[data-testid="stTabs"] button[data-baseweb="tab"]:hover span {{
+    button[data-baseweb="tab"]:hover p, button[data-baseweb="tab"]:hover span {{
         color: {label_color} !important;
     }}
-    div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] p, 
-    div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] span,
-    div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] div {{
+    button[data-baseweb="tab"][aria-selected="true"] p, button[data-baseweb="tab"][aria-selected="true"] span {{
         color: #121418 !important;
-        font-weight: 900 !important;
     }}
-    div[data-testid="stTabs"] button[data-baseweb="tab"] {{
+    .stTabs [data-baseweb="tab"] {{
         background-color: {tab_inactive_bg} !important;
         border: 2px solid rgba(212, 175, 55, 0.6) !important;
         border-bottom: none !important;
         border-radius: 14px 14px 0px 0px !important;
         padding: 12px 18px !important;
         box-shadow: {shadow_3d} !important;
+        opacity: 1 !important;
     }}
-    div[data-testid="stTabs"] button[aria-selected="true"] {{
+    .stTabs [aria-selected="true"] {{
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important;
         border: 2px solid #F7E08B !important;
         border-bottom: none !important;
@@ -296,13 +292,13 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB (TIẾNG ANH 100%):
             1. Bảng giá nấc PP (Lũy tiến): Nấc 1-4 (tốn 1 PP/nấc), Nấc 5-8 (tốn 2 PP/nấc), Nấc 9-12 (tốn 3 PP/nấc), Nấc 13-16 (tốn 4 PP/nấc).
             2. Đọc chính xác Tổng PP (Points) và Level Cap trên ảnh. Tính toán chuẩn 100% dung lượng PP (Không thừa, không thiếu 1 điểm).
-            3. ĐỌC ĐÚNG THÔNG SỐ TỪ ẢNH eFHUB (Cột xanh lá/đỏ bên phải). AI CHỈ ĐƯỢC GHI RA CON SỐ NHÌN THẤY TRÊN ẢNH, CẤM TỰ TÍNH TOÁN HAY SUY ĐOÁN SỐ LỆCH ĐI.
-            4. [ÉP BUỘC TƯ DUY]: Ở mỗi nhánh PP nâng cấp, BẮT BUỘC phải kèm theo 1 câu "LẬP LUẬN TỐI ƯU" giải thích tại sao lại nâng mốc này mang tính sát thương cao trong Meta game.
+            3. [QUAN TRỌNG NHẤT]: TẤT CẢ TÊN CHỈ SỐ PHẢI DÙNG TIẾNG ANH 100% (Ví dụ: Passing, Dexterity, Lower Body Strength, Aerial Strength, Defending, Speed, Acceleration, Finishing, Offensive Awareness...). KHÔNG DỊCH RA TIẾNG VIỆT.
+            4. ĐỌC ĐÚNG THÔNG SỐ TỪ ẢNH eFHUB (Cột xanh lá/đỏ bên phải). AI CHỈ ĐƯỢC GHI RA CON SỐ NHÌN THẤY TRÊN ẢNH, CẤM TỰ TÍNH TOÁN HAY SUY ĐOÁN SỐ LỆCH ĐI.
+            5. [ÉP BUỘC TƯ DUY]: Ở mỗi nhánh PP nâng cấp, BẮT BUỘC phải kèm theo 1 câu "LẬP LUẬN TỐI ƯU" giải thích tại sao lại nâng mốc này mang tính sát thương cao trong Meta game.
             
             Format bắt buộc:
             - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính Tiếng Anh]: [Chỉ số hiển thị chính xác trên ảnh]. 
               [LẬP LUẬN TỐI ƯU]: [Giải thích ngắn gọn tư duy Sa bàn sát thương].
-            [LỆNH CẤM THÉP]: KHÔNG SO SÁNH VỚI CHỈ SỐ AUTO. KHÔNG GHI CÂU RÁC Ở ĐÂY. CHỈ IN BẢNG PP VÀ KẾT QUẢ.
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = """
@@ -445,16 +441,21 @@ if 'raw_report' in st.session_state:
     mode_selected = analysis_mode[0]
     raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
     
-    # Python lọc siêu tốc: Cắt đứt hoàn toàn Tab 3 nếu ở Chế độ 2
-    if mode_selected == "2":
-        raw_text = re.sub(r'===.*?PHẦN 3:.*?===', '===\n\nCẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.\n\n===', raw_text, flags=re.IGNORECASE | re.DOTALL)
-    
     parts = raw_text.split("===")
     
+    # Ở chế độ 2, chúng ta chủ động thay thế phần tử thứ 3 (Tab 3) thành cảnh báo
+    # Tránh sử dụng Regex để không xóa nhầm Tab 2
+    if mode_selected == "2" and len(parts) > 2:
+        parts[2] = "\n\nCẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.\n\n"
+        
     tab1_c = parts[0].strip() if len(parts) > 0 else ""
     tab2_c = parts[1].strip() if len(parts) > 1 else ""
     tab3_c = parts[2].strip() if len(parts) > 2 else ""
     tab4_c = parts[3].strip() if len(parts) > 3 else ""
+    
+    # Rà soát lỗi AI "nhả nhầm" câu cảnh báo sang Tab 2
+    if mode_selected == "2":
+        tab2_c = re.sub(r'CẢNH BÁO TỪ CHỐI.*', '', tab2_c, flags=re.IGNORECASE).strip()
     
     report_time = st.session_state.get('report_time', vn_time_now.strftime("%d/%m/%Y | %H:%M:%S"))
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"

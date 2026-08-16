@@ -244,7 +244,7 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI CHUYÊN SÂU (TỐI ƯU CƠ CHẾ SA BÀN & OCR)
+# 4. LÕI TƯ DUY AI 5 CHIỀU ĐỒNG BỘ TOÀN HỆ THỐNG
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -253,13 +253,24 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         client = genai.Client(api_key=api_key)
         
         hard_rules = """
-        [QUY TẮC BẮT BUỘC CHUNG]:
-        1. Tuyệt đối không dùng HTML. Không xuất hiện chữ 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' trong nội dung phân tích xuất ra.
-        2. Tôn trọng Style Cơ bản In-game gốc. 100% sử dụng THUẬT NGỮ TIẾNG ANH cho chỉ số. Không dịch ra tiếng Việt.
+        [QUY TẮC BẬC THẦY SA BÀN - ÁP DỤNG ĐỒNG BỘ TOÀN BỘ 5 CHẾ ĐỘ]:
+        1. Tuyệt đối không dùng HTML. Không xuất hiện câu 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' trong nội dung xuất ra.
+        2. TẤT CẢ TÊN CHỈ SỐ BẮT BUỘC DÙNG TIẾNG ANH 100% (Speed, Acceleration, Offensive Awareness, Finishing, Defensive Awareness, Physical Contact...). Không dịch ra tiếng Việt.
+        3. TƯ DUY 5 CHIỀU BẮT BUỘC KHI SOI ẢNH:
+           - Chiều 1: Dual Playstyle (Style Đỏ gốc + Style Xanh bổ trợ như Front Line Pressure, High Line Master...).
+           - Chiều 2: Player Model & Physics Hitbox (Chiều cao, cân nặng, Leg Length, Arm Length, Torso Collision, Leg Coverage Radius để đánh giá sải chân cắt bóng/rê bóng và độ đầm khi va chạm).
+           - Chiều 3: COM Skills (Linh hồn khi đá SIM AI như Mazing Run, Long Ball Expert, Incisive Run, Early Crosser...).
+           - Chiều 4: Other Stats (Weak Foot Usage/Accuracy và Form phong độ Unwavering/Standard).
+           - Chiều 5: Tương thích triết lý HLV & Tối ưu hóa điểm chạm ngưỡng (Sweet spots 85, 88, 90, 95, 98).
         """
 
         if "1" in mode:
-            tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV. Kết luận rõ: Phù hợp hay Lệch pha. Đánh giá ưu nhược điểm chi tiết."
+            tab1_cmd = """
+            THẨM ĐỊNH THẺ AUTO MẶC ĐỊNH TOÀN DIỆN 5 CHIỀU:
+            1. Đánh giá Style Đỏ + Style Xanh (nếu có) và triết lý HLV.
+            2. Soi Hitbox (Player Model/Physics), COM Skills (cho hệ SIM AI) và Form/Weak Foot.
+            3. KẾT LUẬN RÕ RÀNG: HỢP hay LOẠI (Có sao xài vậy, chỉ ra ưu điểm chí mạng và nhược điểm cố hữu của phôi Auto này).
+            """
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
             tab4_cmd = """
@@ -267,30 +278,28 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             1. Gán Lệnh Cá Nhân (Individual Instructions):
             - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
             - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
-            (KHÔNG DÙNG DEEP LINE HOẶC CÁC LỆNH KHÁC).
             2. 3 kịch bản Cài đặt In-game: Start Game, Tấn công tổng lực, Tử thủ.
             """
             
         elif "2" in mode:
             tab1_cmd = """
-            1. Thẩm định vai trò cầu thủ trên sân theo đúng Sơ đồ & Triết lý của HLV.
-            2. Nhận diện Slot Booster: 
-            [LỆNH CẤM THÉP]: Nếu thẻ có Slot Booster thứ 2, BẠN CHỈ ĐƯỢC ĐỀ XUẤT BOOSTER +1 (Ví dụ: Shooting +1, Technique +1, Agility +1, Shutting Down +1...). TUYỆT ĐỐI CẤM bịa ra Booster +2.
+            THẨM ĐỊNH CHIẾN THUẬT & SLOT BOOSTER:
+            1. Thẩm định vai trò cầu thủ theo 5 chiều (Style Đỏ + Xanh, Hitbox sải chân/va chạm, COM Skills cho SIM AI, Form/Weak Foot) trong sơ đồ HLV.
+            2. Nhận diện Slot Booster 1 (Mặc định).
+            3. [LỆNH CẤM THÉP]: Đề xuất Slot Booster thứ 2 (Crafting) LUÔN LUÔN LÀ +1 (Ví dụ: Shooting +1, Technique +1, Agility +1, Shutting Down +1...). TUYỆT ĐỐI CẤM bịa ra Booster +2.
             """
             tab2_cmd = """
-            TƯ DUY SA BÀN BẬC THẦY VÀ QUY HOẠCH PP:
-            [NẾU THẺ ĐÃ BUILD SẴN TRÊN ẢNH]:
-            1. Bạn phải đóng vai trò MÁY QUÉT OCR. Nhìn vào các thanh trượt bên trái để lấy 'Số Nấc', nhìn vào cột xanh/đỏ bên phải để lấy 'Chỉ số hiển thị thực tế'. TUYỆT ĐỐI KHÔNG TỰ TÍNH LẠI CÁC SỐ ĐÓ.
-            2. 100% TÊN CHỈ SỐ LÀ TIẾNG ANH (Speed, Acceleration, Offensive Awareness, Finishing, Passing...).
+            TƯ DUY SA BÀN BẬC THẦY VÀ QUY HOẠCH PP CHUẨN XÁC:
+            [LỆNH CẤM THÉP]: BẠN BỊ CẤM TỰ TÍNH TOÁN CỘNG TRỪ CHỈ SỐ. BẠN BẮT BUỘC PHẢI LÀ MÁY QUÉT OCR.
 
-            [CỐT LÕI CHUYÊN MÔN - BẮT BUỘC CÓ Ở MỖI NHÁNH]:
-            Không chỉ liệt kê con số vô hồn. Hãy chứng minh bạn là một Chuyên Gia. Dưới mỗi nhánh nâng cấp, BẮT BUỘC viết [LẬP LUẬN TACTICAL SÁT THƯƠNG]. 
-            Bạn phải giải thích vì sao mức chỉ số đó lại tạo ra độ "sát thương" cực cao cho lối đá của HLV. (Ví dụ: Possession Game cần chuyền chọt thoát pressing; Quick Counter cần Speed/Acceleration để đâm nách cắt mặt...).
-            Dùng ngôn từ sắc bén của dân làm chiến thuật.
+            BƯỚC 1: QUÉT SỐ NẤC TỪ ẢNH TRÁI (Shooting, Passing, Dribbling, Dexterity, Lower Body Strength, Aerial Strength, Defending).
+            BƯỚC 2: TÍNH PP TIÊU TỐN (Nấc 1-4: 1 PP/nấc, Nấc 5-8: 2 PP/nấc, Nấc 9-12: 3 PP/nấc, Nấc 13-16: 4 PP/nấc).
+            BƯỚC 3: QUÉT CHỈ SỐ CUỐI CÙNG TỪ ẢNH PHẢI (Cột ATTACKING, DEFENDING, ATHLETICISM). ĐỌC CHÍNH XÁC CON SỐ TRONG Ô MÀU XANH/ĐỎ TẬN CÙNG BÊN PHẢI (Thấy 94 ghi 94, thấy 97 ghi 97, cấm tự trừ).
+            BƯỚC 4: LẬP LUẬN TACTICAL SÁT THƯƠNG (Kèm phân tích sải chân Hitbox, COM Skills cho SIM AI và khả năng đâm nách/cắt mặt/thoát pressing theo sơ đồ HLV).
             
-            Format:
-            - **[Tên nhánh Tiếng Anh]**: [X] Nấc -> [Chỉ số 1]: [Số chuẩn] | [Chỉ số 2]: [Số chuẩn].
-              [LẬP LUẬN TACTICAL SÁT THƯƠNG]: [Phân tích logic cực nét theo Meta game và HLV].
+            Format bắt buộc:
+            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính 1]: [Số CHUẨN quét từ ảnh] | [Tên chỉ số chính 2]: [Số CHUẨN quét từ ảnh].
+              [LẬP LUẬN TACTICAL SÁT THƯƠNG]: [Phân tích logic cực nét theo 5 chiều].
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = """
@@ -301,7 +310,12 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             """
             
         elif "3" in mode:
-            tab1_cmd = "Phân tích Sơ đồ Tấn Công và Phòng Ngự."
+            tab1_cmd = """
+            KHÁM HLV VÀ PHÂN TÍCH TRIẾT LÝ TOÀN DIỆN:
+            1. Phân tích Triết lý & Lối chơi chủ đạo (Possession, Quick Counter, Long Ball Counter...).
+            2. Vẽ Sơ đồ Tấn Công và Sơ đồ Phòng Ngự chi tiết.
+            3. Đề xuất tiêu chuẩn Hitbox thể hình (Player Model/Physics) và mẫu COM Skills cần có ở các vị trí trọng yếu để vận hành sơ đồ.
+            """
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "CẢNH BÁO TỪ CHỐI."
@@ -309,23 +323,26 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự (Viết văn bản thường)."
             tab2_cmd = """
-            QUY HOẠCH ĐỦ 23 CẦU THỦ. CHỈ GHI VỊ TRÍ, STYLE VÀ VAI TRÒ. BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON.
+            QUY HOẠCH ĐỦ 23 CẦU THỦ (11 ĐÁ CHÍNH + 12 DỰ BỊ) KẾT HỢP DUAL PLAYSTYLE (STYLE ĐỎ + STYLE XANH).
+            [LỆNH CẤM THÉP]: KHÔNG NÊU TÊN CẦU THỦ NGOÀI ĐỜI. BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON NHƯ MẪU.
             ```json
             {
               "FW": [
-                {"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Chạy chỗ cắt mặt..."}
+                {"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher + Front Line Pressure", "vaitro": "Mũi khoan săn bàn, dâng cao pressing tuyến đầu ép CB đối phương..."},
+                {"vitri": "CF", "loai": "Dự bị", "style": "Fox in the Box", "vaitro": "Làm tường, dứt điểm 1 chạm trong vòng cấm..."}
               ],
               "MF": [
-                {"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Đánh chặn..."}
+                {"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man + Pass Disruptor", "vaitro": "Mỏ neo đánh chặn trung lộ, luân chuyển bóng..."}
               ],
               "DF": [
-                {"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Bọc lót..."}
+                {"vitri": "CB", "loai": "Đá chính", "style": "Build Up + High Line Master", "vaitro": "Triển khai bóng tuyến dưới, duy trì cự ly bọc lót..."}
               ],
               "GK": [
-                {"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Cản phá..."}
+                {"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra cản phá các pha chọc khe vượt tuyến..."}
               ]
             }
             ```
+            (Phải kê khai đủ 23 phần tử chia đều cho 4 mảng trên)
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
@@ -345,11 +362,18 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
               "k3": "Rút [Vị trí] thay [Vị trí tấn công]"
             }
             ```
+            LƯU Ý: `tan_cong` CHỈ DÙNG Defensive/Anchoring. `phong_ngu` CHỈ DÙNG Tight Marking/Man Marking/Counter Target.
             """
-        else:
+            
+        else: # Chế độ 5
             tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
-            tab3_cmd = "SO SÁNH AUTO VS MANUAL DNS. Lập luận phân tích [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN]."
+            tab3_cmd = """
+            SO SÁNH ĐỐI CHỨNG AUTO VS THỦ CÔNG DNS (DÀNH CHO TEAM CONTENT):
+            1. [CHÊNH LỆCH CHỈ SỐ]: Chỉ ra sự lãng phí điểm của Auto so với việc tối ưu hóa mốc chỉ số tiếng Anh (Sweet spots 85, 90, 95) của DNS.
+            2. [LẬP LUẬN CHUYÊN MÔN]: So sánh sự khác biệt về Hitbox va chạm (Player Model/Physics), sự tương thích COM Skills khi đá SIM AI và Style Xanh hỗ trợ.
+            3. [KẾT LUẬN THUMBNAIL]: Câu đúc kết giật gân, sắc lẹm khẳng định đẳng cấp của bản Build thủ công so với Auto.
+            """
             tab4_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
 
         system_instruction = f"""
@@ -434,7 +458,6 @@ if 'raw_report' in st.session_state:
     tab3_c = parts[2].strip() if len(parts) > 2 else ""
     tab4_c = parts[3].strip() if len(parts) > 3 else ""
     
-    # Rà soát lỗi AI "nhả nhầm" câu cảnh báo sang Tab 2
     if mode_selected == "2":
         tab2_c = re.sub(r'CẢNH BÁO TỪ CHỐI.*', '', tab2_c, flags=re.IGNORECASE).strip()
     
@@ -442,7 +465,6 @@ if 'raw_report' in st.session_state:
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab_content(content):
-        # Bộ lọc cực thông minh: Chỉ bắt chính xác thông báo lỗi từ chối, không "giết nhầm" tab 2
         if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
@@ -506,12 +528,21 @@ if 'raw_report' in st.session_state:
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
              st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=300)
              
-    else:
-        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+    elif mode_selected == "1":
+        t1, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
-        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
-        
-        clean_raw = raw_text.replace("===", "\n\n")
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=250)
+             st.text_area("Văn bản gốc:", value=f"{tab1_c}\n\n{tab4_c}".strip(), height=250)
+
+    elif mode_selected == "3":
+        t1 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ"])[0]
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=tab1_c.strip(), height=250)
+
+    elif mode_selected == "5":
+        t3 = st.tabs(["⚖️ SO SÁNH AUTO & THỦ CÔNG"])[0]
+        with t3: st.markdown(format_tab_content(tab3_c), unsafe_allow_html=True)
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=tab3_c.strip(), height=250)

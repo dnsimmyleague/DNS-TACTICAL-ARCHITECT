@@ -105,7 +105,7 @@ st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiế
 # ---------------------------------------------------------
 # 3. KHỐI NHẬP LIỆU & ĐIỀU HƯỚNG 5 KỊCH BẢN TÙY BIẾN
 # ---------------------------------------------------------
-analysis_mode = st.radio(
+analysis_mode = st.selectbox(
     "🎯 CHỌN CHẾ ĐỘ PHÂN TÍCH (TỰ ĐỘNG ĐÓNG/MỞ TAB):",
     [
         "1. Khám Phôi Thẻ Auto Mặc định (Có sao xài vậy, Hợp/Loại)",

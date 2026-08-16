@@ -32,8 +32,8 @@ if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
-    tab_inactive_bg = "#94A3B8" 
-    tab_inactive_color = "#FFFFFF"  
+    tab_inactive_bg = "#E2E8F0" 
+    tab_inactive_color = "#0F172A"  
     watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
@@ -99,29 +99,32 @@ custom_css = f"""
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
     .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; border: 1px solid #F7E08B !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px; }}
     
-    /* GIAO DIỆN TAB SÁNG/TỐI CỰC NÉT */
-    .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
-    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {{
+    div[data-testid="stTabs"] button[data-baseweb="tab"] p, 
+    div[data-testid="stTabs"] button[data-baseweb="tab"] span, 
+    div[data-testid="stTabs"] button[data-baseweb="tab"] div {{
         color: {tab_inactive_color} !important;
-        font-weight: 900 !important;
+        font-weight: 800 !important;
         opacity: 1 !important;
     }}
-    button[data-baseweb="tab"]:hover p, button[data-baseweb="tab"]:hover span {{
+    div[data-testid="stTabs"] button[data-baseweb="tab"]:hover p, 
+    div[data-testid="stTabs"] button[data-baseweb="tab"]:hover span {{
         color: {label_color} !important;
     }}
-    button[data-baseweb="tab"][aria-selected="true"] p, button[data-baseweb="tab"][aria-selected="true"] span {{
+    div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] p, 
+    div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] span,
+    div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] div {{
         color: #121418 !important;
+        font-weight: 900 !important;
     }}
-    .stTabs [data-baseweb="tab"] {{
+    div[data-testid="stTabs"] button[data-baseweb="tab"] {{
         background-color: {tab_inactive_bg} !important;
         border: 2px solid rgba(212, 175, 55, 0.6) !important;
         border-bottom: none !important;
         border-radius: 14px 14px 0px 0px !important;
         padding: 12px 18px !important;
         box-shadow: {shadow_3d} !important;
-        opacity: 1 !important;
     }}
-    .stTabs [aria-selected="true"] {{
+    div[data-testid="stTabs"] button[aria-selected="true"] {{
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important;
         border: 2px solid #F7E08B !important;
         border-bottom: none !important;
@@ -130,7 +133,6 @@ custom_css = f"""
         z-index: 10;
     }}
     
-    /* SUB-TABS 3D RỘNG RÃI VÀ CÂN XỨNG HƠN */
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ display: flex; justify-content: space-between; background: transparent; padding: 15px 0; border: none; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{
         flex: 1; margin: 0 8px; border-radius: 12px !important; padding: 16px 10px !important; text-align: center;
@@ -189,7 +191,7 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON (CHẾ ĐỘ 4) VÀ LÀM SẠCH COPY THÔ
+# 3. HÀM KẾT XUẤT JSON (CHẾ ĐỘ 4)
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -208,25 +210,15 @@ def render_expander_from_json(items):
 
 def format_in_game_json(data):
     if not data: return ""
-    
     atk_list = data.get("individual_instructions", {}).get("tan_cong", [])
     def_list = data.get("individual_instructions", {}).get("phong_ngu", [])
     
-    if isinstance(atk_list, list):
-        atk_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list])
-    else: atk_str = str(atk_list)
+    atk_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
+    def_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
     
-    if isinstance(def_list, list):
-        def_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list])
-    else: def_str = str(def_list)
-    
-    if not atk_str: atk_str = "Không gán lệnh tấn công."
-    if not def_str: def_str = "Không gán lệnh phòng ngự."
-
     html_out = "<strong>1. Cài đặt Lệnh Cá nhân (Individual Instructions):</strong><br><br>"
     html_out += f"🔹 <strong style='color:#FF4D4D;'>Tấn công:</strong><br><span style='margin-left: 20px; display: block;'>{atk_str}</span><br>"
     html_out += f"🔹 <strong style='color:#4D94FF;'>Phòng ngự:</strong><br><span style='margin-left: 20px; display: block;'>{def_str}</span><br><br>"
-    
     html_out += "<strong>2. Kịch bản Thay người (Mental Level):</strong><br><br>"
     html_out += f"🔹 <strong>Start Game (Cân bằng):</strong> {data.get('k1', '')}<br>"
     html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
@@ -242,15 +234,12 @@ def translate_json_to_markdown(json_23, json_ingame):
                 for item in json_23[tuyen]:
                     md_out += f"- {item.get('vitri', '')} ({item.get('loai', '')}): Style {item.get('style', '')}. Vai trò: {item.get('vaitro', '')}\n"
                 md_out += "\n"
-                
     md_out += "=== CẨM NANG IN-GAME ===\n\n"
     if json_ingame:
         atk_list = json_ingame.get("individual_instructions", {}).get("tan_cong", [])
         def_list = json_ingame.get("individual_instructions", {}).get("phong_ngu", [])
-        
         atk_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
         def_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
-        
         md_out += f"1. Individual Instructions:\n- Tấn công: {atk_str}\n- Phòng ngự: {def_str}\n\n"
         md_out += f"2. Kịch bản Thay người:\n- Mặc định: {json_ingame.get('k1', '')}\n- Nấc Xanh: {json_ingame.get('k2', '')}\n- Nấc Đỏ: {json_ingame.get('k3', '')}"
     return md_out
@@ -267,7 +256,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         hard_rules = """
         [QUY TẮC BẮT BUỘC CHUNG]:
         1. Tuyệt đối không dùng HTML. Không xuất hiện chữ 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' trong nội dung phân tích.
-        2. Tôn trọng Style Cơ bản In-game gốc. Bám sát cơ chế eFootball/eFHUB. 100% sử dụng THUẬT NGỮ TIẾNG ANH cho chỉ số (Speed, Acceleration, Defensive Awareness, Physical Contact...). Không dịch ra tiếng Việt.
+        2. Tôn trọng Style Cơ bản In-game gốc. 100% sử dụng THUẬT NGỮ TIẾNG ANH cho chỉ số. Không dịch ra tiếng Việt.
         """
 
         if "1" in mode:
@@ -286,27 +275,26 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "2" in mode:
             tab1_cmd = """
             1. Thẩm định vai trò cầu thủ trên sân theo đúng Sơ đồ & Triết lý của HLV.
-            2. Nhận diện Slot Booster: Đọc kỹ ảnh xem Thẻ có Booster mặc định nào? Đề xuất gán Booster thứ 2 tối ưu nhất (Ví dụ: Agility +1, Shutting Down +1, Defending +1, Technique +1...) để tối ưu hóa bộ chỉ số.
+            2. Nhận diện Slot Booster: Đọc kỹ ảnh xem Thẻ có Booster mặc định nào? Đề xuất gán Booster thứ 2 tối ưu nhất.
             """
             tab2_cmd = """
-            TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB (TIẾNG ANH 100%):
-            1. Bảng giá nấc PP (Lũy tiến): Nấc 1-4 (tốn 1 PP/nấc), Nấc 5-8 (tốn 2 PP/nấc), Nấc 9-12 (tốn 3 PP/nấc), Nấc 13-16 (tốn 4 PP/nấc).
-            2. Đọc chính xác Tổng PP (Points) và Level Cap trên ảnh. Tính toán chuẩn 100% dung lượng PP (Không thừa, không thiếu 1 điểm).
-            3. [QUAN TRỌNG NHẤT]: TẤT CẢ TÊN CHỈ SỐ PHẢI DÙNG TIẾNG ANH 100% (Ví dụ: Passing, Dexterity, Lower Body Strength, Aerial Strength, Defending, Speed, Acceleration, Finishing, Offensive Awareness...). KHÔNG DỊCH RA TIẾNG VIỆT.
-            4. ĐỌC ĐÚNG THÔNG SỐ TỪ ẢNH eFHUB (Cột xanh lá/đỏ bên phải). AI CHỈ ĐƯỢC GHI RA CON SỐ NHÌN THẤY TRÊN ẢNH, CẤM TỰ TÍNH TOÁN HAY SUY ĐOÁN SỐ LỆCH ĐI.
-            5. [ÉP BUỘC TƯ DUY]: Ở mỗi nhánh PP nâng cấp, BẮT BUỘC phải kèm theo 1 câu "LẬP LUẬN TỐI ƯU" giải thích tại sao lại nâng mốc này mang tính sát thương cao trong Meta game.
+            TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB:
+            1. CẤM TỰ TÍNH TOÁN. Bạn phải đóng vai trò là một MÁY QUÉT OCR. Nhìn vào các cột chỉ số (ATTACKING, DEFENDING, ATHLETICISM). Ghi ra CHÍNH XÁC con số hiển thị tận cùng bên phải của mỗi dòng chỉ số (thường nằm trong ô nền màu xanh lá hoặc đỏ).
+            (Ví dụ: Nhìn ảnh thấy Offensive Awareness 94, Acceleration 97, Speed 96, Finishing 90 -> BẮT BUỘC ghi đúng số 94, 97, 96, 90. Cấm tự ý giảm hay cộng thêm).
+            2. Tính tổng PP tiêu tốn chuẩn 100% dung lượng Level Cap.
+            3. TẤT CẢ TÊN CHỈ SỐ PHẢI DÙNG TIẾNG ANH 100% (Passing, Dexterity, Lower Body Strength, Aerial Strength, Defending, Speed, Acceleration, Finishing, Offensive Awareness...). KHÔNG DỊCH TIẾNG VIỆT.
+            4. [TƯ DUY SA BÀN SÁT THƯƠNG]: BẮT BUỘC ở cuối mỗi nhánh PP nâng cấp, phải kèm 1 câu "LẬP LUẬN TỐI ƯU" siêu sắc bén, giải thích ngắn gọn tại sao mức điểm này tạo ra tính đột biến/sát thương cao nhất cho vai trò của cầu thủ trên sân (Ví dụ: Đâm nách, cắt mặt, xé gió...).
             
             Format bắt buộc:
-            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính Tiếng Anh]: [Chỉ số hiển thị chính xác trên ảnh]. 
-              [LẬP LUẬN TỐI ƯU]: [Giải thích ngắn gọn tư duy Sa bàn sát thương].
+            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính 1]: [Số chuẩn trên ảnh OCR] | [Tên chỉ số chính 2]: [Số chuẩn trên ảnh OCR]. 
+              [LẬP LUẬN TỐI ƯU]: [Giải thích sát thương].
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = """
             1. Gán Lệnh Cá Nhân (Individual Instructions):
             - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
             - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
-            (KHÔNG DÙNG DEEP LINE HOẶC CÁC LỆNH KHÁC).
-            2. Đề xuất Top 5 Skills bổ sung then chốt nhất cho cầu thủ này.
+            2. Đề xuất Top 5 Skills bổ sung then chốt nhất.
             """
             
         elif "3" in mode:
@@ -318,13 +306,11 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự (Viết văn bản thường)."
             tab2_cmd = """
-            QUY HOẠCH ĐỦ 23 CẦU THỦ. KHÔNG ĐƯỢC NÊU TÊN CẦU THỦ NGOÀI ĐỜI. CHỈ GHI VỊ TRÍ, STYLE VÀ VAI TRÒ.
-            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON NHƯ MẪU.
+            QUY HOẠCH ĐỦ 23 CẦU THỦ. CHỈ GHI VỊ TRÍ, STYLE VÀ VAI TRÒ. BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON.
             ```json
             {
               "FW": [
-                {"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Chạy chỗ cắt mặt..."},
-                {"vitri": "CF", "loai": "Dự bị", "style": "Fox in the Box", "vaitro": "Làm tường..."}
+                {"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Chạy chỗ cắt mặt..."}
               ],
               "MF": [
                 {"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Đánh chặn..."}
@@ -337,12 +323,10 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
               ]
             }
             ```
-            (Phải kê khai đủ 23 dòng tương ứng 23 người chia cho 4 mảng trên)
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            CẨM NANG IN-GAME CHIẾN THUẬT.
-            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON DƯỚI ĐÂY.
+            CẨM NANG IN-GAME CHIẾN THUẬT. BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON.
             ```json
             {
               "individual_instructions": {
@@ -358,10 +342,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
               "k3": "Rút [Vị trí] thay [Vị trí tấn công]"
             }
             ```
-            LƯU Ý CỰC KỲ QUAN TRỌNG CHO INDIVIDUAL:
-            - `lenh_duoc_chon` trong `tan_cong` CHỈ ĐƯỢC LÀ "Defensive" HOẶC "Anchoring".
-            - `lenh_duoc_chon` trong `phong_ngu` CHỈ ĐƯỢC LÀ "Tight Marking", "Man Marking", HOẶC "Counter Target".
-            (CẤM TUYỆT ĐỐI dùng Deep Line hay bất kỳ lệnh nào khác).
             """
         else:
             tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
@@ -420,7 +400,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER GIAO DIỆN & LỌC SẠCH VĂN BẢN (CHỐNG LỖI CẤP ĐỘ NHÂN)
+# 5. RENDER GIAO DIỆN & LỌC SẠCH VĂN BẢN
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -442,9 +422,6 @@ if 'raw_report' in st.session_state:
     raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
     
     parts = raw_text.split("===")
-    
-    # Ở chế độ 2, chúng ta chủ động thay thế phần tử thứ 3 (Tab 3) thành cảnh báo
-    # Tránh sử dụng Regex để không xóa nhầm Tab 2
     if mode_selected == "2" and len(parts) > 2:
         parts[2] = "\n\nCẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.\n\n"
         
@@ -453,7 +430,6 @@ if 'raw_report' in st.session_state:
     tab3_c = parts[2].strip() if len(parts) > 2 else ""
     tab4_c = parts[3].strip() if len(parts) > 3 else ""
     
-    # Rà soát lỗi AI "nhả nhầm" câu cảnh báo sang Tab 2
     if mode_selected == "2":
         tab2_c = re.sub(r'CẢNH BÁO TỪ CHỐI.*', '', tab2_c, flags=re.IGNORECASE).strip()
     
@@ -461,7 +437,6 @@ if 'raw_report' in st.session_state:
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab_content(content):
-        # Bộ lọc cực thông minh: Chỉ bắt chính xác thông báo lỗi từ chối, không "giết nhầm" tab 2
         if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
@@ -498,13 +473,6 @@ if 'raw_report' in st.session_state:
             else:
                 st.markdown(format_tab_content("Lỗi truy xuất dữ liệu từ Sa bàn. Vui lòng phân tích lại."), unsafe_allow_html=True)
                 
-            st.markdown(f"""<div class="dns-card" style="margin-top: 10px; padding: 15px;">
-                <div class="dns-footer" style="margin-top: 0; padding-top:0; border:none;">
-                    <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
-                    <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
-                </div>
-            </div>""", unsafe_allow_html=True)
-                
         with t4: 
             if json_data_ingame:
                 st.markdown(format_tab_content(format_in_game_json(json_data_ingame)), unsafe_allow_html=True)
@@ -516,7 +484,6 @@ if 'raw_report' in st.session_state:
              st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
 
     elif mode_selected == "2":
-        # Chế độ 2 chỉ in 3 Tab, Cắt đứt hoàn toàn Tab 3
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & BOOSTER", "🛠️ BẢNG BUILD PP", "🎯 LỆNH IN-GAME & TOP 5 SKILLS"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
@@ -527,7 +494,6 @@ if 'raw_report' in st.session_state:
              st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=300)
              
     else:
-        # Các chế độ cũ 1, 3, 5
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)

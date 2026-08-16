@@ -2,15 +2,17 @@ import streamlit as st
 from PIL import Image
 from google import genai
 from google.genai import types
+from google.genai.errors import APIError
 import gc
 import re
 import datetime
 import json
+import time
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & GIAO DIỆN NỀN TẢNG (HỆ KIM VIP)
+# 1. CẤU HÌNH TRANG & GIAO DIỆN NỀN TẢNG (DNS ARCHITECT)
 # ---------------------------------------------------------
-st.set_page_config(page_title="DN SIM MY LEAGUE | VIP DNS", page_icon="👑", layout="centered")
+st.set_page_config(page_title="DN SIM MY LEAGUE | DNS", page_icon="⚽", layout="centered")
 
 vn_time_now = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
 default_is_daytime = 6 <= vn_time_now.hour < 18
@@ -30,8 +32,8 @@ if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
-    tab_inactive_bg = "#E2E8F0" 
-    tab_inactive_color = "#000000"  # Đen tuyệt đối
+    tab_inactive_bg = "#94A3B8" 
+    tab_inactive_color = "#FFFFFF"  
     watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
@@ -43,7 +45,7 @@ else:
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "#1E222A"
-    tab_inactive_color = "#FFFFFF"  # Trắng tuyệt đối
+    tab_inactive_color = "#FFFFFF"  
     watermark_opacity = "0.08"; watermark_blend = "screen"
     expander_copy_bg = "#1A1D24"
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
@@ -97,7 +99,7 @@ custom_css = f"""
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
     .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; border: 1px solid #F7E08B !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px; }}
     
-    /* GIAO DIỆN TAB SÁNG/TỐI CỰC NÉT */
+    /* CSS TAB CHÍNH */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {{
         color: {tab_inactive_color} !important;
@@ -128,10 +130,10 @@ custom_css = f"""
         z-index: 10;
     }}
     
-    /* SUB-TABS 3D RỘNG RÃI VÀ CÂN XỨNG HƠN */
+    /* CSS SUB-TABS 3D */
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ display: flex; justify-content: space-between; background: transparent; padding: 15px 0; border: none; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{
-        flex: 1; margin: 0 8px; border-radius: 12px !important; padding: 16px 10px !important; text-align: center;
+        flex: 1; margin: 0 6px; border-radius: 12px !important; padding: 14px 8px !important; text-align: center;
         background: {subtab_bg} !important;
         box-shadow: {subtab_shadow} !important;
         border: 1.5px solid rgba(212, 175, 55, 0.3) !important;
@@ -147,10 +149,11 @@ custom_css = f"""
     }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] p {{ color: #121418 !important; }}
 
-    .vip-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; margin-bottom: 20px; }}
-    .vip-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }}
-    .vip-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; color: {text_color} !important; }}
-    .vip-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }}
+    /* Khung kết quả */
+    .dns-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; margin-bottom: 20px; }}
+    .dns-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }}
+    .dns-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; color: {text_color} !important; }}
+    .dns-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }}
     .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; margin-bottom: 12px; color: #FF4D4D !important; font-weight: bold; }}
     
     .dns-expander {{ margin-bottom: 12px; margin-top: 10px; border-radius: 10px; background: {element_bg}; overflow: hidden; box-shadow: {subtab_shadow}; border: 1px solid rgba(212, 175, 55, 0.3); }}
@@ -187,7 +190,7 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON (SÁT THỦ 4.0)
+# 3. HÀM KẾT XUẤT JSON (CHẾ ĐỘ 4) VÀ LÀM SẠCH COPY THÔ
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -200,7 +203,6 @@ def render_expander_from_json(items):
         style = item.get("style", "")
         vaitro = item.get("vaitro", "")
         
-        # UI Tab 2 chỉ lấy Style và Vai trò, Bỏ tên cầu thủ ngoài đời
         content = f"<strong>Phân loại:</strong> {loai}<br><strong>Style đề xuất:</strong> <span style='color:{label_color}; font-weight:800;'>{style}</span><br><strong>Vai trò chiến thuật:</strong> {vaitro}"
         html_out += f'<details class="dns-expander"><summary>{title} ({loai})</summary><div class="expander-content"><p>🔹 {content}</p></div></details>'
     return html_out
@@ -208,7 +210,6 @@ def render_expander_from_json(items):
 def format_in_game_json(data):
     if not data: return ""
     
-    # Lấy và bóc tách dữ liệu mảng Lệnh Cá Nhân (Xử lý an toàn nếu AI viết nhầm)
     atk_list = data.get("individual_instructions", {}).get("tan_cong", [])
     def_list = data.get("individual_instructions", {}).get("phong_ngu", [])
     
@@ -234,7 +235,6 @@ def format_in_game_json(data):
     return html_out
 
 def translate_json_to_markdown(json_23, json_ingame):
-    """Bộ lọc Dịch JSON sang Markdown Sạch sẽ hoàn toàn cho Khung Copy Thô"""
     md_out = "=== QUY HOẠCH 23 CẦU THỦ ===\n\n"
     if json_23:
         for tuyen in ["FW", "MF", "DF", "GK"]:
@@ -257,7 +257,7 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (ÉP JSON CỨNG NGẮC BẢO VỆ 100%)
+# 4. LÕI TƯ DUY AI (CHUẨN TOÁN PP EFHUB, BOOSTER THỨ 2 & CHỐNG RÁC)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -267,15 +267,58 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         
         hard_rules = """
         [QUY TẮC BẮT BUỘC CHUNG]:
-        1. Tuyệt đối không dùng HTML.
-        2. Tôn trọng Style Cơ bản In-game gốc. 
+        1. Tuyệt đối không dùng HTML. Không dùng các từ ngữ như 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' vào nội dung phân tích.
+        2. Tôn trọng Style Cơ bản In-game gốc. Bám sát cơ chế eFootball/eFHUB.
         """
 
-        if "4" in mode:
-            tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự (Viết bằng văn bản thường)."
+        if "1" in mode:
+            tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV. Kết luận rõ: Phù hợp hay Lệch pha. Đánh giá ưu nhược điểm chi tiết."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
+            tab4_cmd = """
+            CẨM NANG IN-GAME:
+            1. Gán Lệnh Cá Nhân (Individual Instructions):
+            - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
+            - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
+            (KHÔNG DÙNG DEEP LINE HOẶC CÁC LỆNH KHÁC).
+            2. 3 kịch bản Cài đặt In-game: Start Game, Tấn công tổng lực, Tử thủ.
+            """
+            
+        elif "2" in mode:
+            tab1_cmd = """
+            1. Thẩm định vai trò cầu thủ trên sân theo đúng Sơ đồ & Triết lý của HLV.
+            2. Nhận diện Slot Booster: Thẻ có Booster mặc định nào? Đề xuất gán Booster thứ 2 tối ưu nhất (Ví dụ: Agility +1, Shutting Down +1, Defending +1, Technique +1...).
+            """
             tab2_cmd = """
-            QUY HOẠCH ĐỦ 23 CẦU THỦ CHO 4 TUYẾN.
-            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON. KHÔNG ĐƯỢC NÊU TÊN CẦU THỦ NGOÀI ĐỜI.
+            TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB:
+            1. Bảng giá nấc PP (Lũy tiến): Nấc 1-4 (tốn 1 PP/nấc), Nấc 5-8 (tốn 2 PP/nấc), Nấc 9-12 (tốn 3 PP/nấc), Nấc 13-16 (tốn 4 PP/nấc).
+            2. Đọc chính xác Tổng PP và Level Cap trên ảnh. Phân bổ đúng 100% dung lượng PP (Không thừa, không thiếu 1 điểm).
+            3. Trình bày rõ ràng từng nhánh: Số nấc nâng -> Tốn bao nhiêu PP -> Chỉ số sau nâng (Bao gồm: Chỉ số gốc + Điểm nấc + Buff HLV + Team Playstyle Buff in-game) để chỉ số đạt các mốc ngọt (85, 88, 90, 95).
+            
+            Format bắt buộc:
+            - **[Tên nhánh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính]: [Chỉ số sau khi ăn full Buff].
+            [LỆNH CẤM THÉP]: KHÔNG SO SÁNH VỚI CHỈ SỐ AUTO. KHÔNG GHI CÂU "CẢNH BÁO DỰ ÁN VIDEO" Ở ĐÂY. CHỈ IN BẢNG PP VÀ KẾT QUẢ.
+            """
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab4_cmd = """
+            1. Gán Lệnh Cá Nhân (Individual Instructions):
+            - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
+            - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
+            (KHÔNG DÙNG DEEP LINE HOẶC CÁC LỆNH KHÁC).
+            2. Đề xuất Top 5 Skills bổ sung then chốt nhất cho cầu thủ này.
+            """
+            
+        elif "3" in mode:
+            tab1_cmd = "Phân tích Sơ đồ Tấn Công và Phòng Ngự."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab4_cmd = "CẢNH BÁO TỪ CHỐI."
+            
+        elif "4" in mode:
+            tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự (Viết văn bản thường)."
+            tab2_cmd = """
+            QUY HOẠCH ĐỦ 23 CẦU THỦ. KHÔNG ĐƯỢC NÊU TÊN CẦU THỦ NGOÀI ĐỜI. CHỈ GHI VỊ TRÍ, STYLE VÀ VAI TRÒ.
+            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON NHƯ MẪU.
             ```json
             {
               "FW": [
@@ -293,12 +336,12 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
               ]
             }
             ```
-            (Phải kê khai đủ 23 phần tử tương ứng 23 người chia cho 4 mảng trên)
+            (Phải kê khai đủ 23 dòng tương ứng 23 người chia cho 4 mảng trên)
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            CẨM NANG IN-GAME.
-            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ JSON. TUYỆT ĐỐI KHÔNG ĐƯỢC CHẾ THÊM LỆNH NGOÀI MENU DƯỚI ĐÂY.
+            CẨM NANG IN-GAME CHIẾN THUẬT.
+            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON DƯỚI ĐÂY.
             ```json
             {
               "individual_instructions": {
@@ -315,23 +358,15 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             }
             ```
             LƯU Ý CỰC KỲ QUAN TRỌNG CHO INDIVIDUAL:
-            - `lenh_duoc_chon` trong `tan_cong` CHỈ ĐƯỢC PHÉP LÀ "Defensive" HOẶC "Anchoring".
-            - `lenh_duoc_chon` trong `phong_ngu` CHỈ ĐƯỢC PHÉP LÀ "Tight Marking", "Man Marking", HOẶC "Counter Target".
-            - Tối đa chỉ có 2 slot cho tấn công và 2 slot cho phòng ngự.
+            - `lenh_duoc_chon` trong `tan_cong` CHỈ ĐƯỢC LÀ "Defensive" HOẶC "Anchoring".
+            - `lenh_duoc_chon` trong `phong_ngu` CHỈ ĐƯỢC LÀ "Tight Marking", "Man Marking", HOẶC "Counter Target".
             (CẤM TUYỆT ĐỐI dùng Deep Line hay bất kỳ lệnh nào khác).
             """
         else:
-            tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV."
-            tab2_cmd = "TRA CỨU BẢNG PP: Cấp 4: 4PP... Tính 100% dung lượng thẻ."
-            tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
-            tab4_cmd = "3 kịch bản Cài đặt In-game. Đề xuất Top 5 Skills bổ sung."
-            if "3" in mode:
-                tab1_cmd = "Phân tích Sơ đồ Tấn Công và Phòng Ngự."
-                tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI."
-                tab4_cmd = "CẢNH BÁO TỪ CHỐI."
-            if "5" in mode:
-                tab1_cmd, tab2_cmd, tab4_cmd = "CẢNH BÁO", "CẢNH BÁO", "CẢNH BÁO"
-                tab3_cmd = "SO SÁNH AUTO VS MANUAL DNS. Lập luận phân tích [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN]."
+            tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab3_cmd = "SO SÁNH AUTO VS MANUAL DNS. Lập luận phân tích [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN]."
+            tab4_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
 
         system_instruction = f"""
         {hard_rules}
@@ -352,15 +387,40 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
-        
         contents = [context_prompt] + img_list
-        response = client.models.generate_content(model='gemini-3.6-flash', contents=contents, config=config)
-        return response.text
+        
+        # Khóa cứng Model theo lệnh Boss yêu cầu
+        candidate_models = ['gemini-3.6-flash']
+        
+        last_error = ""
+        for model_name in candidate_models:
+            for attempt in range(2):
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=contents,
+                        config=config
+                    )
+                    if response and response.text:
+                        return response.text
+                except APIError as api_err:
+                    last_error = str(api_err)
+                    if "503" in last_error or "429" in last_error:
+                        time.sleep(1.5)
+                        continue
+                    else:
+                        break
+                except Exception as e:
+                    last_error = str(e)
+                    time.sleep(1.0)
+                    continue
+
+        return f"[LỖI HỆ THỐNG]: Server Google quá tải tạm thời ({last_error}). Vui lòng bấm 'BẮT ĐẦU PHÂN TÍCH' lại sau vài giây!"
     except Exception as e:
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER GIAO DIỆN & BÓC TÁCH JSON BẢO MẬT
+# 5. RENDER GIAO DIỆN & BÓC TÁCH KẾT QUẢ
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -380,6 +440,9 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
 if 'raw_report' in st.session_state:
     mode_selected = analysis_mode[0]
     raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
+    
+    # Cắt rác thô sơ do AI bịa ra ở cuối Tab 2
+    raw_text = raw_text.replace("CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO", "").replace("CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO", "")
     parts = raw_text.split("===")
     
     tab1_c = parts[0].strip() if len(parts) > 0 else ""
@@ -394,10 +457,10 @@ if 'raw_report' in st.session_state:
         if "CẢNH BÁO" in content:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
-        return f"""<div class="vip-card">
-            <img src="{logo_url}" class="vip-logo-3d">
-            <div class="vip-text">{html_content}</div>
-            <div class="vip-footer">
+        return f"""<div class="dns-card">
+            <img src="{logo_url}" class="dns-logo-3d">
+            <div class="dns-text">{html_content}</div>
+            <div class="dns-footer">
                 <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
                 <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
             </div>
@@ -427,8 +490,8 @@ if 'raw_report' in st.session_state:
             else:
                 st.markdown(format_tab_content("Lỗi truy xuất dữ liệu từ Sa bàn. Vui lòng phân tích lại."), unsafe_allow_html=True)
                 
-            st.markdown(f"""<div class="vip-card" style="margin-top: 10px; padding: 15px;">
-                <div class="vip-footer" style="margin-top: 0; padding-top:0; border:none;">
+            st.markdown(f"""<div class="dns-card" style="margin-top: 10px; padding: 15px;">
+                <div class="dns-footer" style="margin-top: 0; padding-top:0; border:none;">
                     <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
                     <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
                 </div>
@@ -445,10 +508,14 @@ if 'raw_report' in st.session_state:
              st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
 
     else:
-        # Các chế độ cũ giữ nguyên
+        # Các chế độ cũ (1, 2, 3, 5)
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+        # Diệt triệt để văn bản thừa trong Copy thô
+        clean_raw = raw_text.replace("===", "\n\n")
+        clean_raw = re.sub(r'1\.\s*Bảng so sánh thông số:.*?(?=2\. Nhận xét|$)', '', clean_raw, flags=re.DOTALL)
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             st.text_area("Văn bản gốc:", value=raw_text.replace("===", "\n\n"), height=250)
+             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=250)

@@ -361,3 +361,177 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
               "k2": "Rút [Vị trí] thay [Vị trí phòng ngự]",
               "k3": "Rút [Vị trí] thay [Vị trí tấn công]"
             }
+            ```
+            LƯU Ý CỰC KỲ QUAN TRỌNG CHO INDIVIDUAL:
+            - `lenh_duoc_chon` trong `tan_cong` CHỈ ĐƯỢC LÀ "Defensive" HOẶC "Anchoring".
+            - `lenh_duoc_chon` trong `phong_ngu` CHỈ ĐƯỢC LÀ "Tight Marking", "Man Marking", HOẶC "Counter Target".
+            (CẤM TUYỆT ĐỐI dùng Deep Line hay bất kỳ lệnh nào khác).
+            """
+        else:
+            tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab3_cmd = "SO SÁNH AUTO VS MANUAL DNS. Lập luận phân tích [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN]."
+            tab4_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+
+        system_instruction = f"""
+        {hard_rules}
+        CHIA BÁO CÁO THÀNH 4 PHẦN NGĂN CÁCH NHAU BỞI DẤU "===" NẰM ĐỘC LẬP TRÊN 1 DÒNG.
+
+        PHẦN 1: THẨM ĐỊNH TƯƠNG THÍCH & TRIẾT LÝ
+        {tab1_cmd}
+        ===
+        PHẦN 2: PHÂN BỔ PP & QUY HOẠCH
+        {tab2_cmd}
+        ===
+        PHẦN 3: SO SÁNH AUTO VS THỦ CÔNG & BUFF HLV
+        {tab3_cmd}
+        ===
+        PHẦN 4: CẨM NANG IN-GAME
+        {tab4_cmd}
+        """
+        
+        config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
+        context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
+        contents = [context_prompt] + img_list
+        
+        candidate_models = ['gemini-3.6-flash']
+        
+        last_error = ""
+        for model_name in candidate_models:
+            for attempt in range(2):
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=contents,
+                        config=config
+                    )
+                    if response and response.text:
+                        return response.text
+                except APIError as api_err:
+                    last_error = str(api_err)
+                    if "503" in last_error or "429" in last_error:
+                        time.sleep(1.5)
+                        continue
+                    else:
+                        break
+                except Exception as e:
+                    last_error = str(e)
+                    time.sleep(1.0)
+                    continue
+
+        return f"[LỖI HỆ THỐNG]: Server Google quá tải tạm thời ({last_error}). Vui lòng bấm 'BẮT ĐẦU PHÂN TÍCH' lại sau vài giây!"
+    except Exception as e:
+        return f"[LỖI HỆ THỐNG]: {str(e)}"
+
+# ---------------------------------------------------------
+# 5. RENDER GIAO DIỆN & LỌC SẠCH VĂN BẢN (CHỐNG LỖI CẤP ĐỘ NHÂN)
+# ---------------------------------------------------------
+if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
+    if not uploaded_players and not uploaded_managers: 
+        st.error("Vui lòng tải ít nhất 1 ảnh Cầu thủ hoặc HLV!")
+    else:
+        with st.spinner("Đang trích xuất Báo cáo Sa bàn..."):
+            images_to_send = []
+            if uploaded_players:
+                for f in uploaded_players: images_to_send.append(Image.open(f).copy())
+            if uploaded_managers:
+                for f in uploaded_managers: images_to_send.append(Image.open(f).copy())
+                
+            st.session_state['raw_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, analysis_mode)
+            st.session_state['report_time'] = vn_time_now.strftime("%d/%m/%Y | %H:%M:%S")
+            images_to_send.clear(); gc.collect()
+
+if 'raw_report' in st.session_state:
+    mode_selected = analysis_mode[0]
+    raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
+    
+    # Python lọc siêu tốc: Cắt đứt hoàn toàn Tab 3 nếu ở Chế độ 2
+    if mode_selected == "2":
+        raw_text = re.sub(r'===.*?PHẦN 3:.*?===', '===\n\nCẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO.\n\n===', raw_text, flags=re.IGNORECASE | re.DOTALL)
+    
+    parts = raw_text.split("===")
+    
+    tab1_c = parts[0].strip() if len(parts) > 0 else ""
+    tab2_c = parts[1].strip() if len(parts) > 1 else ""
+    tab3_c = parts[2].strip() if len(parts) > 2 else ""
+    tab4_c = parts[3].strip() if len(parts) > 3 else ""
+    
+    report_time = st.session_state.get('report_time', vn_time_now.strftime("%d/%m/%Y | %H:%M:%S"))
+    footer_text_color = "#64748B" if is_daytime else "#94A3B8"
+    
+    def format_tab_content(content):
+        # Bộ lọc cực thông minh: Chỉ bắt chính xác thông báo lỗi từ chối, không "giết nhầm" tab 2
+        if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
+            return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
+        html_content = content.replace('\n', '<br>')
+        return f"""<div class="dns-card">
+            <img src="{logo_url}" class="dns-logo-3d">
+            <div class="dns-text">{html_content}</div>
+            <div class="dns-footer">
+                <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
+                <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+            </div>
+        </div>"""
+
+    def extract_json(text):
+        try:
+            json_str = re.search(r'\{.*\}', text, re.DOTALL).group()
+            return json.loads(json_str)
+        except:
+            return None
+
+    if mode_selected == "4":
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ QUY HOẠCH 23 CẦU THỦ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        
+        json_data_23 = extract_json(tab2_c)
+        json_data_ingame = extract_json(tab4_c)
+        
+        with t2: 
+            if json_data_23:
+                s1, s2, s3, s4 = st.tabs(["⚽ FW", "🎯 MF", "🛡️ DF", "🧤 GK"])
+                with s1: st.markdown(render_expander_from_json(json_data_23.get("FW", [])), unsafe_allow_html=True)
+                with s2: st.markdown(render_expander_from_json(json_data_23.get("MF", [])), unsafe_allow_html=True)
+                with s3: st.markdown(render_expander_from_json(json_data_23.get("DF", [])), unsafe_allow_html=True)
+                with s4: st.markdown(render_expander_from_json(json_data_23.get("GK", [])), unsafe_allow_html=True)
+            else:
+                st.markdown(format_tab_content("Lỗi truy xuất dữ liệu từ Sa bàn. Vui lòng phân tích lại."), unsafe_allow_html=True)
+                
+            st.markdown(f"""<div class="dns-card" style="margin-top: 10px; padding: 15px;">
+                <div class="dns-footer" style="margin-top: 0; padding-top:0; border:none;">
+                    <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
+                    <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+                </div>
+            </div>""", unsafe_allow_html=True)
+                
+        with t4: 
+            if json_data_ingame:
+                st.markdown(format_tab_content(format_in_game_json(json_data_ingame)), unsafe_allow_html=True)
+            else:
+                st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+                
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             markdown_sach = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
+             st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
+
+    elif mode_selected == "2":
+        # Chế độ 2 chỉ in 3 Tab, Cắt đứt hoàn toàn Tab 3
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & BOOSTER", "🛠️ BẢNG BUILD PP", "🎯 LỆNH IN-GAME & TOP 5 SKILLS"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+        clean_raw = f"{tab1_c}\n\n{tab2_c}\n\n{tab4_c}"
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=300)
+             
+    else:
+        # Các chế độ cũ 1, 3, 5
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+        clean_raw = raw_text.replace("===", "\n\n")
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=250)

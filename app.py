@@ -5,6 +5,7 @@ from google.genai import types
 import gc
 import re
 import datetime
+import json
 
 # ---------------------------------------------------------
 # 1. CẤU HÌNH TRANG & GIAO DIỆN NỀN TẢNG (HỆ KIM VIP)
@@ -29,8 +30,8 @@ if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
-    tab_inactive_bg = "linear-gradient(145deg, #E2E8F0, #CBD5E1)" 
-    tab_inactive_color = "#000000"  
+    tab_inactive_bg = "#E2E8F0" 
+    tab_inactive_color = "#000000"  # Đen tuyệt đối
     watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
@@ -41,8 +42,8 @@ else:
     app_bg = "#1E222A"; element_bg = "#252A34"; text_color = "#F1F5F9"
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
-    tab_inactive_bg = "linear-gradient(145deg, #252A34, #1E222A)"
-    tab_inactive_color = "#FFFFFF"  
+    tab_inactive_bg = "#1E222A"
+    tab_inactive_color = "#FFFFFF"  # Trắng tuyệt đối
     watermark_opacity = "0.08"; watermark_blend = "screen"
     expander_copy_bg = "#1A1D24"
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
@@ -96,12 +97,12 @@ custom_css = f"""
     [data-testid="stUploadedFile"] div, [data-testid="stUploadedFile"] span {{ color: #121418 !important; font-weight: bold !important; }}
     .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058 0%, #B8860B 100%) !important; color: #121418 !important; border: 1px solid #F7E08B !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); margin-top: 15px; }}
     
+    /* GIAO DIỆN TAB SÁNG/TỐI CỰC NÉT */
     .stTabs [data-baseweb="tab-list"] {{ gap: 12px; padding-bottom: 5px; }}
     button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {{
         color: {tab_inactive_color} !important;
         font-weight: 900 !important;
         opacity: 1 !important;
-        transition: all 0.3s ease;
     }}
     button[data-baseweb="tab"]:hover p, button[data-baseweb="tab"]:hover span {{
         color: {label_color} !important;
@@ -110,8 +111,8 @@ custom_css = f"""
         color: #121418 !important;
     }}
     .stTabs [data-baseweb="tab"] {{
-        background: {tab_inactive_bg} !important;
-        border: 1.5px solid {border_color} !important;
+        background-color: {tab_inactive_bg} !important;
+        border: 2px solid rgba(212, 175, 55, 0.6) !important;
         border-bottom: none !important;
         border-radius: 14px 14px 0px 0px !important;
         padding: 12px 18px !important;
@@ -120,19 +121,20 @@ custom_css = f"""
     }}
     .stTabs [aria-selected="true"] {{
         background: linear-gradient(145deg, #E5C058, #C89B2B) !important;
-        border: 1.5px solid #F7E08B !important;
+        border: 2px solid #F7E08B !important;
         border-bottom: none !important;
         transform: translateY(-6px);
         box-shadow: 0px -6px 15px rgba(200, 155, 43, 0.4) !important;
         z-index: 10;
     }}
     
+    /* SUB-TABS 3D */
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ display: flex; justify-content: space-between; background: transparent; padding: 15px 0; border: none; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{
         flex: 1; margin: 0 6px; border-radius: 12px !important; padding: 14px 8px !important; text-align: center;
         background: {subtab_bg} !important;
         box-shadow: {subtab_shadow} !important;
-        border: 1.5px solid rgba(212, 175, 55, 0.5) !important;
+        border: 1.5px solid rgba(212, 175, 55, 0.3) !important;
         opacity: 1 !important;
     }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] p {{
@@ -185,74 +187,38 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM XỬ LÝ VÀ BÓC TÁCH (SÁT THỦ 2.0)
+# 3. HÀM KẾT XUẤT JSON (SÁT THỦ 3.0)
 # ---------------------------------------------------------
-def render_expander_from_list(items):
-    if not items: 
-        return "<p style='color: #64748B; font-style: italic; text-align: center; padding: 20px;'>Không có vị trí phù hợp.</p>"
+def render_expander_from_json(items):
+    if not items or len(items) == 0: 
+        return "<p style='color: #64748B; font-style: italic; text-align: center; padding: 20px;'>Hệ thống đang tải dữ liệu...</p>"
     
     html_out = ""
     for item in items:
-        # Bắt nội dung linh hoạt hơn dù AI trả về kiểu gì
-        item_clean = item.strip().replace('*', '')
-        if not item_clean: continue
+        # Chuẩn hóa từ JSON
+        title = item.get("vitri", "Vị trí")
+        chinh = item.get("dachinh", "")
+        dubi = item.get("dubi", "")
+        vaitro = item.get("vaitro", "")
         
-        parts = item_clean.split(':')
-        if len(parts) > 1:
-            title = parts[0].strip()
-            content = ":".join(parts[1:]).strip()
-        else:
-            title = "Phân tích vị trí"
-            content = item_clean
-            
-        if len(content) < 5: continue
-        
+        content = f"<strong>Đá chính:</strong> {chinh}<br><strong>Dự bị:</strong> {dubi}<br><br><strong>Vai trò:</strong> {vaitro}"
         html_out += f'<details class="dns-expander"><summary>{title}</summary><div class="expander-content"><p>🔹 {content}</p></div></details>'
     return html_out
 
-def parse_and_group_positions(text_block):
-    """Quét MỌI DÒNG, hễ thấy Tên Vị Trí là bốc vào Rổ"""
-    fw_list, mf_list, df_list, gk_list = [], [], [], []
-    intro_text = ""
+def format_in_game_json(data):
+    if not data: return ""
+    html_out = "<strong>1. Cài đặt Cá nhân (Individual Instructions):</strong><br><br>"
+    html_out += f"🔹 <strong>Tấn công:</strong> {data.get('atk', '')}<br>"
+    html_out += f"🔹 <strong>Phòng ngự:</strong> {data.get('def', '')}<br><br>"
     
-    text_block = text_block.replace('*', '')
-    lines = text_block.split('\n')
-    
-    for line in lines:
-        line_clean = line.strip()
-        if not line_clean or line_clean.startswith('#'): continue
-        if line_clean in ['-', '--', '---', '=']: continue
-        
-        # Nhận diện vị trí bằng mọi giá (Bất chấp AI nhóm chữ kiểu gì)
-        upper_line = line_clean.upper()
-        if any(x in upper_line for x in ['CF', 'ST', 'SS', 'LWF', 'RWF', 'RW', 'LW', 'TIỀN ĐẠO']):
-            fw_list.append(line_clean)
-        elif any(x in upper_line for x in ['AMF', 'CMF', 'DMF', 'LMF', 'RMF', 'RM', 'LM', 'TIỀN VỆ']):
-            mf_list.append(line_clean)
-        elif any(x in upper_line for x in ['CB', 'LB', 'RB', 'LWB', 'RWB', 'HẬU VỆ', 'TRUNG VỆ']):
-            df_list.append(line_clean)
-        elif any(x in upper_line for x in ['GK', 'THỦ MÔN']):
-            gk_list.append(line_clean)
-        else:
-            intro_text += line_clean + "<br>"
-                
-    return intro_text.strip(), fw_list, mf_list, df_list, gk_list
-
-def clean_text_for_copy(raw_text, mode):
-    if mode.startswith("4"):
-        parts = raw_text.split("===")
-        if len(parts) >= 4:
-            raw_text = f"{parts[0]}\n\n{parts[1]}\n\n{parts[3]}"
-    
-    text = raw_text.replace("===", "\n\n").replace("⛔ ", "").replace("*", "")
-    text = re.sub(r'\(?Cấp \d+.*?\d*PP\)?', '', text, flags=re.IGNORECASE) 
-    text = re.sub(r'\d+\.\s*Đề\s*xuất.*', '', text, flags=re.IGNORECASE)
-    text = text.replace("CẢNH BÁO TỪ CHỐI.", "")
-    text = re.sub(r'\n{3,}', '\n\n', text)
-    return text.strip()
+    html_out += "<strong>2. Kịch bản Thay người (Mental Level):</strong><br><br>"
+    html_out += f"🔹 <strong>Cân bằng:</strong> {data.get('k1', '')}<br>"
+    html_out += f"🔹 <strong>Bảo toàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
+    html_out += f"🔹 <strong>Tấn công (Nấc Đỏ):</strong> {data.get('k3', '')}"
+    return html_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI CHIẾN THUẬT (CHUẨN FORM CỨNG NGẮC)
+# 4. LÕI TƯ DUY AI (ÉP JSON CỨNG NGẮC 100%)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -261,58 +227,60 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         client = genai.Client(api_key=api_key)
         
         hard_rules = """
-        [QUY TẮC BẮT BUỘC]:
-        1. KHÔNG DÙNG DẤU SAO (*). KHÔNG DÙNG HTML. Trả văn bản trơn hoàn toàn.
-        2. Tôn trọng Style Cơ bản In-game gốc (Goal Poacher, Build Up, Anchor Man...). 
+        [QUY TẮC BẮT BUỘC CHUNG]:
+        1. Tuyệt đối không dùng HTML.
+        2. Tôn trọng Style Cơ bản In-game gốc. 
         """
 
-        if "1" in mode:
-            tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV."
-            tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
-            tab3_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
-            tab4_cmd = "3 kịch bản Cài đặt In-game: Start Game, Tấn công tổng lực, Tử thủ."
-        elif "2" in mode:
-            tab1_cmd = "Thẩm định chỉ số, Style Đỏ/Xanh."
-            tab2_cmd = "TRA CỨU BẢNG PP: Cấp 4: 4PP... Tính 100% dung lượng thẻ."
-            tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
-            tab4_cmd = "3 kịch bản Cài đặt In-game. Đề xuất Top 5 Skills bổ sung."
-        elif "3" in mode:
-            tab1_cmd = "Phân tích Sơ đồ Tấn Công và Phòng Ngự."
-            tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI."
-            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "CẢNH BÁO TỪ CHỐI."
-        elif "4" in mode:
-            tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự."
+        if "4" in mode:
+            tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự (Viết văn bản thường)."
             tab2_cmd = """
-            QUY HOẠCH ĐỦ 23 VỊ TRÍ (11 ĐÁ CHÍNH + 12 DỰ BỊ) DỰA TRÊN SƠ ĐỒ Ở PHẦN 1.
-            [LỆNH CẤM THÉP]: CẤM VIẾT CHỮ 'PP', 'CẤP'. CẤM CHIA NHÓM VỚI DẤU GẠCH NGANG HAY NGOẶC KÉP.
-            BẮT BUỘC viết liệt kê liên tục 23 dòng cho 23 cầu thủ theo chuẩn:
-            
-            CF: Đá chính: [Tên Cầu thủ] ([Style Cơ bản In-game]). Vai trò: [Giải thích nhiệm vụ].
-            CF: Dự bị: [Tên Cầu thủ] ([Style Cơ bản In-game]). Vai trò: [Giải thích nhiệm vụ].
-            CB: Đá chính: [Tên Cầu thủ] ([Style Cơ bản In-game]). Vai trò: [Giải thích nhiệm vụ].
-            DMF: Đá chính: [Tên Cầu thủ] ([Style Cơ bản In-game]). Vai trò: [Giải thích nhiệm vụ].
+            QUY HOẠCH ĐỦ 23 CẦU THỦ THỰC TẾ.
+            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON (Không viết thêm bất kỳ chữ nào khác ngoài JSON).
+            ```json
+            {
+              "FW": [
+                {"vitri": "CF", "dachinh": "Tên Cầu Thủ (Style Cơ bản)", "dubi": "Tên Cầu Thủ (Style Cơ bản)", "vaitro": "Làm tường..."}
+              ],
+              "MF": [
+                {"vitri": "DMF", "dachinh": "Tên Cầu Thủ (Style Cơ bản)", "dubi": "Tên Cầu Thủ (Style Cơ bản)", "vaitro": "Đánh chặn..."}
+              ],
+              "DF": [
+                {"vitri": "CB", "dachinh": "Tên Cầu Thủ (Style Cơ bản)", "dubi": "Tên Cầu Thủ (Style Cơ bản)", "vaitro": "Bọc lót..."}
+              ],
+              "GK": [
+                {"vitri": "GK", "dachinh": "Tên Cầu Thủ (Style Cơ bản)", "dubi": "Tên Cầu Thủ (Style Cơ bản)", "vaitro": "Cản phá..."}
+              ]
+            }
+            ```
+            (Phải kê khai đủ 23 người chia cho 4 mảng trên)
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            CẨM NANG IN-GAME VÀ KỊCH BẢN THAY NGƯỜI CHIẾN THUẬT:
-            
-            1. Gán Lệnh Cá Nhân (Individual Instructions):
-            Tấn công (Chọn 1 hoặc 2: Defensive, Anchoring): Gán cho [Tên vị trí].
-            Phòng ngự (Chọn 1 hoặc 2: Tight Marking, Man Marking, Counter Target): Gán cho [Tên vị trí].
-            
-            2. Kịch Bản Thay Người & Chỉnh Nấc Mental Level:
-            - Start Game (Cân bằng): Đội hình xuất phát.
-            - Đang dẫn bàn (Hạ 1/2 nấc Xanh): Rút [Vị trí] ra, thay [Vị trí phòng ngự] vào.
-            - Bị dẫn bàn (Tăng 1/2 nấc Đỏ): Rút [Vị trí] ra, thay [Vị trí tấn công] vào.
-            
-            [LỆNH CẤM THÉP]: KHÔNG VIẾT MỤC KỸ NĂNG HAY SKILLS VÀO ĐÂY.
+            CẨM NANG IN-GAME.
+            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ JSON. KHÔNG ĐỀ XUẤT SKILLS.
+            ```json
+            {
+              "atk": "Gán Defensive cho [Vị trí]",
+              "def": "Gán Tight Marking cho [Vị trí]",
+              "k1": "Đội hình xuất phát...",
+              "k2": "Rút [Ai] thay [Ai phòng ngự]",
+              "k3": "Rút [Ai] thay [Ai tấn công]"
+            }
+            ```
             """
         else:
-            tab1_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
-            tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
-            tab3_cmd = "SO SÁNH AUTO VS MANUAL DNS. Lập luận phân tích [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN]."
-            tab4_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV."
+            tab2_cmd = "TRA CỨU BẢNG PP: Cấp 4: 4PP... Tính 100% dung lượng thẻ."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
+            tab4_cmd = "3 kịch bản Cài đặt In-game. Đề xuất Top 5 Skills bổ sung."
+            if "3" in mode:
+                tab1_cmd = "Phân tích Sơ đồ Tấn Công và Phòng Ngự."
+                tab2_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO BUILD 23 NGƯỜI."
+                tab4_cmd = "CẢNH BÁO TỪ CHỐI."
+            if "5" in mode:
+                tab1_cmd, tab2_cmd, tab4_cmd = "CẢNH BÁO", "CẢNH BÁO", "CẢNH BÁO"
+                tab3_cmd = "SO SÁNH AUTO VS MANUAL DNS. Lập luận phân tích [CHÊNH LỆCH CHỈ SỐ], [LẬP LUẬN CHUYÊN MÔN]."
 
         system_instruction = f"""
         {hard_rules}
@@ -341,7 +309,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER GIAO DIỆN & LỌC PYTHON
+# 5. RENDER GIAO DIỆN & BÓC TÁCH JSON
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -360,17 +328,9 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
 
 if 'raw_report' in st.session_state:
     mode_selected = analysis_mode[0]
+    raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
+    parts = raw_text.split("===")
     
-    # [TRẢM SẠCH] CÁC MỤC AI CỐ RẶN RA Ở CHẾ ĐỘ 4
-    if mode_selected == "4":
-        lines_4 = st.session_state['raw_report'].split("===")
-        if len(lines_4) > 3:
-            # Chém đứt đoạn nếu thấy chữ Skills hoặc Top 5
-            clean_tab4 = re.split(r'(?i)(Đề\s*xuất\s*Top|Skills|Kỹ\s*năng)', lines_4[3])[0]
-            lines_4[3] = clean_tab4.strip()
-            st.session_state['raw_report'] = "===".join(lines_4)
-            
-    parts = st.session_state['raw_report'].split("===")
     tab1_c = parts[0].strip() if len(parts) > 0 else ""
     tab2_c = parts[1].strip() if len(parts) > 1 else ""
     tab3_c = parts[2].strip() if len(parts) > 2 else ""
@@ -380,11 +340,9 @@ if 'raw_report' in st.session_state:
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab_content(content):
-        if "CẢNH BÁO TỪ CHỐI" in content:
+        if "CẢNH BÁO" in content:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
-        
-        html_content = content.replace('*', '').replace('\n', '<br>')
-        
+        html_content = content.replace('\n', '<br>')
         return f"""<div class="vip-card">
             <img src="{logo_url}" class="vip-logo-3d">
             <div class="vip-text">{html_content}</div>
@@ -394,57 +352,50 @@ if 'raw_report' in st.session_state:
             </div>
         </div>"""
 
-    if mode_selected == "1":
-        t1, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
-        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
-        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
-        
-    elif mode_selected == "2":
-        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
-        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
-        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
-        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
-        
-    elif mode_selected == "3":
-        t1 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ"])[0]
-        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
-        
-    elif mode_selected == "4":
+    def extract_json(text):
+        try:
+            json_str = re.search(r'\{.*\}', text, re.DOTALL).group()
+            return json.loads(json_str)
+        except:
+            return None
+
+    if mode_selected == "4":
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ QUY HOẠCH 23 CẦU THỦ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         
         with t2: 
-            intro_text, fw_list, mf_list, df_list, gk_list = parse_and_group_positions(tab2_c)
-            
-            if fw_list or mf_list or df_list or gk_list:
-                if intro_text and len(intro_text) > 10:
-                    st.markdown(f"""<div class="vip-card" style="margin-bottom: 10px; padding-bottom: 15px;">
-                        <img src="{logo_url}" class="vip-logo-3d">
-                        <div class="vip-text">{intro_text.replace('*', '')}</div>
-                    </div>""", unsafe_allow_html=True)
-                
+            json_data = extract_json(tab2_c)
+            if json_data:
                 s1, s2, s3, s4 = st.tabs(["⚽ FW", "🎯 MF", "🛡️ DF", "🧤 GK"])
-                with s1: st.markdown(render_expander_from_list(fw_list), unsafe_allow_html=True)
-                with s2: st.markdown(render_expander_from_list(mf_list), unsafe_allow_html=True)
-                with s3: st.markdown(render_expander_from_list(df_list), unsafe_allow_html=True)
-                with s4: st.markdown(render_expander_from_list(gk_list), unsafe_allow_html=True)
-                
-                st.markdown(f"""<div class="vip-card" style="margin-top: 10px; padding: 15px;">
-                    <div class="vip-footer" style="margin-top: 0; padding-top:0; border:none;">
-                        <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
-                        <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
-                    </div>
-                </div>""", unsafe_allow_html=True)
+                with s1: st.markdown(render_expander_from_json(json_data.get("FW", [])), unsafe_allow_html=True)
+                with s2: st.markdown(render_expander_from_json(json_data.get("MF", [])), unsafe_allow_html=True)
+                with s3: st.markdown(render_expander_from_json(json_data.get("DF", [])), unsafe_allow_html=True)
+                with s4: st.markdown(render_expander_from_json(json_data.get("GK", [])), unsafe_allow_html=True)
             else:
-                st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+                st.markdown(format_tab_content("Lỗi xuất dữ liệu. Vui lòng phân tích lại."), unsafe_allow_html=True)
+                
+            st.markdown(f"""<div class="vip-card" style="margin-top: 10px; padding: 15px;">
+                <div class="vip-footer" style="margin-top: 0; padding-top:0; border:none;">
+                    <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
+                    <span style="color: {label_color}; font-weight: 900;">DNS TACTICAL ARCHITECT <br> © 2026 DN SIM MY LEAGUE. All rights reserved.</span>
+                </div>
+            </div>""", unsafe_allow_html=True)
                 
         with t4: 
-            st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
-        
-    elif mode_selected == "5":
-        t3 = st.tabs(["⚖️ SO SÁNH AUTO & THỦ CÔNG"])[0]
-        with t3: st.markdown(format_tab_content(tab3_c), unsafe_allow_html=True)
-    
-    with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-        clean_raw = clean_text_for_copy(st.session_state['raw_report'], mode_selected)
-        st.text_area("Văn bản gốc (Markdown sạch):", value=clean_raw, height=250)
+            json_in_game = extract_json(tab4_c)
+            if json_in_game:
+                st.markdown(format_tab_content(format_in_game_json(json_in_game)), unsafe_allow_html=True)
+            else:
+                st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+                
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc (JSON Sạch):", value=f"{tab1_c}\n\n[QUY HOẠCH]\n{json.dumps(json_data, ensure_ascii=False, indent=2)}\n\n[IN-GAME]\n{json.dumps(json_in_game, ensure_ascii=False, indent=2)}", height=250)
+
+    else:
+        # Các chế độ cũ giữ nguyên
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=raw_text.replace("===", "\n\n"), height=250)

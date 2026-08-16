@@ -189,7 +189,7 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON (CHẾ ĐỘ 4) VÀ LÀM SẠCH COPY THÔ
+# 3. HÀM KẾT XUẤT JSON VÀ MD SẠCH
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -256,7 +256,7 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (CHUẨN TOÁN PP EFHUB, BOOSTER THỨ 2 & CHỐNG RÁC)
+# 4. LÕI TƯ DUY AI (TỐI ƯU HÓA TƯ DUY SA BÀN CHẾ ĐỘ 2)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -266,8 +266,8 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         
         hard_rules = """
         [QUY TẮC BẮT BUỘC CHUNG]:
-        1. Tuyệt đối không dùng HTML. Không xuất hiện chữ 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' trong nội dung phân tích.
-        2. Tôn trọng Style Cơ bản In-game gốc. Bám sát cơ chế eFootball/eFHUB. 100% sử dụng THUẬT NGỮ TIẾNG ANH cho chỉ số (Speed, Acceleration, Defensive Awareness, Physical Contact...). Không dịch ra tiếng Việt.
+        1. Tuyệt đối không dùng HTML. KHÔNG ĐƯỢC IN RA CÂU 'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO' VÀO KẾT QUẢ.
+        2. Tôn trọng Style Cơ bản In-game gốc. Bám sát cơ chế eFootball/eFHUB. 
         """
 
         if "1" in mode:
@@ -279,7 +279,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             1. Gán Lệnh Cá Nhân (Individual Instructions):
             - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
             - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
-            (KHÔNG DÙNG DEEP LINE HOẶC CÁC LỆNH KHÁC).
             2. 3 kịch bản Cài đặt In-game: Start Game, Tấn công tổng lực, Tử thủ.
             """
             
@@ -291,13 +290,14 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             tab2_cmd = """
             TÍNH TOÁN PHÂN BỔ ĐIỂM TIẾN TRÌNH (PP) CHUẨN XÁC EFHUB (TIẾNG ANH 100%):
             1. Bảng giá nấc PP (Lũy tiến): Nấc 1-4 (tốn 1 PP/nấc), Nấc 5-8 (tốn 2 PP/nấc), Nấc 9-12 (tốn 3 PP/nấc), Nấc 13-16 (tốn 4 PP/nấc).
-            2. Đọc chính xác Tổng PP (Points) và Level Cap trên ảnh. Tính toán chuẩn 100% dung lượng PP (Không thừa, không thiếu 1 điểm).
-            3. ĐỌC ĐÚNG THÔNG SỐ TỪ ẢNH eFHUB (Cột ATTACKING, DEFENDING, ATHLETICISM). Thấy số nào trên ảnh phải ghi y hệt số đó.
+            2. Đọc chính xác Tổng PP (Points) và Level Cap trên ảnh. Tính toán chuẩn 100% dung lượng PP (Không thừa, không thiếu).
+            3. [QUAN TRỌNG NHẤT]: TẤT CẢ TÊN CHỈ SỐ PHẢI DÙNG TIẾNG ANH 100% (Ví dụ: Passing, Dexterity, Lower Body Strength, Aerial Strength, Defending, Speed, Acceleration, Finishing, Offensive Awareness...). KHÔNG DỊCH RA TIẾNG VIỆT.
+            4. ĐỌC ĐÚNG THÔNG SỐ TỪ ẢNH eFHUB (Cột xanh lá/đỏ bên phải). AI CHỈ ĐƯỢC GHI RA CON SỐ NHÌN THẤY TRÊN ẢNH, CẤM TỰ TÍNH TOÁN HAY SUY ĐOÁN SỐ LỆCH ĐI.
+            5. [ÉP BUỘC TƯ DUY]: Ở mỗi nhánh PP nâng cấp, BẮT BUỘC phải kèm theo 1 câu "LẬP LUẬN TỐI ƯU" giải thích tại sao lại nâng mốc này mang tính sát thương cao trong Meta game.
             
             Format bắt buộc:
-            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính Tiếng Anh]: [Chỉ số hiển thị chính xác trên ảnh].
-            (Ví dụ: - **Defending**: 13 Nấc (Tốn 28 PP) -> Defensive Awareness: 99 | Tackling: 99).
-            [LỆNH CẤM THÉP]: KHÔNG SO SÁNH VỚI CHỈ SỐ AUTO. KHÔNG GHI CÂU RÁC Ở ĐÂY. CHỈ IN BẢNG PP VÀ KẾT QUẢ.
+            - **[Tên nhánh Tiếng Anh]**: [X] Nấc (Tốn [Y] PP) -> [Tên chỉ số chính Tiếng Anh]: [Chỉ số hiển thị trên ảnh]. 
+              [LẬP LUẬN TỐI ƯU]: [Giải thích ngắn gọn tư duy Sa bàn sát thương].
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = """
@@ -389,7 +389,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
         contents = [context_prompt] + img_list
         
-        # Khóa cứng Model siêu việt gemini-3.6-flash
         candidate_models = ['gemini-3.6-flash']
         
         last_error = ""
@@ -420,7 +419,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER GIAO DIỆN & BÓC TÁCH KẾT QUẢ
+# 5. RENDER GIAO DIỆN & LỌC SẠCH VĂN BẢN
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -441,7 +440,11 @@ if 'raw_report' in st.session_state:
     mode_selected = analysis_mode[0]
     raw_text = st.session_state['raw_report'].replace("⛔ ", "").replace("*", "")
     
-    # Cắt triệt để rác thô sơ do AI bịa ra ở cuối Tab 2 và các đoạn cảnh báo lạc lõng
+    # Python lọc siêu tốc: Nếu ở Chế độ 2, xóa sổ toàn bộ Tab 3 ngay từ trong trứng nước
+    if mode_selected == "2":
+        raw_text = re.sub(r'===.*?PHẦN 3:.*?===', '===\n\nCẢNH BÁO TỪ CHỐI\n\n===', raw_text, flags=re.IGNORECASE | re.DOTALL)
+    
+    # Cắt rác thô sơ do AI bịa ra
     raw_text = re.sub(r'CẢNH BÁO TỪ CHỐI DỰ ÁN VIDEO.*?', '', raw_text, flags=re.IGNORECASE | re.DOTALL)
     parts = raw_text.split("===")
     
@@ -454,7 +457,7 @@ if 'raw_report' in st.session_state:
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
     def format_tab_content(content):
-        if "CẢNH BÁO TỪ CHỐI" in content:
+        if "CẢNH BÁO" in content or "TỪ CHỐI" in content:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
         return f"""<div class="dns-card">
@@ -507,15 +510,24 @@ if 'raw_report' in st.session_state:
              markdown_sach = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
              st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
 
+    elif mode_selected == "2":
+        # Chế độ 2 chỉ in 3 Tab, Cắt đứt hoàn toàn Tab 3
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & BOOSTER", "🛠️ BẢNG BUILD PP", "🎯 LỆNH IN-GAME & TOP 5 SKILLS"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+        clean_raw = f"{tab1_c}\n\n{tab2_c}\n\n{tab4_c}"
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=300)
+             
     else:
-        # Chế độ 1, 2, 3, 5
+        # Các chế độ cũ 1, 3, 5
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
         
-        # Diệt triệt để văn bản thừa trong Copy thô của Chế độ 2
         clean_raw = raw_text.replace("===", "\n\n")
-        clean_raw = re.sub(r'1\.\s*Bảng so sánh thông số:.*?(?=2\. Nhận xét|$)', '', clean_raw, flags=re.DOTALL)
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
              st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=250)

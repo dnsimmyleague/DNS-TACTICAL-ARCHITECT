@@ -30,9 +30,8 @@ if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
-    # CHỐT CSS TAB BAN NGÀY: Nền Xám Slate, Chữ Trắng để chống chìm
-    tab_inactive_bg = "#94A3B8" 
-    tab_inactive_color = "#FFFFFF"  
+    tab_inactive_bg = "#E2E8F0" 
+    tab_inactive_color = "#000000"  # Đen tuyệt đối
     watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
@@ -44,7 +43,7 @@ else:
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "#1E222A"
-    tab_inactive_color = "#FFFFFF"  
+    tab_inactive_color = "#FFFFFF"  # Trắng tuyệt đối
     watermark_opacity = "0.08"; watermark_blend = "screen"
     expander_copy_bg = "#1A1D24"
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
@@ -129,17 +128,17 @@ custom_css = f"""
         z-index: 10;
     }}
     
-    /* SUB-TABS 3D */
+    /* SUB-TABS 3D RỘNG RÃI VÀ CÂN XỨNG HƠN */
     div[data-testid="stTabs"] div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ display: flex; justify-content: space-between; background: transparent; padding: 15px 0; border: none; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{
-        flex: 1; margin: 0 6px; border-radius: 12px !important; padding: 14px 8px !important; text-align: center;
+        flex: 1; margin: 0 8px; border-radius: 12px !important; padding: 16px 10px !important; text-align: center;
         background: {subtab_bg} !important;
         box-shadow: {subtab_shadow} !important;
         border: 1.5px solid rgba(212, 175, 55, 0.3) !important;
         opacity: 1 !important;
     }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] p {{
-        color: {text_color} !important; font-size: 15px !important; font-weight: 900 !important;
+        color: {text_color} !important; font-size: 16px !important; font-weight: 900 !important;
     }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] {{
         background: {subtab_active_bg} !important;
@@ -155,10 +154,10 @@ custom_css = f"""
     .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; margin-bottom: 12px; color: #FF4D4D !important; font-weight: bold; }}
     
     .dns-expander {{ margin-bottom: 12px; margin-top: 10px; border-radius: 10px; background: {element_bg}; overflow: hidden; box-shadow: {subtab_shadow}; border: 1px solid rgba(212, 175, 55, 0.3); }}
-    .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; list-style: none; font-size: 15px; transition: all 0.2s; }}
+    .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; list-style: none; font-size: 15.5px; transition: all 0.2s; }}
     .dns-expander summary::-webkit-details-marker {{ display: none; }}
     .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #121418 !important; box-shadow: {subtab_active_shadow}; }}
-    .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; line-height: 1.6; font-size: 14px; border-top: 1px solid rgba(212, 175, 55, 0.1); }}
+    .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; line-height: 1.6; font-size: 14.5px; border-top: 1px solid rgba(212, 175, 55, 0.1); }}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -188,7 +187,7 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True, key="manager_imgs")
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON (CHỈ HIỂN THỊ STYLE, BỎ TÊN CẦU THỦ)
+# 3. HÀM KẾT XUẤT JSON (SÁT THỦ 4.0)
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -201,25 +200,41 @@ def render_expander_from_json(items):
         style = item.get("style", "")
         vaitro = item.get("vaitro", "")
         
-        # Chỉ hiển thị Loại (Đá chính/Dự bị), Style và Vai trò
+        # UI Tab 2 chỉ lấy Style và Vai trò, Bỏ tên cầu thủ ngoài đời
         content = f"<strong>Phân loại:</strong> {loai}<br><strong>Style đề xuất:</strong> <span style='color:{label_color}; font-weight:800;'>{style}</span><br><strong>Vai trò chiến thuật:</strong> {vaitro}"
         html_out += f'<details class="dns-expander"><summary>{title} ({loai})</summary><div class="expander-content"><p>🔹 {content}</p></div></details>'
     return html_out
 
 def format_in_game_json(data):
     if not data: return ""
-    html_out = "<strong>1. Cài đặt Cá nhân (Individual Instructions):</strong><br><br>"
-    html_out += f"🔹 <strong>Tấn công:</strong> <span style='color:#FF4D4D;'>{data.get('atk', '')}</span><br>"
-    html_out += f"🔹 <strong>Phòng ngự:</strong> <span style='color:#4D94FF;'>{data.get('def', '')}</span><br><br>"
+    
+    # Lấy và bóc tách dữ liệu mảng Lệnh Cá Nhân (Xử lý an toàn nếu AI viết nhầm)
+    atk_list = data.get("individual_instructions", {}).get("tan_cong", [])
+    def_list = data.get("individual_instructions", {}).get("phong_ngu", [])
+    
+    if isinstance(atk_list, list):
+        atk_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list])
+    else: atk_str = str(atk_list)
+    
+    if isinstance(def_list, list):
+        def_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list])
+    else: def_str = str(def_list)
+    
+    if not atk_str: atk_str = "Không gán lệnh tấn công."
+    if not def_str: def_str = "Không gán lệnh phòng ngự."
+
+    html_out = "<strong>1. Cài đặt Lệnh Cá nhân (Individual Instructions):</strong><br><br>"
+    html_out += f"🔹 <strong style='color:#FF4D4D;'>Tấn công:</strong><br><span style='margin-left: 20px; display: block;'>{atk_str}</span><br>"
+    html_out += f"🔹 <strong style='color:#4D94FF;'>Phòng ngự:</strong><br><span style='margin-left: 20px; display: block;'>{def_str}</span><br><br>"
     
     html_out += "<strong>2. Kịch bản Thay người (Mental Level):</strong><br><br>"
-    html_out += f"🔹 <strong>Cân bằng:</strong> {data.get('k1', '')}<br>"
-    html_out += f"🔹 <strong>Bảo toàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
-    html_out += f"🔹 <strong>Tấn công (Nấc Đỏ):</strong> {data.get('k3', '')}"
+    html_out += f"🔹 <strong>Start Game (Cân bằng):</strong> {data.get('k1', '')}<br>"
+    html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
+    html_out += f"🔹 <strong>Bị dẫn bàn (Nấc Đỏ):</strong> {data.get('k3', '')}"
     return html_out
 
 def translate_json_to_markdown(json_23, json_ingame):
-    """Dịch JSON thành văn bản Markdown sạch sẽ cho Khung Copy Thô"""
+    """Bộ lọc Dịch JSON sang Markdown Sạch sẽ hoàn toàn cho Khung Copy Thô"""
     md_out = "=== QUY HOẠCH 23 CẦU THỦ ===\n\n"
     if json_23:
         for tuyen in ["FW", "MF", "DF", "GK"]:
@@ -231,12 +246,18 @@ def translate_json_to_markdown(json_23, json_ingame):
                 
     md_out += "=== CẨM NANG IN-GAME ===\n\n"
     if json_ingame:
-        md_out += f"1. Individual Instructions:\n- Tấn công: {json_ingame.get('atk', '')}\n- Phòng ngự: {json_ingame.get('def', '')}\n\n"
+        atk_list = json_ingame.get("individual_instructions", {}).get("tan_cong", [])
+        def_list = json_ingame.get("individual_instructions", {}).get("phong_ngu", [])
+        
+        atk_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
+        def_str = ", ".join([f"{i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
+        
+        md_out += f"1. Individual Instructions:\n- Tấn công: {atk_str}\n- Phòng ngự: {def_str}\n\n"
         md_out += f"2. Kịch bản Thay người:\n- Mặc định: {json_ingame.get('k1', '')}\n- Nấc Xanh: {json_ingame.get('k2', '')}\n- Nấc Đỏ: {json_ingame.get('k3', '')}"
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (ÉP JSON CỨNG NGẮC 100%)
+# 4. LÕI TƯ DUY AI (ÉP JSON CỨNG NGẮC BẢO VỆ 100%)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -251,10 +272,10 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         """
 
         if "4" in mode:
-            tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự (Viết văn bản thường)."
+            tab1_cmd = "Phân tích Triết lý HLV. Vẽ Sơ đồ Tấn công và Sơ đồ Phòng ngự (Viết bằng văn bản thường)."
             tab2_cmd = """
-            QUY HOẠCH ĐỦ 23 CẦU THỦ. KHÔNG ĐƯỢC NÊU TÊN CẦU THỦ NGOÀI ĐỜI. CHỈ GHI VỊ TRÍ, STYLE VÀ VAI TRÒ.
-            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON.
+            QUY HOẠCH ĐỦ 23 CẦU THỦ CHO 4 TUYẾN.
+            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON. KHÔNG ĐƯỢC NÊU TÊN CẦU THỦ NGOÀI ĐỜI.
             ```json
             {
               "FW": [
@@ -272,21 +293,32 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
               ]
             }
             ```
-            (Phải kê khai đủ 23 dòng tương ứng 23 người chia cho 4 mảng trên)
+            (Phải kê khai đủ 23 phần tử tương ứng 23 người chia cho 4 mảng trên)
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            CẨM NANG IN-GAME. KHÔNG ĐỀ XUẤT SKILLS HAY KỸ NĂNG.
-            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON.
+            CẨM NANG IN-GAME.
+            [LỆNH CẤM THÉP]: BẮT BUỘC TRẢ VỀ JSON. TUYỆT ĐỐI KHÔNG ĐƯỢC CHẾ THÊM LỆNH NGOÀI MENU DƯỚI ĐÂY.
             ```json
             {
-              "atk": "Gán Defensive cho [Vị trí]",
-              "def": "Gán Tight Marking cho [Vị trí]",
+              "individual_instructions": {
+                "tan_cong": [
+                  {"lenh_duoc_chon": "Defensive", "ap_dung_cho_vi_tri": "DMF"}
+                ],
+                "phong_ngu": [
+                  {"lenh_duoc_chon": "Counter Target", "ap_dung_cho_vi_tri": "CF"}
+                ]
+              },
               "k1": "Đội hình xuất phát...",
               "k2": "Rút [Vị trí] thay [Vị trí phòng ngự]",
               "k3": "Rút [Vị trí] thay [Vị trí tấn công]"
             }
             ```
+            LƯU Ý CỰC KỲ QUAN TRỌNG CHO INDIVIDUAL:
+            - `lenh_duoc_chon` trong `tan_cong` CHỈ ĐƯỢC PHÉP LÀ "Defensive" HOẶC "Anchoring".
+            - `lenh_duoc_chon` trong `phong_ngu` CHỈ ĐƯỢC PHÉP LÀ "Tight Marking", "Man Marking", HOẶC "Counter Target".
+            - Tối đa chỉ có 2 slot cho tấn công và 2 slot cho phòng ngự.
+            (CẤM TUYỆT ĐỐI dùng Deep Line hay bất kỳ lệnh nào khác).
             """
         else:
             tab1_cmd = "Thẩm định thẻ Auto này với triết lý HLV."
@@ -328,7 +360,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER GIAO DIỆN & BÓC TÁCH JSON
+# 5. RENDER GIAO DIỆN & BÓC TÁCH JSON BẢO MẬT
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -410,7 +442,7 @@ if 'raw_report' in st.session_state:
                 
         with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
              markdown_sach = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
-             st.text_area("Văn bản gốc (Sạch sẽ):", value=markdown_sach, height=300)
+             st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
 
     else:
         # Các chế độ cũ giữ nguyên

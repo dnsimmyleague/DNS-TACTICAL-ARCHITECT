@@ -11,7 +11,6 @@ import time
 
 # ---------------------------------------------------------
 # 1. CẤU HÌNH TRANG & GIAO DIỆN NỀN TẢNG (DNS ARCHITECT)
-# GIỮ NGUYÊN 100% GIAO DIỆN CỦA BOSS
 # ---------------------------------------------------------
 st.set_page_config(page_title="DN SIM MY LEAGUE | DNS", page_icon="⚽", layout="centered")
 
@@ -27,14 +26,14 @@ selected_theme = st.radio("Theme Switcher", ["Ban Ngày ☀️", "Ban Đêm 🌙
 st.session_state['manual_theme'] = selected_theme
 is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
 
-logo_url = "https://i.postimg.cc/4KNSdqRd/D9754823-56B4-4957-8F90-1EE072CFF5A2.jpg"
+# ĐÃ CẬP NHẬT LINK LOGO PNG CHUẨN CỦA BOSS
+logo_url = "https://i.postimg.cc/ydpJLXP9/26529F2E-29C2-40BD-B202-BEDC09BAE6F9.png"
 
 if is_daytime:
     app_bg = "#F4F6F9"; element_bg = "#FFFFFF"; text_color = "#1E293B"
     label_color = "#D4AF37"; slogan_color = "#64748B"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.06), -6px -6px 14px rgba(255,255,255,0.9)"
     tab_inactive_bg = "#E2E8F0"; tab_inactive_color = "#0F172A"  
-    watermark_opacity = "0.04"; watermark_blend = "multiply"
     expander_copy_bg = "#F8FAFC"
     subtab_bg = "linear-gradient(145deg, #f0f0f0, #cacaca)"
     subtab_shadow = "5px 5px 12px #bebebe, -5px -5px 12px #ffffff"
@@ -45,7 +44,6 @@ else:
     label_color = "#E5C058"; slogan_color = "#94A3B8"; border_color = "#D4AF37"
     shadow_3d = "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.03)"
     tab_inactive_bg = "#1E222A"; tab_inactive_color = "#FFFFFF"  
-    watermark_opacity = "0.08"; watermark_blend = "screen"
     expander_copy_bg = "#1A1D24"
     subtab_bg = "linear-gradient(145deg, #21252e, #1c1f26)"
     subtab_shadow = "5px 5px 12px #15181d, -5px -5px 12px #2d323f"
@@ -53,6 +51,7 @@ else:
     subtab_active_shadow = "inset 5px 5px 10px #a68124, inset -5px -5px 10px #ffdf30"
 
 st.markdown(f"""<div class="watermark-logo"></div>""", unsafe_allow_html=True)
+
 custom_css = f"""
 <style>
     header[data-testid="stHeader"] {{ display: none !important; }} footer {{ display: none !important; }}
@@ -62,7 +61,19 @@ custom_css = f"""
     div[data-testid="stSpinner"] > div > span, div[data-testid="stSpinner"] p {{ color: {label_color} !important; font-weight: 900 !important; font-size: 17px !important; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }}
     [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1.5px solid {border_color}; margin-top: 15px; }}
     [data-testid="stExpander"] summary p {{ color: {text_color} !important; font-weight: 800 !important; font-size: 15px; }}
-    .watermark-logo {{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; height: 450px; background-image: url('{logo_url}'); background-size: cover; opacity: {watermark_opacity}; mix-blend-mode: {watermark_blend}; pointer-events: none; z-index: 0; border-radius: 50%; }}
+    
+    .watermark-logo {{ 
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+        width: 450px; height: 450px; 
+        background-image: url('{logo_url}'); 
+        background-size: contain; 
+        background-repeat: no-repeat; 
+        background-position: center; 
+        opacity: 0.12; 
+        pointer-events: none; 
+        z-index: 0; 
+    }}
+    
     [data-testid="stAppViewBlockContainer"] {{ position: relative; z-index: 10; padding-top: 3rem !important; }}
     div[data-testid="stRadio"] {{ position: fixed !important; top: 15px !important; right: 15px !important; z-index: 999999 !important; background-color: {element_bg} !important; border: 1.5px solid {border_color} !important; border-radius: 30px !important; padding: 4px 12px !important; box-shadow: {shadow_3d} !important; }}
     .title-brand {{ text-align: center; color: {border_color} !important; font-size: 2.5rem; font-weight: 900; margin-bottom: 5px; letter-spacing: 2px; }}
@@ -80,7 +91,7 @@ custom_css = f"""
     .dns-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }}
     .dns-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; color: {text_color} !important; }}
     .dns-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; }}
-    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; color: #FF4D4D !important; font-weight: bold; }}
+    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; color: #FF4D4D !important; font-weight: bold; margin-bottom: 15px; }}
     .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); }}
     .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; font-size: 14.5px; border-top: 1px solid rgba(212, 175, 55, 0.1); }}
 </style>
@@ -90,7 +101,7 @@ st.markdown("<h1 class='title-brand'>DN SIM MY LEAGUE</h1>", unsafe_allow_html=T
 st.markdown("<p class='slogan'>Giải Mã Sơ Đồ - Định Hình Meta - Kiến Tạo Dream Team</p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. KHỐI NHẬP LIỆU (GIỮ NGUYÊN)
+# 2. KHỐI NHẬP LIỆU
 # ---------------------------------------------------------
 analysis_mode = st.selectbox(
     "🎯 CHỌN CHẾ ĐỘ PHÂN TÍCH:",
@@ -112,7 +123,7 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON (GIỮ NGUYÊN CHỨC NĂNG, TỐI ƯU HIỂN THỊ)
+# 3. HÀM KẾT XUẤT JSON 
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -142,18 +153,8 @@ def format_in_game_json(data):
     html_out += f"🔹 <strong>Bị dẫn bàn (Nấc Đỏ):</strong> {data.get('k3', '')}"
     return html_out
 
-def translate_json_to_markdown(json_23, json_ingame):
-    md_out = "=== QUY HOẠCH 23 CẦU THỦ ===\n\n"
-    if json_23:
-        for tuyen in ["FW", "MF", "DF", "GK"]:
-            if tuyen in json_23:
-                md_out += f"--- Tuyến {tuyen} ---\n"
-                for item in json_23[tuyen]:
-                    md_out += f"- {item.get('vitri', '')} ({item.get('loai', '')}): Style {item.get('style', '')}. Vai trò: {item.get('vaitro', '')}\n"
-    return md_out
-
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI: VẾT MỔ 1 (FIX LOGIC RÂU ÔNG NỌ CẮM CẰM BÀ KIA)
+# 4. LÕI TƯ DUY AI (V1.1 - CHỐNG LỖI LOGIC TỰ VẢ)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -161,7 +162,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         if not api_key: return "[LỖI CẤU HÌNH]: Không tìm thấy GEMINI_API_KEY!"
         client = genai.Client(api_key=api_key)
         
-        # LUẬT THÉP V1.1 ĐỂ KHÓA CHẶT NÃO AI
         hard_rules = """
         [LUẬT THÉP BẬT TẮT META - CẤM LỖI LOGIC TỰ VẢ]:
         1. LOGIC ĐỒNG NHẤT CHIẾN THUẬT (QUAN TRỌNG NHẤT):
@@ -218,7 +218,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             }
             ```
             """
-        else: # Chế độ 5
+        else:
             tab1_cmd = "CẢNH BÁO TỪ CHỐI."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI."
             tab3_cmd = "SO SÁNH AUTO VS THỦ CÔNG: Chênh lệch chỉ số Tiếng Anh, Hitbox va chạm, và Câu đúc kết giật gân làm Thumbnail Video."
@@ -255,7 +255,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
     except Exception as e: return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER & VẾT MỔ 2 (FIX LỖI CRASH KHI ĐỌC JSON CHẾ ĐỘ 4)
+# 5. RENDER & FIX LỖI [ 0 : NULL ]
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -263,8 +263,14 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     else:
         with st.spinner("Đang trích xuất Báo cáo Sa bàn..."):
             images_to_send = []
-            if uploaded_players: [images_to_send.append(Image.open(f).copy()) for f in uploaded_players]
-            if uploaded_managers: [images_to_send.append(Image.open(f).copy()) for f in uploaded_managers]
+            
+            if uploaded_players: 
+                for f in uploaded_players: 
+                    images_to_send.append(Image.open(f).copy())
+            if uploaded_managers: 
+                for f in uploaded_managers: 
+                    images_to_send.append(Image.open(f).copy())
+                    
             st.session_state['raw_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, analysis_mode)
             st.session_state['report_time'] = vn_time_now.strftime("%d/%m/%Y | %H:%M:%S")
 
@@ -294,13 +300,10 @@ if 'raw_report' in st.session_state:
             </div>
         </div>"""
 
-    # THUẬT TOÁN CHỐNG SẬP APP (BẮT LỖI JSON TUYỆT ĐỐI)
     def extract_json(text):
         try:
-            # Ưu tiên quét chính xác Block Code JSON
             json_match = re.search(r'```json\n([\s\S]*?)\n```', text, re.IGNORECASE)
             if json_match: return json.loads(json_match.group(1).strip())
-            # Nếu AI quên gõ ```json, quét dấu ngoặc nhọn lớn nhất
             match = re.search(r'\{[\s\S]*\}', text)
             if match: return json.loads(match.group(0))
         except: pass
@@ -328,7 +331,6 @@ if 'raw_report' in st.session_state:
             else: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
 
     else:
-        # Chế độ 1, 2, 3, 5 (Giữ nguyên cấu trúc Tab của Boss)
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)

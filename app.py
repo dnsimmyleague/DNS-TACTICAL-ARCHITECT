@@ -26,7 +26,7 @@ selected_theme = st.radio("Theme Switcher", ["Ban Ngày ☀️", "Ban Đêm 🌙
 st.session_state['manual_theme'] = selected_theme
 is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
 
-# ĐÃ CẬP NHẬT LINK LOGO PNG CHUẨN CỦA BOSS
+# LINK LOGO PNG TRONG SUỐT CỦA BOSS
 logo_url = "https://i.postimg.cc/ydpJLXP9/26529F2E-29C2-40BD-B202-BEDC09BAE6F9.png"
 
 if is_daytime:
@@ -50,8 +50,6 @@ else:
     subtab_active_bg = "linear-gradient(145deg, #E5C058, #C89B2B)"
     subtab_active_shadow = "inset 5px 5px 10px #a68124, inset -5px -5px 10px #ffdf30"
 
-st.markdown(f"""<div class="watermark-logo"></div>""", unsafe_allow_html=True)
-
 custom_css = f"""
 <style>
     header[data-testid="stHeader"] {{ display: none !important; }} footer {{ display: none !important; }}
@@ -62,16 +60,24 @@ custom_css = f"""
     [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1.5px solid {border_color}; margin-top: 15px; }}
     [data-testid="stExpander"] summary p {{ color: {text_color} !important; font-weight: 800 !important; font-size: 15px; }}
     
-    .watermark-logo {{ 
-        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-        width: 450px; height: 450px; 
+    /* ĐÃ FIX HIỂN THỊ LOGO TRÊN CẢ MOBILE VÀ LAPTOP */
+    .stApp::before {{ 
+        content: "";
+        position: fixed; 
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%); 
+        width: 85vw; 
+        max-width: 450px; 
+        height: 85vw; 
+        max-height: 450px; 
         background-image: url('{logo_url}'); 
         background-size: contain; 
         background-repeat: no-repeat; 
         background-position: center; 
-        opacity: 0.12; 
+        opacity: 0.15; 
         pointer-events: none; 
-        z-index: 0; 
+        z-index: 999999; 
     }}
     
     [data-testid="stAppViewBlockContainer"] {{ position: relative; z-index: 10; padding-top: 3rem !important; }}

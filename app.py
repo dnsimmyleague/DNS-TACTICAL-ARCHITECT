@@ -173,7 +173,7 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (V4.0 - SIÊU TRÍ TUỆ META 2027)
+# 4. LÕI TƯ DUY AI (V4.1 - FIX JSON & BOOSTER ẢO GIÁC)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -182,64 +182,62 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         client = genai.Client(api_key=api_key)
         
         hard_rules = """
-        [ĐÓNG VAI TRÒ: CHUYÊN GIA PHÂN TÍCH CHIẾN THUẬT THỰC CHIẾN TẠI DN SIM MY LEAGUE]
+        [ĐÓNG VAI TRÒ: CHUYÊN GIA PHÂN TÍCH CHIẾN THUẬT THỰC CHIẾN]
         [LUẬT THÉP BẬT TẮT META eFOOTBALL 2027 KHẮT KHE]:
-        1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn eFootball thực chiến, mượt mà. KHÔNG dùng HTML. KHÔNG in các thẻ ngoặc vuông định hướng. Tuyệt đối KHÔNG dùng cụm từ "R&D". 
-        2. CHỈ SỐ CHÍNH XÁC TUYỆT ĐỐI: Đọc và ghi ĐÚNG con số in-game (màu xanh lá) hiển thị trên ảnh. KHÔNG tự làm phép tính trừ điểm buff. TUYỆT ĐỐI KHÔNG ghi "chưa tính buff HLV" hay các từ tương tự.
-        3. CƠ CHẾ DUAL PLAYSTYLE (STYLE KÉP ĐỎ/XANH):
-           - Bắt buộc soi cả 2 thẻ Playstyle trên ảnh cầu thủ: Đỏ (In Possession) và Xanh (Out of Possession).
-           - Nếu Style Xanh ghi là "Basic" hoặc không có Style Xanh: Coi như thẻ bình thường, Build PP tập trung 100% tối ưu cho mặt trận tấn công và vị trí sở trường, không cần bận tâm phòng ngự.
-           - Nếu Style Xanh có tên cụ thể (Ví dụ: Front Line Pressure, Track Back...): BẮT BUỘC trích quỹ PP đắp vào Stamina, Aggression hoặc Defensive. Phải viết đoạn văn giải thích cách phân bổ này nuôi thể lực/tranh chấp để phục vụ giai đoạn pressing/phòng ngự.
-        4. CƠ CHẾ HLV ĐỜI MỚI (DUAL-FORMATION & TACTICAL LINKS):
-           - Sơ đồ luân phiên (Dual-Formation): Phân tích chi tiết hình dáng đội hình lúc Có bóng (Tấn công) và Mất bóng (Phòng ngự giật về).
-           - Sợi dây liên kết (Tactical Links): BẮT BUỘC soi 2 khung bài đánh (vd: Over-the-Top Pass, 1-2 Cut-in...). Giải mã bài đánh đó bằng cách chỉ định rõ Center Piece cần Style gì, Key Man cần Style gì để AI chạy chỗ tự động.
-           - QUY HOẠCH 23 NGƯỜI (Chế độ 4): Khi điền JSON, BẮT BUỘC ưu tiên chọn các cầu thủ mang Style khớp với Tactical Links của HLV để kích hoạt bài đánh. Ở mục "style", nếu là bài đánh 2 style thì ghi theo format: "Tên Style Đỏ (Đỏ) + Tên Style Xanh (Xanh)". Nếu thẻ basic thì ghi bình thường.
-        5. LỆNH CÁ NHÂN IN-GAME CHUẨN META:
-           - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
-           - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
+        1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn thực chiến. KHÔNG dùng HTML. KHÔNG in ngoặc vuông định hướng.
+        2. CHỈ SỐ: Đọc và ghi ĐÚNG số màu xanh lá trên ảnh. TUYỆT ĐỐI KHÔNG ghi "chưa tính buff HLV".
+        3. CƠ CHẾ DUAL PLAYSTYLE (Áp dụng khi Khám Cầu Thủ):
+           - Nếu Style Xanh là "Basic" hoặc không có: Build tối ưu 100% tấn công.
+           - Nếu Style Xanh có tên riêng (Front Line Pressure...): Bắt buộc cộng thêm điểm Stamina/Defensive và giải thích cách nó phục vụ phòng ngự.
+        4. CƠ CHẾ HLV ĐỜI MỚI (Áp dụng khi Khám HLV):
+           - Phân tích rõ Sơ đồ luân phiên (In/Out Possession).
+           - Phân tích rõ Tactical Links (Bài đánh): Chỉ rõ tên bài đánh và yêu cầu Style của Center Piece / Key Man.
+           - QUAN TRỌNG NHẤT CHO TAB HLV: TUYỆT ĐỐI CẤM NHẮC TỚI CỤM TỪ "SLOT BOOSTER" HOẶC "CRAFTING". HLV KHÔNG CÓ BOOSTER CRAFTING!
+        5. LỆNH IN-GAME CHUẨN META: Tấn công (Defensive/Anchoring). Phòng ngự (Tight Marking/Man Marking/Counter Target).
         """
 
         if "1" in mode:
-            tab1_cmd = "Đánh giá Phôi Auto 5 chiều (Style, Hitbox, Skills, Form). Cân nhắc sức mạnh của Dual Playstyle (nếu Style xanh khác Basic). KẾT LUẬN RÕ: Hợp hay Loại."
-            tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
-            tab3_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
+            tab1_cmd = "Đánh giá Phôi Auto 5 chiều (Style, Hitbox, Skills, Form). Cân nhắc sức mạnh Dual Playstyle. KẾT LUẬN: Hợp/Loại."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "Lệnh cá nhân In-game & 3 kịch bản nấc tâm lý."
             
         elif "2" in mode:
-            tab1_cmd = "Đánh giá sự tương thích của Cầu thủ trong sơ đồ. Đề xuất Slot Booster (Crafting +1) phù hợp với thẻ cầu thủ."
-            tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ. Viết lập luận chiến thuật sắc bén. Nếu Style Xanh KHÁC Basic, bắt buộc trích quỹ nâng PP phòng ngự/thể lực và giải thích rõ. TUYỆT ĐỐI KHÔNG in thẻ ngoặc vuông. Xài hết sạch quỹ PP."
-            tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
-            tab4_cmd = "Gán Lệnh Cá Nhân phù hợp lối chơi và Đề xuất Top 5 Skills cho cầu thủ."
+            tab1_cmd = "Đánh giá sự tương thích sơ đồ. Đề xuất Slot Booster (Crafting +1) phù hợp với cầu thủ."
+            tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ. Viết lập luận chiến thuật. Nếu có Style Xanh đặc biệt, giải thích cách phân bổ điểm thể lực/phòng ngự."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab4_cmd = "Lệnh Cá Nhân phù hợp và Top 5 Skills."
             
         elif "3" in mode:
-            tab1_cmd = "Phân tích HLV: 1. Triết lý chủ đạo. 2. Sơ đồ luân phiên (Dual-Formation In/Out Possession). 3. GIẢI MÃ CHI TIẾT TACTICAL LINKS (Bài đánh tự động) chỉ rõ Center Piece và Key Man."
-            tab2_cmd = "CẢNH BÁO TỪ CHỐI: Tính năng này chỉ dành cho Thẩm định Cầu thủ, không áp dụng cho HLV."
+            tab1_cmd = "Phân tích HLV: 1. Triết lý. 2. Sơ đồ luân phiên. 3. GIẢI MÃ TACTICAL LINKS (Chỉ rõ Center Piece/Key Man). LƯU Ý: KHÔNG ĐƯỢC ĐỀ XUẤT BOOSTER."
+            tab2_cmd = "CẢNH BÁO TỪ CHỐI."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "CẢNH BÁO TỪ CHỐI."
             
         elif "4" in mode:
-            tab1_cmd = "Phân tích Triết lý HLV, Sơ đồ luân phiên (Dual-formation). GIẢI MÃ TACTICAL LINKS và chỉ ra các Playstyle bắt buộc phải có ở từng vị trí để kích hoạt bài đánh."
+            tab1_cmd = "Phân tích súc tích Triết lý HLV, Sơ đồ luân phiên và TACTICAL LINKS. LƯU Ý: DỪNG LẠI Ở ĐÂY, KHÔNG VIẾT QUÁ DÀI. TUYỆT ĐỐI KHÔNG NHẮC ĐẾN BOOSTER."
             tab2_cmd = """
-            QUY HOẠCH 23 CẦU THỦ (11 CHÍNH + 12 DỰ BỊ). KHÔNG NÊU TÊN NGOÀI ĐỜI. Ở mục "style", BẮT BUỘC ƯU TIÊN chọn các Style khớp với Tactical Links của HLV. Ghi rõ Style Đỏ/Xanh nếu có. BẮT BUỘC TRẢ VỀ ĐÚNG FORMAT JSON DƯỚI ĐÂY BÊN TRONG CẶP DẤU ```json VÀ ```.
+            BẮT BUỘC TRẢ VỀ CHỈ 1 KHỐI JSON DUY NHẤT. KHÔNG VIẾT THÊM BẤT CỨ CHỮ NÀO BÊN NGOÀI KHỐI JSON NÀY.
+            Ưu tiên chọn cầu thủ có Style khớp với Tactical Links của HLV.
             ```json
             {
-              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher (Đỏ) + Front Line Pressure (Xanh)", "vaitro": "Mũi khoan..."}],
-              "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo..."}],
-              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động Tactical Links..."}],
-              "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra..."}]
+              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan"}],
+              "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo"}],
+              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động"}],
+              "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra"}]
             }
             ```
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            BẮT BUỘC TRẢ VỀ ĐÚNG FORMAT JSON CẨM NANG IN-GAME BÊN TRONG CẶP DẤU ```json VÀ ```.
+            BẮT BUỘC TRẢ VỀ CHỈ 1 KHỐI JSON DUY NHẤT. KHÔNG VIẾT THÊM BẤT CỨ CHỮ NÀO BÊN NGOÀI KHỐI JSON NÀY.
             ```json
             {
               "individual_instructions": {
                 "tan_cong": [{"lenh_duoc_chon": "Defensive", "ap_dung_cho_vi_tri": "DMF"}],
-                "phong_ngu": [{"lenh_duoc_chon": "Tight Marking", "ap_dung_cho_vi_tri": "CF"}]
+                "phong_ngu": [{"lenh_duoc_chon": "Counter Target", "ap_dung_cho_vi_tri": "CF"}]
               },
-              "k1": "Đội hình xuất phát...", "k2": "Rút thay phòng ngự...", "k3": "Rút thay tấn công..."
+              "k1": "Xuất phát...", "k2": "Phòng ngự...", "k3": "Tấn công..."
             }
             ```
             """

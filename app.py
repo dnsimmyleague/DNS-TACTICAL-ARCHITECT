@@ -20,7 +20,6 @@ default_is_daytime = 6 <= vn_time_now.hour < 18
 if 'manual_theme' not in st.session_state:
     st.session_state['manual_theme'] = "☀️" if default_is_daytime else "🌙"
 
-# KHỞI TẠO BỘ NHỚ LƯU TRỮ (KHAY DỰ ÁN)
 if 'project_tray' not in st.session_state:
     st.session_state['project_tray'] = []
 
@@ -99,7 +98,6 @@ custom_css = f"""
     .dns-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }}
     .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; color: #FF4D4D !important; font-weight: bold; margin-bottom: 12px; }}
     
-    /* GIAO DIỆN KHUNG 3D CHO CÁC TAB CẦU THỦ (EXPANDER) */
     .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); list-style: none; transition: all 0.2s; box-shadow: 3px 3px 8px rgba(0,0,0,0.2); margin-bottom: 10px; }}
     .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #121418 !important; box-shadow: {subtab_active_shadow}; margin-bottom: 0px; border-radius: 10px 10px 0 0; }}
     .dns-expander summary::-webkit-details-marker {{ display: none; }}
@@ -130,12 +128,14 @@ col1, col2 = st.columns(2)
 with col1:
     player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ:", placeholder="Ví dụ: Roberto Carlos, 4-2-1-3...")
     ecosystem = st.selectbox("🌐 Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"], index=1)
+    # ĐÃ PHỤC HỒI NÚT TICK SO SÁNH CỦA BOSS
+    is_compare = st.checkbox("🔍 Kích hoạt So sánh (Dành cho 2 ảnh trở lên)", value=False)
 with col2:
     uploaded_players = st.file_uploader("📸 1. Tải ảnh Cầu thủ (eFHUB/In-game):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON VÀ UI (GIAO DIỆN 3D CỦA BOSS)
+# 3. HÀM KẾT XUẤT JSON VÀ UI 
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -202,9 +202,9 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (V4.5 - KỶ LUẬT THÉP BẢO VỆ JSON & BẢN QUYỀN)
+# 4. LÕI TƯ DUY AI (V5.0 - PHÂN LUỒNG MODE 3 VÀ MODE 5)
 # ---------------------------------------------------------
-def execute_tactical_analysis(img_list, p_info, eco, mode):
+def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
     try:
         api_key = st.secrets.get("GEMINI_API_KEY")
         if not api_key: return "[LỖI CẤU HÌNH]: Không tìm thấy GEMINI_API_KEY!"
@@ -213,10 +213,10 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         hard_rules = """
         [ĐÓNG VAI TRÒ: CHUYÊN GIA PHÂN TÍCH CHIẾN THUẬT THỰC CHIẾN]
         [LUẬT THÉP eFOOTBALL 2027 KHẮT KHE]:
-        1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn thực chiến. KHÔNG dùng HTML. KHÔNG in ngoặc vuông định hướng.
+        1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn thực chiến. KHÔNG dùng HTML. KHÔNG in ngoặc vuông định hướng. Tuyệt đối không dùng từ R&D.
         2. CHỈ SỐ: Đọc và ghi ĐÚNG số màu xanh lá trên ảnh. TUYỆT ĐỐI KHÔNG ghi "chưa tính buff HLV".
-        3. CƠ CHẾ DUAL PLAYSTYLE (Áp dụng khi Khám Cầu Thủ): Nếu Style Xanh khác Basic, bắt buộc phân tích cách phân bổ PP vào thể lực/phòng ngự.
-        4. CƠ CHẾ HLV ĐỜI MỚI (Áp dụng khi Khám HLV): Phân tích rõ Sơ đồ luân phiên (In/Out Possession) và Tactical Links (yêu cầu Center Piece/Key Man). LƯU Ý TỐI THƯỢNG CHO TAB HLV: TUYỆT ĐỐI CẤM NHẮC TỚI BOOSTER HOẶC CRAFTING. HLV KHÔNG CÓ BOOSTER!
+        3. CƠ CHẾ DUAL PLAYSTYLE (Khám Cầu Thủ): Nếu Style Xanh khác Basic, bắt buộc phân tích phân bổ PP vào thể lực/phòng ngự.
+        4. CƠ CHẾ HLV ĐỜI MỚI (Khám HLV): Phân tích rõ Sơ đồ luân phiên (In/Out Possession) và Tactical Links. TUYỆT ĐỐI CẤM NHẮC TỚI BOOSTER/CRAFTING ĐỐI VỚI HLV.
         """
 
         if "1" in mode:
@@ -232,17 +232,17 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             tab4_cmd = "Lệnh Cá Nhân phù hợp và Top 5 Skills."
             
         elif "3" in mode:
-            tab1_cmd = "Phân tích HLV: 1. Triết lý. 2. Sơ đồ luân phiên. 3. TACTICAL LINKS. LƯU Ý: KHÔNG ĐƯỢC NHẮC BOOSTER/CRAFTING."
+            tab1_cmd = "Khám HLV Tổng Quan: 1. Triết lý. 2. Đề xuất Sơ đồ luân phiên (Công & Thủ). 3. TACTICAL LINKS. (Tuyệt đối dừng lại ở HLV, không build Dream Team 23 người ở đây)."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab4_cmd = "Cài đặt Lệnh Cá Nhân (Individual Instructions). Lưu ý: Game cho phép gán tối đa 4 slot lệnh. Hãy đề xuất đúng 4 lệnh (kết hợp công thủ) sắc bén nhất để vận hành sơ đồ Công/Thủ của HLV này. Viết dạng văn xuôi giải thích chi tiết, không cần xuất JSON."
             
         elif "4" in mode:
-            tab1_cmd = "Phân tích Triết lý HLV, Sơ đồ luân phiên và TACTICAL LINKS. TUYỆT ĐỐI KHÔNG NHẮC ĐẾN BOOSTER."
+            tab1_cmd = "Phân tích Triết lý HLV, Sơ đồ luân phiên và TACTICAL LINKS."
             tab2_cmd = """
             QUY HOẠCH 23 CẦU THỦ CHO SƠ ĐỒ NÀY.
-            [KỶ LUẬT THÉP]: TUYỆT ĐỐI KHÔNG ĐƯỢC VÍ DỤ HAY NHẮC ĐẾN BẤT KỲ TÊN CẦU THỦ NGOÀI ĐỜI NÀO (CẤM NHẮC ĐẾN Mbappe, Saliba, Rodri, Van Dijk, v.v...). 
-            [KỶ LUẬT THÉP VỀ FORMAT]: BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐOẠN CODE JSON. TUYỆT ĐỐI KHÔNG ĐƯỢC VIẾT BẤT CỨ VĂN XUÔI NÀO TRƯỚC HAY SAU KHỐI JSON.
+            [KỶ LUẬT THÉP]: TUYỆT ĐỐI KHÔNG ĐƯỢC VÍ DỤ HAY NHẮC ĐẾN BẤT KỲ TÊN CẦU THỦ NGOÀI ĐỜI NÀO. 
+            BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐOẠN CODE JSON. TUYỆT ĐỐI KHÔNG ĐƯỢC VIẾT BẤT CỨ VĂN XUÔI NÀO BÊN NGOÀI KHỐI JSON.
             ```json
             {
               "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan..."}],
@@ -255,7 +255,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
             CÀI ĐẶT LỆNH & SKILLS.
-            [KỶ LUẬT THÉP]: TUYỆT ĐỐI KHÔNG ĐƯỢC NHẮC TÊN CẦU THỦ NGOÀI ĐỜI. BẮT BUỘC CHỈ TRẢ VỀ 1 ĐOẠN CODE JSON DUY NHẤT NHƯ MẪU DƯỚI ĐÂY. KHÔNG VIẾT VĂN XUÔI BÊN NGOÀI.
+            [KỶ LUẬT THÉP]: KHÔNG NHẮC TÊN CẦU THỦ NGOÀI ĐỜI. BẮT BUỘC CHỈ TRẢ VỀ 1 ĐOẠN CODE JSON DUY NHẤT. KHÔNG VIẾT VĂN XUÔI BÊN NGOÀI.
             ```json
             {
               "individual_instructions": {
@@ -270,10 +270,15 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             }
             ```
             """
+        elif "5" in mode:
+            tab1_cmd = "SO SÁNH TỔNG QUAN: (Ảnh 1 - Auto vs Ảnh 2 - DNS). So sánh sự khác biệt về tư duy lối chơi, đánh giá điểm yếu của Auto."
+            tab2_cmd = "PHÂN TÍCH CHÊNH LỆCH PP: Đi sâu vào chênh lệch các chỉ số Tiếng Anh (Speed, Awareness...). Giải thích tại sao cách Build DNS (Thủ công) lại mang tính sát thương cao hơn."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab4_cmd = "KỊCH BẢN VIDEO & THUMBNAIL: Đề xuất 3 tiêu đề giật gân, câu view và 1 kịch bản ngắn gọn gọn gàng để làm video Tiktok/Shorts so sánh."
         else:
             tab1_cmd = "CẢNH BÁO TỪ CHỐI."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab3_cmd = "SO SÁNH AUTO VS THỦ CÔNG."
+            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "CẢNH BÁO TỪ CHỐI."
 
         system_instruction = f"""
@@ -292,8 +297,11 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         {tab4_cmd}
         """
         
-        config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
+        if is_compare_mode:
+            context_prompt += " | YÊU CẦU ĐẶC BIỆT: Thực hiện so sánh chi tiết giữa các ảnh được cung cấp."
+            
+        config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
         contents = [context_prompt] + img_list
         
         client_models = ['gemini-3.6-flash']
@@ -323,7 +331,7 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
             if uploaded_managers: 
                 for f in uploaded_managers: images_to_send.append(Image.open(f).copy())
                     
-            st.session_state['raw_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, analysis_mode)
+            st.session_state['raw_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, analysis_mode, is_compare)
             st.session_state['report_time'] = vn_time_now.strftime("%d/%m/%Y | %H:%M:%S")
 
 if 'raw_report' in st.session_state:
@@ -343,7 +351,6 @@ if 'raw_report' in st.session_state:
         if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
-        # GẮN LẠI CHỮ KÝ BẢN QUYỀN ĐẦY ĐỦ 2027
         return f"""<div class="dns-card">
             <div class="dns-text">{html_content}</div>
             <div class="dns-footer">
@@ -361,6 +368,7 @@ if 'raw_report' in st.session_state:
         except: pass
         return None
 
+    # RENDER THEO TỪNG MODE ĐỂ KHÔNG BỊ TRẬT ĐƯỜNG RAY
     if mode_selected == "4":
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ QUY HOẠCH 23 CẦU THỦ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
@@ -369,7 +377,6 @@ if 'raw_report' in st.session_state:
         json_data_ingame = extract_json(tab4_c)
         
         with t2: 
-            # ĐIỀU KIỆN VẼ RA CÁC TAB VÀ KHUNG 3D ĐÃ SẴN SÀNG
             if json_data_23 and any(k in json_data_23 for k in ["FW", "MF", "DF", "GK"]):
                 s1, s2, s3, s4 = st.tabs(["⚽ FW", "🎯 MF", "🛡️ DF", "🧤 GK"])
                 with s1: st.markdown(render_expander_from_json(json_data_23.get("FW", [])), unsafe_allow_html=True)
@@ -386,6 +393,19 @@ if 'raw_report' in st.session_state:
                 st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ AI xuất dữ liệu dạng tự do. Dưới đây là bản thô:</span><br><br>{tab4_c}"), unsafe_allow_html=True)
             
         raw_to_save = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
+
+    elif mode_selected == "5":
+        t1, t2, t4 = st.tabs(["⚖️ SO SÁNH TỔNG QUAN", "🛠️ PHÂN TÍCH CHÊNH LỆCH PP", "🎬 KỊCH BẢN THUMBNAIL"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        raw_to_save = f"{tab1_c}\n\n{tab2_c}\n\n{tab4_c}"
+
+    elif mode_selected == "3":
+        t1, t4 = st.tabs(["🪪 TRIẾT LÝ & SƠ ĐỒ KÉP", "🎯 LỆNH CÁ NHÂN (4 SLOT)"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        raw_to_save = f"{tab1_c}\n\n{tab4_c}"
 
     elif mode_selected == "2":
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & BOOSTER", "🛠️ BẢNG BUILD PP", "🎯 LỆNH IN-GAME & TOP 5 SKILLS"])

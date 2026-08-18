@@ -17,7 +17,6 @@ st.set_page_config(page_title="DN SIM MY LEAGUE | DNS", page_icon="⚽", layout=
 vn_time_now = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
 default_is_daytime = 6 <= vn_time_now.hour < 18
 
-# ĐÃ FIX UI 1: Rút gọn nút gạt Theme thành icon [ ☀️ | 🌙 ] để không chiếm diện tích
 if 'manual_theme' not in st.session_state:
     st.session_state['manual_theme'] = "☀️" if default_is_daytime else "🌙"
 
@@ -27,6 +26,7 @@ selected_theme = st.radio("Theme Switcher", ["☀️", "🌙"],
 st.session_state['manual_theme'] = selected_theme
 is_daytime = (st.session_state['manual_theme'] == "☀️")
 
+# LINK LOGO CHUẨN ĐÃ LỌC NỀN TRONG SUỐT
 logo_url = "https://i.postimg.cc/ydpJLXP9/26529F2E-29C2-40BD-B202-BEDC09BAE6F9.png"
 
 if is_daytime:
@@ -69,7 +69,6 @@ custom_css = f"""
     
     [data-testid="stAppViewBlockContainer"] {{ position: relative; z-index: 10; padding-top: 3rem !important; }}
     
-    /* ĐÃ FIX UI 2: Bo gọn viên thuốc, làm mờ đi 1 chút để không cản trở tầm nhìn */
     div[data-testid="stRadio"] {{ 
         position: fixed !important; top: 12px !important; right: 12px !important; z-index: 999999 !important; 
         background-color: {element_bg} !important; border: 1.5px solid {border_color} !important; 
@@ -79,22 +78,26 @@ custom_css = f"""
     div[data-testid="stRadio"]:hover, div[data-testid="stRadio"]:active {{ opacity: 1; transform: scale(1.05); }}
     div[data-testid="stRadio"] label p {{ font-size: 18px !important; margin: 0 !important; padding: 0 !important; }}
     
-    .title-brand {{ text-align: center; color: {border_color} !important; font-size: 2.5rem; font-weight: 900; margin-bottom: 5px; letter-spacing: 2px; }}
+    .title-brand {{ text-align: center; color: {border_color} !important; font-size: 2.5rem; font-weight: 900; margin-bottom: 5px; letter-spacing: 2px; text-shadow: 0px 4px 12px rgba(212, 175, 55, 0.35); }}
     .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.05rem; font-style: italic; margin-bottom: 25px; }}
     label {{ color: {label_color} !important; font-weight: bold !important; font-size: 15px !important; }}
-    .stTextInput>div>div>input, .stSelectbox>div>div>div {{ background-color: {element_bg} !important; color: {text_color} !important; font-weight: 600 !important; border-radius: 12px !important; border: 1px solid {border_color} !important; }}
-    [data-testid="stFileUploader"] section {{ background-color: {element_bg} !important; border: 1.5px dashed {border_color} !important; border-radius: 15px !important; }}
+    .stTextInput>div>div>input, .stSelectbox>div>div>div {{ background-color: {element_bg} !important; color: {text_color} !important; font-weight: 600 !important; border-radius: 12px !important; border: 1px solid {border_color} !important; box-shadow: {shadow_3d} !important; }}
+    [data-testid="stFileUploader"] section {{ background-color: {element_bg} !important; border: 1.5px dashed {border_color} !important; border-radius: 15px !important; box-shadow: {shadow_3d} !important; }}
     [data-testid="stFileUploader"] button {{ background: linear-gradient(135deg, #E5C058, #B8860B) !important; color: #121418 !important; font-weight: bold !important; }}
-    .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058, #B8860B) !important; color: #121418 !important; border-radius: 12px !important; }}
-    div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background-color: {tab_inactive_bg} !important; border: 2px solid rgba(212, 175, 55, 0.6) !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; }}
-    div[data-testid="stTabs"] button[aria-selected="true"] {{ background: linear-gradient(145deg, #E5C058, #C89B2B) !important; }}
-    div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background: {subtab_bg} !important; border-radius: 12px !important; }}
-    div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] {{ background: {subtab_active_bg} !important; border: 1.5px solid {border_color} !important; }}
+    .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058, #B8860B) !important; color: #121418 !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); }}
+    div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background-color: {tab_inactive_bg} !important; border: 2px solid rgba(212, 175, 55, 0.6) !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; }}
+    div[data-testid="stTabs"] button[data-baseweb="tab"] p {{ color: {tab_inactive_color} !important; font-weight: 800 !important; }}
+    div[data-testid="stTabs"] button[aria-selected="true"] {{ background: linear-gradient(145deg, #E5C058, #C89B2B) !important; transform: translateY(-6px); box-shadow: 0px -6px 15px rgba(200, 155, 43, 0.4) !important; }}
+    div[data-testid="stTabs"] button[aria-selected="true"] p {{ color: #121418 !important; font-weight: 900 !important; }}
+    div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background: {subtab_bg} !important; border-radius: 12px !important; transform: none; box-shadow: {subtab_shadow} !important; }}
+    div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] {{ background: {subtab_active_bg} !important; border: 1.5px solid {border_color} !important; box-shadow: {subtab_active_shadow} !important; }}
     .dns-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; margin-bottom: 20px; }}
     .dns-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; color: {text_color} !important; }}
-    .dns-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; }}
-    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; color: #FF4D4D !important; font-weight: bold; margin-bottom: 15px; }}
-    .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); }}
+    .dns-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }}
+    .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; color: #FF4D4D !important; font-weight: bold; margin-bottom: 12px; }}
+    .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); list-style: none; transition: all 0.2s; }}
+    .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #121418 !important; box-shadow: {subtab_active_shadow}; }}
+    .dns-expander summary::-webkit-details-marker {{ display: none; }}
     .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; font-size: 14.5px; border-top: 1px solid rgba(212, 175, 55, 0.1); }}
 </style>
 """
@@ -129,7 +132,7 @@ with col2:
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
-        return "<p style='color: #64748B; font-style: italic; text-align: center;'>Chưa có dữ liệu phân bổ.</p>"
+        return "<p style='color: #64748B; font-style: italic; text-align: center; padding: 20px;'>Chưa có dữ liệu phân bổ.</p>"
     html_out = ""
     for item in items:
         title = item.get("vitri", "Vị trí")
@@ -154,6 +157,16 @@ def format_in_game_json(data):
     html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
     html_out += f"🔹 <strong>Bị dẫn bàn (Nấc Đỏ):</strong> {data.get('k3', '')}"
     return html_out
+
+def translate_json_to_markdown(json_23, json_ingame):
+    md_out = "=== QUY HOẠCH 23 CẦU THỦ ===\n\n"
+    if json_23:
+        for tuyen in ["FW", "MF", "DF", "GK"]:
+            if tuyen in json_23:
+                md_out += f"--- Tuyến {tuyen} ---\n"
+                for item in json_23[tuyen]:
+                    md_out += f"- {item.get('vitri', '')} ({item.get('loai', '')}): Style {item.get('style', '')}. Vai trò: {item.get('vaitro', '')}\n"
+    return md_out
 
 # ---------------------------------------------------------
 # 4. LÕI TƯ DUY AI 
@@ -246,14 +259,18 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
         contents = [context_prompt] + img_list
         
-        client_models = ['gemini-2.5-flash', 'gemini-1.5-flash']
+        # ĐÃ PHỤC HỒI MODEL THEO KEY CỦA BOSS VÀ KHỐI BÁO LỖI CHI TIẾT
+        client_models = ['gemini-3.6-flash']
+        last_error = ""
         for m in client_models:
             try:
                 response = client.models.generate_content(model=m, contents=contents, config=config)
                 if response and response.text: return response.text
-            except: continue
+            except Exception as api_err: 
+                last_error = str(api_err)
+                continue
             
-        return "[LỖI HỆ THỐNG]: Server Google quá tải tạm thời. Vui lòng thử lại!"
+        return f"[LỖI TỪ GOOGLE API]: {last_error}"
     except Exception as e: return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
@@ -286,7 +303,6 @@ if 'raw_report' in st.session_state:
     report_time = st.session_state.get('report_time', vn_time_now.strftime("%d/%m/%Y | %H:%M:%S"))
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
-    # ĐÃ FIX UI 3: XÓA CÁI LOGO NẰM BÊN TRONG THẺ KẾT QUẢ
     def format_tab_content(content):
         if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
@@ -328,9 +344,27 @@ if 'raw_report' in st.session_state:
         with t4: 
             if json_data_ingame: st.markdown(format_tab_content(format_in_game_json(json_data_ingame)), unsafe_allow_html=True)
             else: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+            
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             markdown_sach = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
+             st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
+
+    elif mode_selected == "2":
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & BOOSTER", "🛠️ BẢNG BUILD PP", "🎯 LỆNH IN-GAME & TOP 5 SKILLS"])
+        with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
+        with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
+        with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+        clean_raw = f"{tab1_c}\n\n{tab2_c}\n\n{tab4_c}"
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=300)
 
     else:
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        
+        clean_raw = raw_text.replace("===", "\n\n")
+        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
+             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=250)

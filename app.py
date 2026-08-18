@@ -134,7 +134,7 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON VÀ UI ĐÃ FIX LỆNH DEEP LINE
+# 3. HÀM KẾT XUẤT JSON VÀ UI (ĐÃ BỌC THÉP)
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -172,7 +172,6 @@ def format_in_game_json(data):
     html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
     html_out += f"🔹 <strong>Bị dẫn bàn (Nấc Đỏ):</strong> {data.get('k3', '')}"
     
-    # Chỉ hiện Skill nếu trong JSON có nhả ra (Bên Build Cầu thủ mới có)
     top_skills = data.get("top_5_skills", [])
     if top_skills and isinstance(top_skills, list):
         html_out += "<br><br><strong>3. Top 5 Skills Bắt Buộc:</strong><br><br>"
@@ -208,7 +207,7 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (V5.1 - KỶ LUẬT THÉP VỀ JSON, TÊN CẦU THỦ VÀ DEEP LINE)
+# 4. LÕI TƯ DUY AI (V6.0 - AUTO-RETRY & ÉP CÔNG THỨC & ÉP JSON)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
     try:
@@ -223,7 +222,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
         2. CHỈ SỐ: Đọc và ghi ĐÚNG số màu xanh lá trên ảnh. TUYỆT ĐỐI KHÔNG ghi "chưa tính buff HLV".
         3. CƠ CHẾ DUAL PLAYSTYLE (Khám Cầu Thủ): Nếu Style Xanh khác Basic, bắt buộc phân tích phân bổ PP vào thể lực/phòng ngự.
         4. CƠ CHẾ HLV ĐỜI MỚI (Khám HLV): Phân tích rõ Sơ đồ luân phiên (In/Out Possession) và Tactical Links. TUYỆT ĐỐI CẤM NHẮC TỚI BOOSTER ĐỐI VỚI HLV.
-        5. LUẬT LỆNH CÁ NHÂN (QUAN TRỌNG): Konami ĐÃ XÓA lệnh "Deep Line". TUYỆT ĐỐI CẤM sử dụng từ Deep Line. Lệnh cá nhân hiện chia làm 4 Slot: AT1, AT2 (Dành cho Tấn công) và DF1, DF2 (Dành cho Phòng ngự). Hãy phân bổ đúng 4 slot này.
+        5. LUẬT LỆNH CÁ NHÂN (QUAN TRỌNG): Konami ĐÃ XÓA lệnh "Deep Line". TUYỆT ĐỐI CẤM sử dụng từ Deep Line. Lệnh cá nhân hiện chia làm 4 Slot: AT1, AT2 (Dành cho Tấn công) và DF1, DF2 (Dành cho Phòng ngự).
         """
 
         if "1" in mode:
@@ -234,7 +233,8 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
             
         elif "2" in mode:
             tab1_cmd = "Đánh giá sự tương thích sơ đồ. Đề xuất Slot Booster (Crafting +1) phù hợp với cầu thủ."
-            tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ. Nếu có Style Xanh đặc biệt, giải thích cách phân bổ điểm thể lực/phòng ngự."
+            # ĐÃ FIX: ÉP BUỘC IN CÔNG THỨC RÕ RÀNG Ở ĐẦU
+            tab2_cmd = "BẮT BUỘC liệt kê RÕ CÔNG THỨC PHÂN BỔ ĐIỂM Ở ĐẦU BÀI (Ví dụ: Shooting: 8, Dexterity: 12...). SAU ĐÓ mới viết lập luận chiến thuật giải thích chỉ số. NẾU CÓ Style Xanh đặc biệt, bắt buộc giải thích cách phân bổ điểm thể lực/phòng ngự."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "Đề xuất Lệnh Cá Nhân phù hợp (AT1/AT2/DF1/DF2) và Top 5 Skills."
             
@@ -242,33 +242,24 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
             tab1_cmd = "Khám HLV Tổng Quan: 1. Triết lý. 2. Đề xuất Sơ đồ luân phiên (Công & Thủ). 3. TACTICAL LINKS. (Tuyệt đối dừng lại ở HLV, không build Dream Team 23 người ở đây)."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "Cài đặt Lệnh Cá Nhân. BẮT BUỘC đề xuất 4 slot lệnh: AT1, AT2 (Tấn công) và DF1, DF2 (Phòng ngự). CẤM DÙNG DEEP LINE. Viết dạng văn xuôi giải thích tại sao gán 4 lệnh này cho sơ đồ của HLV, không cần xuất JSON."
+            tab4_cmd = "Cài đặt Lệnh Cá Nhân. BẮT BUỘC đề xuất 4 slot lệnh: AT1, AT2 (Tấn công) và DF1, DF2 (Phòng ngự). CẤM DÙNG DEEP LINE. Viết dạng văn xuôi giải thích tại sao gán 4 lệnh này."
             
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV, Sơ đồ luân phiên và TACTICAL LINKS."
             tab2_cmd = """
             QUY HOẠCH 23 CẦU THỦ CHO SƠ ĐỒ NÀY.
-            [KỶ LUẬT THÉP CỰC ĐỘ]: 
-            - TUYỆT ĐỐI KHÔNG NÊU TÊN BẤT KỲ CẦU THỦ NGOÀI ĐỜI NÀO (Cấm ghi Mbappe, Rodri, Messi, v.v...). 
-            - ĐÂY LÀ CHẾ ĐỘ LÊN KHUNG ĐỘI HÌNH, KHÔNG ĐỀ XUẤT SKILLS Ở ĐÂY.
-            - BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 KHỐI CODE JSON. KHÔNG VIẾT BẤT CỨ VĂN XUÔI NÀO TRƯỚC HOẶC SAU JSON.
-            ```json
+            [KỶ LUẬT THÉP CỰC ĐỘ]: BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 KHỐI CODE JSON NHƯ MẪU BÊN DƯỚI. TUYỆT ĐỐI KHÔNG VIẾT VĂN XUÔI TRƯỚC HAY SAU KHỐI JSON. TUYỆT ĐỐI KHÔNG GHI TÊN CẦU THỦ NGOÀI ĐỜI.
             {
               "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan"}],
               "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo"}],
               "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động"}],
               "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra"}]
             }
-            ```
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
             CÀI ĐẶT 4 SLOT LỆNH IN-GAME & THAY NGƯỜI.
-            [KỶ LUẬT THÉP CỰC ĐỘ]: 
-            - TUYỆT ĐỐI CẤM SỬ DỤNG "DEEP LINE".
-            - KHÔNG ĐỀ XUẤT SKILLS Ở CHẾ ĐỘ NÀY (Xóa trường top_5_skills khỏi JSON).
-            - BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 KHỐI CODE JSON. KHÔNG VIẾT VĂN XUÔI BÊN NGOÀI.
-            ```json
+            [KỶ LUẬT THÉP CỰC ĐỘ]: BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 KHỐI CODE JSON NHƯ MẪU BÊN DƯỚI. KHÔNG VIẾT VĂN XUÔI. CẤM SỬ DỤNG "DEEP LINE". KHÔNG ĐỀ XUẤT SKILLS Ở CHẾ ĐỘ NÀY.
             {
               "individual_instructions": {
                 "AT1": {"lenh": "Anchoring", "vitri": "LWF"},
@@ -278,7 +269,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
               },
               "k1": "Xuất phát...", "k2": "Phòng ngự...", "k3": "Tấn công..."
             }
-            ```
             """
         elif "5" in mode:
             tab1_cmd = "SO SÁNH TỔNG QUAN: So sánh sự khác biệt về tư duy lối chơi, đánh giá điểm yếu của thẻ Auto."
@@ -286,10 +276,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "KỊCH BẢN VIDEO & THUMBNAIL: Đề xuất 3 tiêu đề giật gân, câu view và 1 kịch bản ngắn gọn gọn gàng để làm video Tiktok/Shorts so sánh."
         else:
-            tab1_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab2_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "CẢNH BÁO TỪ CHỐI."
+            tab1_cmd = "CẢNH BÁO TỪ CHỐI."; tab2_cmd = "CẢNH BÁO TỪ CHỐI."; tab3_cmd = "CẢNH BÁO TỪ CHỐI."; tab4_cmd = "CẢNH BÁO TỪ CHỐI."
 
         system_instruction = f"""
         {hard_rules}
@@ -308,21 +295,28 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
         """
         
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
-        if is_compare_mode:
-            context_prompt += " | YÊU CẦU ĐẶC BIỆT: Thực hiện so sánh chi tiết giữa các ảnh được cung cấp."
+        if is_compare_mode: context_prompt += " | YÊU CẦU ĐẶC BIỆT: Thực hiện so sánh chi tiết giữa các ảnh được cung cấp."
             
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.1)
         contents = [context_prompt] + img_list
         
         client_models = ['gemini-3.6-flash']
         last_error = ""
-        for m in client_models:
-            try:
-                response = client.models.generate_content(model=m, contents=contents, config=config)
-                if response and response.text: return response.text
-            except Exception as api_err: 
-                last_error = str(api_err)
-                continue
+        
+        # ĐÃ FIX: THÊM CƠ CHẾ TỰ ĐỘNG THỬ LẠI KHI GOOGLE BỊ QUÁ TẢI (LỖI 503)
+        for attempt in range(3): 
+            for m in client_models:
+                try:
+                    response = client.models.generate_content(model=m, contents=contents, config=config)
+                    if response and response.text: return response.text
+                except Exception as api_err: 
+                    last_error = str(api_err)
+                    if "503" in last_error or "429" in last_error:
+                        time.sleep(3) # Đợi 3s rồi gõ cửa lại Google
+                        continue
+                    else:
+                        break # Lỗi sai Key thì thoát luôn
+            if "503" not in last_error and "429" not in last_error: break
             
         return f"[LỖI TỪ GOOGLE API]: {last_error}"
     except Exception as e: return f"[LỖI HỆ THỐNG]: {str(e)}"
@@ -369,12 +363,16 @@ if 'raw_report' in st.session_state:
             </div>
         </div>"""
 
+    # ĐÃ FIX: TRÁNG GƯƠNG BỘ LỌC JSON, CHỐNG MỌI THỂ LOẠI VĂN XUÔI AI VIẾT BẬY
     def extract_json(text):
         try:
-            json_match = re.search(r'```(?:json)?\n([\s\S]*?)\n```', text, re.IGNORECASE)
-            if json_match: return json.loads(json_match.group(1).strip())
+            json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text, re.IGNORECASE)
+            if json_match:
+                try: return json.loads(json_match.group(1).strip())
+                except: pass
             match = re.search(r'(\{[\s\S]*\})', text)
-            if match: return json.loads(match.group(1))
+            if match: 
+                return json.loads(match.group(1).strip())
         except: pass
         return None
 
@@ -393,13 +391,13 @@ if 'raw_report' in st.session_state:
                 with s3: st.markdown(render_expander_from_json(json_data_23.get("DF", [])), unsafe_allow_html=True)
                 with s4: st.markdown(render_expander_from_json(json_data_23.get("GK", [])), unsafe_allow_html=True)
             else:
-                st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ CẢNH BÁO LỖI VĂN XUÔI: AI đã lanh chanh nhét tên cầu thủ vào nên khung 3D không load được. Dưới đây là bản thô:</span><br><br>{tab2_c}"), unsafe_allow_html=True)
+                st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ CẢNH BÁO LỖI VĂN XUÔI: AI đã viết sai cấu trúc JSON. Dưới đây là bản thô:</span><br><br>{tab2_c}"), unsafe_allow_html=True)
                 
         with t4: 
             if json_data_ingame and "individual_instructions" in json_data_ingame: 
                 st.markdown(format_tab_content(format_in_game_json(json_data_ingame)), unsafe_allow_html=True)
             else: 
-                st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ AI xuất dữ liệu dạng tự do. Dưới đây là bản thô:</span><br><br>{tab4_c}"), unsafe_allow_html=True)
+                st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ CẢNH BÁO LỖI VĂN XUÔI: AI đã viết sai cấu trúc JSON. Dưới đây là bản thô:</span><br><br>{tab4_c}"), unsafe_allow_html=True)
             
         raw_to_save = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
 

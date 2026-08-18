@@ -20,13 +20,16 @@ default_is_daytime = 6 <= vn_time_now.hour < 18
 if 'manual_theme' not in st.session_state:
     st.session_state['manual_theme'] = "☀️" if default_is_daytime else "🌙"
 
+# KHỞI TẠO BỘ NHỚ LƯU TRỮ (KHAY DỰ ÁN)
+if 'project_tray' not in st.session_state:
+    st.session_state['project_tray'] = []
+
 selected_theme = st.radio("Theme Switcher", ["☀️", "🌙"], 
                           index=0 if st.session_state['manual_theme'] == "☀️" else 1,
                           horizontal=True, label_visibility="collapsed")
 st.session_state['manual_theme'] = selected_theme
 is_daytime = (st.session_state['manual_theme'] == "☀️")
 
-# LINK LOGO CHUẨN ĐÃ LỌC NỀN TRONG SUỐT
 logo_url = "https://i.postimg.cc/ydpJLXP9/26529F2E-29C2-40BD-B202-BEDC09BAE6F9.png"
 
 if is_daytime:
@@ -99,6 +102,7 @@ custom_css = f"""
     .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #121418 !important; box-shadow: {subtab_active_shadow}; }}
     .dns-expander summary::-webkit-details-marker {{ display: none; }}
     .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; font-size: 14.5px; border-top: 1px solid rgba(212, 175, 55, 0.1); }}
+    .tray-box {{ background-color: {element_bg}; border: 1.5px dashed {border_color}; border-radius: 12px; padding: 15px; margin-top: 25px; box-shadow: {shadow_3d}; }}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -178,13 +182,13 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         client = genai.Client(api_key=api_key)
         
         hard_rules = """
+        [ĐÓNG VAI TRÒ: CHUYÊN GIA PHÂN TÍCH CHIẾN THUẬT THỰC CHIẾN TẠI DN SIM MY LEAGUE]
         [LUẬT THÉP BẬT TẮT META - CẤM LỖI LOGIC TỰ VẢ]:
-        1. LOGIC ĐỒNG NHẤT CHIẾN THUẬT (QUAN TRỌNG NHẤT):
-           - KHÁM HLV (Sa bàn): CHỈ tập trung vào Sơ đồ, Triết lý. TUYỆT ĐỐI CẤM đề xuất Slot Booster (Crafting) hay bóp quỹ PP cho HLV.
-           - KHÁM CẦU THỦ (PP): CHỈ tập trung vào thông số cá nhân, Hitbox, Sải chân, PP.
-           - SỰ LOGIC TỰ NHIÊN: Nếu HLV đá Possession Game (Kiểm soát) -> Mọi lệnh cá nhân & kỹ năng (Skills) đề xuất PHẢI phục vụ bóng ngắn, ban bật. TUYỆT ĐỐI CẤM đề xuất phất bóng bổng (Lofted Pass) cho sơ đồ Possession.
-        2. QUY TẮC NGÔN NGỮ ZERO-FLUFF: Không dùng HTML. 100% Tên chỉ số in-game phải ghi Tiếng Anh (Speed, Finishing, Defensive Awareness...). Không bao giờ dịch ra Tiếng Việt.
-        3. LỆNH CÁ NHÂN IN-GAME CHUẨN META:
+        1. LOGIC ĐỒNG NHẤT CHIẾN THUẬT:
+           - HLV đá Possession Game -> Mọi lệnh cá nhân & kỹ năng đề xuất PHẢI phục vụ bóng ngắn, ban bật. TUYỆT ĐỐI CẤM xúi phất bóng bổng (Lofted Pass).
+        2. QUY TẮC NGÔN NGỮ ZERO-FLUFF: Không dùng HTML. 100% Tên chỉ số in-game phải ghi Tiếng Anh. TUYỆT ĐỐI KHÔNG in ra các thẻ/ngoặc vuông định hướng. Sử dụng từ ngữ chuyên môn bóng đá thực tế, đa dạng, mượt mà và dễ hiểu cho người chơi. Tuyệt đối không dùng từ R&D.
+        3. CHỈ SỐ CHÍNH XÁC TUYỆT ĐỐI: Phải đọc và ghi ĐÚNG con số cuối cùng (màu xanh lá) hiển thị trên ảnh (tức là đã bao gồm điểm buff HLV). KHÔNG tự ý làm toán trừ đi điểm buff. TUYỆT ĐỐI KHÔNG dùng cụm từ "chưa tính buff HLV" hay "chưa tính buff".
+        4. LỆNH CÁ NHÂN IN-GAME CHUẨN META:
            - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
            - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
         """
@@ -197,7 +201,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
             
         elif "2" in mode:
             tab1_cmd = "Đánh giá sự tương thích của Cầu thủ trong sơ đồ. Đề xuất Slot Booster (Crafting +1) phù hợp với thẻ cầu thủ."
-            tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ BẰNG TIẾNG ANH. Giải thích [LẬP LUẬN TACTICAL SÁT THƯƠNG] ở mỗi nhánh. Xài hết sạch quỹ PP."
+            tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ BẰNG TIẾNG ANH. Viết lập luận chiến thuật sắc bén, dùng từ chuyên môn đa dạng ở mỗi nhánh (TUYỆT ĐỐI KHÔNG in thẻ ngoặc vuông). Xài hết sạch quỹ PP."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = "Gán Lệnh Cá Nhân phù hợp lối chơi và Đề xuất Top 5 Skills cho cầu thủ."
             
@@ -210,7 +214,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV và vẽ sa bàn Công/Thủ."
             tab2_cmd = """
-            QUY HOẠCH 23 CẦU THỦ (11 CHÍNH + 12 DỰ BỊ). KHÔNG NÊU TÊN NGOÀI ĐỜI. BẮT BUỘC TRẢ VỀ ĐÚNG FORMAT JSON DƯỚI ĐÂY BÊN TRONG CẶP DẤU ```json VÀ ```. TUYỆT ĐỐI KHÔNG THÊM CHỮ BÊN NGOÀI.
+            QUY HOẠCH 23 CẦU THỦ (11 CHÍNH + 12 DỰ BỊ). KHÔNG NÊU TÊN NGOÀI ĐỜI. BẮT BUỘC TRẢ VỀ ĐÚNG FORMAT JSON DƯỚI ĐÂY BÊN TRONG CẶP DẤU ```json VÀ ```.
             ```json
             {
               "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan..."}],
@@ -259,7 +263,6 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         context_prompt = f"Thông tin: {p_info} | Hệ: {eco} | Chế độ: {mode}"
         contents = [context_prompt] + img_list
         
-        # ĐÃ PHỤC HỒI MODEL THEO KEY CỦA BOSS VÀ KHỐI BÁO LỖI CHI TIẾT
         client_models = ['gemini-3.6-flash']
         last_error = ""
         for m in client_models:
@@ -274,7 +277,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
     except Exception as e: return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER BÁO CÁO KẾT QUẢ
+# 5. RENDER BÁO CÁO KẾT QUẢ & LƯU KHAY DỰ ÁN
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -345,26 +348,48 @@ if 'raw_report' in st.session_state:
             if json_data_ingame: st.markdown(format_tab_content(format_in_game_json(json_data_ingame)), unsafe_allow_html=True)
             else: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
             
-        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             markdown_sach = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
-             st.text_area("Văn bản gốc (Markdown Dịch Sạch):", value=markdown_sach, height=350)
+        raw_to_save = f"{tab1_c}\n\n{translate_json_to_markdown(json_data_23, json_data_ingame)}"
 
     elif mode_selected == "2":
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & BOOSTER", "🛠️ BẢNG BUILD PP", "🎯 LỆNH IN-GAME & TOP 5 SKILLS"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
-        
-        clean_raw = f"{tab1_c}\n\n{tab2_c}\n\n{tab4_c}"
-        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=300)
+        raw_to_save = f"{tab1_c}\n\n{tab2_c}\n\n{tab4_c}"
 
     else:
         t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ PHÂN BỔ PP", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         with t2: st.markdown(format_tab_content(tab2_c), unsafe_allow_html=True)
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
+        raw_to_save = raw_text.replace("===", "\n\n")
         
-        clean_raw = raw_text.replace("===", "\n\n")
-        with st.expander("Bấm vào đây để Copy văn bản thô (Dành cho Team Content)"):
-             st.text_area("Văn bản gốc:", value=clean_raw.strip(), height=250)
+    # --- CHỨC NĂNG LƯU VÀO KHAY DỰ ÁN ---
+    st.markdown("---")
+    col_save, col_dl = st.columns(2)
+    with col_save:
+        if st.button("💾 LƯU BÁO CÁO NÀY VÀO KHAY"):
+            current_title = player_info if player_info else f"Báo cáo lúc {report_time}"
+            st.session_state['project_tray'].append({
+                "title": current_title,
+                "content": raw_to_save.strip()
+            })
+            st.rerun()
+
+    if len(st.session_state['project_tray']) > 0:
+        with col_dl:
+            master_text = "=== HỒ SƠ THẨM ĐỊNH CHIẾN THUẬT - DN SIM MY LEAGUE ===\n\n"
+            for idx, item in enumerate(st.session_state['project_tray']):
+                master_text += f"--- {idx + 1}. {item['title']} ---\n{item['content']}\n\n"
+            st.download_button(
+                label=f"📥 TẢI XUỐNG DỰ ÁN ({len(st.session_state['project_tray'])} MỤC)",
+                data=master_text,
+                file_name=f"DNS_Project_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
+                mime="text/plain"
+            )
+            
+        st.markdown(f"""<div class="tray-box"><p style="color: {label_color}; font-weight: 900; margin-bottom: 5px;">📁 KHAY DỰ ÁN ĐANG LƯU ({len(st.session_state['project_tray'])} cầu thủ/HLV)</p></div>""", unsafe_allow_html=True)
+        
+        if st.button("🗑️ XÓA SẠCH KHAY DỰ ÁN ĐỂ LÀM KHÁCH MỚI"):
+             st.session_state['project_tray'] = []
+             st.rerun()

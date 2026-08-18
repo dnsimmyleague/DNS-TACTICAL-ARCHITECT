@@ -17,16 +17,16 @@ st.set_page_config(page_title="DN SIM MY LEAGUE | DNS", page_icon="⚽", layout=
 vn_time_now = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
 default_is_daytime = 6 <= vn_time_now.hour < 18
 
+# ĐÃ FIX UI 1: Rút gọn nút gạt Theme thành icon [ ☀️ | 🌙 ] để không chiếm diện tích
 if 'manual_theme' not in st.session_state:
-    st.session_state['manual_theme'] = "Ban Ngày ☀️" if default_is_daytime else "Ban Đêm 🌙"
+    st.session_state['manual_theme'] = "☀️" if default_is_daytime else "🌙"
 
-selected_theme = st.radio("Theme Switcher", ["Ban Ngày ☀️", "Ban Đêm 🌙"], 
-                          index=0 if st.session_state['manual_theme'] == "Ban Ngày ☀️" else 1,
+selected_theme = st.radio("Theme Switcher", ["☀️", "🌙"], 
+                          index=0 if st.session_state['manual_theme'] == "☀️" else 1,
                           horizontal=True, label_visibility="collapsed")
 st.session_state['manual_theme'] = selected_theme
-is_daytime = (st.session_state['manual_theme'] == "Ban Ngày ☀️")
+is_daytime = (st.session_state['manual_theme'] == "☀️")
 
-# LINK LOGO PNG TRONG SUỐT CỦA BOSS
 logo_url = "https://i.postimg.cc/ydpJLXP9/26529F2E-29C2-40BD-B202-BEDC09BAE6F9.png"
 
 if is_daytime:
@@ -60,28 +60,25 @@ custom_css = f"""
     [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1.5px solid {border_color}; margin-top: 15px; }}
     [data-testid="stExpander"] summary p {{ color: {text_color} !important; font-weight: 800 !important; font-size: 15px; }}
     
-    /* ĐÃ FIX HIỂN THỊ LOGO TRÊN CẢ MOBILE VÀ LAPTOP */
     .stApp::before {{ 
-        content: "";
-        position: fixed; 
-        top: 50%; 
-        left: 50%; 
-        transform: translate(-50%, -50%); 
-        width: 85vw; 
-        max-width: 450px; 
-        height: 85vw; 
-        max-height: 450px; 
-        background-image: url('{logo_url}'); 
-        background-size: contain; 
-        background-repeat: no-repeat; 
-        background-position: center; 
-        opacity: 0.15; 
-        pointer-events: none; 
-        z-index: 999999; 
+        content: ""; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+        width: 85vw; max-width: 450px; height: 85vw; max-height: 450px; 
+        background-image: url('{logo_url}'); background-size: contain; background-repeat: no-repeat; 
+        background-position: center; opacity: 0.15; pointer-events: none; z-index: 999999; 
     }}
     
     [data-testid="stAppViewBlockContainer"] {{ position: relative; z-index: 10; padding-top: 3rem !important; }}
-    div[data-testid="stRadio"] {{ position: fixed !important; top: 15px !important; right: 15px !important; z-index: 999999 !important; background-color: {element_bg} !important; border: 1.5px solid {border_color} !important; border-radius: 30px !important; padding: 4px 12px !important; box-shadow: {shadow_3d} !important; }}
+    
+    /* ĐÃ FIX UI 2: Bo gọn viên thuốc, làm mờ đi 1 chút để không cản trở tầm nhìn */
+    div[data-testid="stRadio"] {{ 
+        position: fixed !important; top: 12px !important; right: 12px !important; z-index: 999999 !important; 
+        background-color: {element_bg} !important; border: 1.5px solid {border_color} !important; 
+        border-radius: 30px !important; padding: 2px 10px !important; box-shadow: {shadow_3d} !important; 
+        opacity: 0.65; transition: opacity 0.3s ease, transform 0.3s ease; 
+    }}
+    div[data-testid="stRadio"]:hover, div[data-testid="stRadio"]:active {{ opacity: 1; transform: scale(1.05); }}
+    div[data-testid="stRadio"] label p {{ font-size: 18px !important; margin: 0 !important; padding: 0 !important; }}
+    
     .title-brand {{ text-align: center; color: {border_color} !important; font-size: 2.5rem; font-weight: 900; margin-bottom: 5px; letter-spacing: 2px; }}
     .slogan {{ text-align: center; color: {slogan_color} !important; font-size: 1.05rem; font-style: italic; margin-bottom: 25px; }}
     label {{ color: {label_color} !important; font-weight: bold !important; font-size: 15px !important; }}
@@ -94,7 +91,6 @@ custom_css = f"""
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background: {subtab_bg} !important; border-radius: 12px !important; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] {{ background: {subtab_active_bg} !important; border: 1.5px solid {border_color} !important; }}
     .dns-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; margin-bottom: 20px; }}
-    .dns-logo-3d {{ max-width: 90px; border-radius: 10px; border: 2px solid {border_color}; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }}
     .dns-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; color: {text_color} !important; }}
     .dns-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; color: {slogan_color}; font-size: 13px; display: flex; justify-content: space-between; }}
     .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; color: #FF4D4D !important; font-weight: bold; margin-bottom: 15px; }}
@@ -160,7 +156,7 @@ def format_in_game_json(data):
     return html_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (V1.1 - CHỐNG LỖI LOGIC TỰ VẢ)
+# 4. LÕI TƯ DUY AI 
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -261,7 +257,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
     except Exception as e: return f"[LỖI HỆ THỐNG]: {str(e)}"
 
 # ---------------------------------------------------------
-# 5. RENDER & FIX LỖI [ 0 : NULL ]
+# 5. RENDER BÁO CÁO KẾT QUẢ
 # ---------------------------------------------------------
 if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     if not uploaded_players and not uploaded_managers: 
@@ -269,13 +265,10 @@ if st.button("🚀 BẮT ĐẦU PHÂN TÍCH"):
     else:
         with st.spinner("Đang trích xuất Báo cáo Sa bàn..."):
             images_to_send = []
-            
             if uploaded_players: 
-                for f in uploaded_players: 
-                    images_to_send.append(Image.open(f).copy())
+                for f in uploaded_players: images_to_send.append(Image.open(f).copy())
             if uploaded_managers: 
-                for f in uploaded_managers: 
-                    images_to_send.append(Image.open(f).copy())
+                for f in uploaded_managers: images_to_send.append(Image.open(f).copy())
                     
             st.session_state['raw_report'] = execute_tactical_analysis(images_to_send, player_info, ecosystem, analysis_mode)
             st.session_state['report_time'] = vn_time_now.strftime("%d/%m/%Y | %H:%M:%S")
@@ -293,12 +286,12 @@ if 'raw_report' in st.session_state:
     report_time = st.session_state.get('report_time', vn_time_now.strftime("%d/%m/%Y | %H:%M:%S"))
     footer_text_color = "#64748B" if is_daytime else "#94A3B8"
     
+    # ĐÃ FIX UI 3: XÓA CÁI LOGO NẰM BÊN TRONG THẺ KẾT QUẢ
     def format_tab_content(content):
         if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
         return f"""<div class="dns-card">
-            <img src="{logo_url}" class="dns-logo-3d">
             <div class="dns-text">{html_content}</div>
             <div class="dns-footer">
                 <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>

@@ -128,14 +128,13 @@ col1, col2 = st.columns(2)
 with col1:
     player_info = st.text_input("👤 Tên Cầu thủ/Sơ đồ:", placeholder="Ví dụ: Roberto Carlos, 4-2-1-3...")
     ecosystem = st.selectbox("🌐 Chọn hệ sinh thái (SIM AI / PvP):", ["SIM AI", "PvP"], index=1)
-    # ĐÃ PHỤC HỒI NÚT TICK SO SÁNH CỦA BOSS
     is_compare = st.checkbox("🔍 Kích hoạt So sánh (Dành cho 2 ảnh trở lên)", value=False)
 with col2:
     uploaded_players = st.file_uploader("📸 1. Tải ảnh Cầu thủ (eFHUB/In-game):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON VÀ UI 
+# 3. HÀM KẾT XUẤT JSON VÀ UI ĐÃ FIX LỆNH DEEP LINE
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -152,21 +151,31 @@ def render_expander_from_json(items):
 
 def format_in_game_json(data):
     if not data: return ""
-    atk_list = data.get("individual_instructions", {}).get("tan_cong", [])
-    def_list = data.get("individual_instructions", {}).get("phong_ngu", [])
-    atk_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in atk_list]) if isinstance(atk_list, list) else str(atk_list)
-    def_str = "<br>".join([f"🔸 Gán <strong>{i.get('lenh_duoc_chon', '')}</strong> cho {i.get('ap_dung_cho_vi_tri', '')}" for i in def_list]) if isinstance(def_list, list) else str(def_list)
-    html_out = "<strong>1. Cài đặt Lệnh Cá nhân (Individual Instructions):</strong><br><br>"
-    html_out += f"🔹 <strong style='color:#FF4D4D;'>Tấn công:</strong><br><span style='margin-left: 20px; display: block;'>{atk_str}</span><br>"
-    html_out += f"🔹 <strong style='color:#4D94FF;'>Phòng ngự:</strong><br><span style='margin-left: 20px; display: block;'>{def_str}</span><br><br>"
+    inst = data.get("individual_instructions", {})
+    
+    html_out = "<strong>1. Cài đặt Lệnh Cá nhân (4 Slot AT/DF chuẩn Meta):</strong><br><br>"
+    
+    html_out += f"🔹 <strong style='color:#FF4D4D;'>Tấn công (AT):</strong><br>"
+    if "AT1" in inst:
+        html_out += f"<span style='margin-left: 20px;'>🔸 AT1: <strong>{inst.get('AT1', {}).get('lenh', '')}</strong> cho {inst.get('AT1', {}).get('vitri', '')}</span><br>"
+    if "AT2" in inst:
+        html_out += f"<span style='margin-left: 20px;'>🔸 AT2: <strong>{inst.get('AT2', {}).get('lenh', '')}</strong> cho {inst.get('AT2', {}).get('vitri', '')}</span><br>"
+    
+    html_out += f"<br>🔹 <strong style='color:#4D94FF;'>Phòng ngự (DF):</strong><br>"
+    if "DF1" in inst:
+        html_out += f"<span style='margin-left: 20px;'>🔸 DF1: <strong>{inst.get('DF1', {}).get('lenh', '')}</strong> cho {inst.get('DF1', {}).get('vitri', '')}</span><br>"
+    if "DF2" in inst:
+        html_out += f"<span style='margin-left: 20px;'>🔸 DF2: <strong>{inst.get('DF2', {}).get('lenh', '')}</strong> cho {inst.get('DF2', {}).get('vitri', '')}</span><br><br>"
+    
     html_out += "<strong>2. Kịch bản Thay người (Mental Level):</strong><br><br>"
     html_out += f"🔹 <strong>Start Game:</strong> {data.get('k1', '')}<br>"
     html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
     html_out += f"🔹 <strong>Bị dẫn bàn (Nấc Đỏ):</strong> {data.get('k3', '')}"
     
+    # Chỉ hiện Skill nếu trong JSON có nhả ra (Bên Build Cầu thủ mới có)
     top_skills = data.get("top_5_skills", [])
     if top_skills and isinstance(top_skills, list):
-        html_out += "<br><br><strong>3. Top 5 Skills Bắt Buộc Cho Bộ Khung:</strong><br><br>"
+        html_out += "<br><br><strong>3. Top 5 Skills Bắt Buộc:</strong><br><br>"
         for skill in top_skills:
             html_out += f"⭐ {skill}<br>"
             
@@ -182,27 +191,24 @@ def translate_json_to_markdown(json_23, json_ingame):
                     md_out += f"- {item.get('vitri', '')} ({item.get('loai', '')}): Style {item.get('style', '')}. Vai trò: {item.get('vaitro', '')}\n"
     
     if json_ingame:
-        md_out += "\n=== CÀI ĐẶT LỆNH & KỸ NĂNG IN-GAME ===\n\n"
-        atk = json_ingame.get("individual_instructions", {}).get("tan_cong", [])
-        if atk:
-            md_out += "🔸 Tấn công:\n"
-            for i in atk: md_out += f"   - Gán {i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}\n"
-        df = json_ingame.get("individual_instructions", {}).get("phong_ngu", [])
-        if df:
-            md_out += "🔸 Phòng ngự:\n"
-            for i in df: md_out += f"   - Gán {i.get('lenh_duoc_chon', '')} cho {i.get('ap_dung_cho_vi_tri', '')}\n"
+        md_out += "\n=== CÀI ĐẶT LỆNH 4 SLOT IN-GAME ===\n\n"
+        inst = json_ingame.get("individual_instructions", {})
+        if "AT1" in inst: md_out += f"🔸 AT1: {inst['AT1'].get('lenh', '')} cho {inst['AT1'].get('vitri', '')}\n"
+        if "AT2" in inst: md_out += f"🔸 AT2: {inst['AT2'].get('lenh', '')} cho {inst['AT2'].get('vitri', '')}\n"
+        if "DF1" in inst: md_out += f"🔸 DF1: {inst['DF1'].get('lenh', '')} cho {inst['DF1'].get('vitri', '')}\n"
+        if "DF2" in inst: md_out += f"🔸 DF2: {inst['DF2'].get('lenh', '')} cho {inst['DF2'].get('vitri', '')}\n"
             
         md_out += f"\n🔸 Kịch bản thay người:\n   - Start Game: {json_ingame.get('k1', '')}\n   - Dẫn bàn (Xanh): {json_ingame.get('k2', '')}\n   - Bị dẫn (Đỏ): {json_ingame.get('k3', '')}\n"
         
         skills = json_ingame.get("top_5_skills", [])
         if skills:
-            md_out += "\n🔸 Top 5 Skills Bắt Buộc Cho Sa Bàn:\n"
+            md_out += "\n🔸 Top 5 Skills Bắt Buộc:\n"
             for s in skills: md_out += f"   - {s}\n"
             
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (V5.0 - PHÂN LUỒNG MODE 3 VÀ MODE 5)
+# 4. LÕI TƯ DUY AI (V5.1 - KỶ LUẬT THÉP VỀ JSON, TÊN CẦU THỦ VÀ DEEP LINE)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
     try:
@@ -213,10 +219,11 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
         hard_rules = """
         [ĐÓNG VAI TRÒ: CHUYÊN GIA PHÂN TÍCH CHIẾN THUẬT THỰC CHIẾN]
         [LUẬT THÉP eFOOTBALL 2027 KHẮT KHE]:
-        1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn thực chiến. KHÔNG dùng HTML. KHÔNG in ngoặc vuông định hướng. Tuyệt đối không dùng từ R&D.
+        1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn thực chiến. KHÔNG dùng HTML. KHÔNG in ngoặc vuông. Tuyệt đối không dùng từ R&D.
         2. CHỈ SỐ: Đọc và ghi ĐÚNG số màu xanh lá trên ảnh. TUYỆT ĐỐI KHÔNG ghi "chưa tính buff HLV".
         3. CƠ CHẾ DUAL PLAYSTYLE (Khám Cầu Thủ): Nếu Style Xanh khác Basic, bắt buộc phân tích phân bổ PP vào thể lực/phòng ngự.
-        4. CƠ CHẾ HLV ĐỜI MỚI (Khám HLV): Phân tích rõ Sơ đồ luân phiên (In/Out Possession) và Tactical Links. TUYỆT ĐỐI CẤM NHẮC TỚI BOOSTER/CRAFTING ĐỐI VỚI HLV.
+        4. CƠ CHẾ HLV ĐỜI MỚI (Khám HLV): Phân tích rõ Sơ đồ luân phiên (In/Out Possession) và Tactical Links. TUYỆT ĐỐI CẤM NHẮC TỚI BOOSTER ĐỐI VỚI HLV.
+        5. LUẬT LỆNH CÁ NHÂN (QUAN TRỌNG): Konami ĐÃ XÓA lệnh "Deep Line". TUYỆT ĐỐI CẤM sử dụng từ Deep Line. Lệnh cá nhân hiện chia làm 4 Slot: AT1, AT2 (Dành cho Tấn công) và DF1, DF2 (Dành cho Phòng ngự). Hãy phân bổ đúng 4 slot này.
         """
 
         if "1" in mode:
@@ -229,49 +236,52 @@ def execute_tactical_analysis(img_list, p_info, eco, mode, is_compare_mode):
             tab1_cmd = "Đánh giá sự tương thích sơ đồ. Đề xuất Slot Booster (Crafting +1) phù hợp với cầu thủ."
             tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ. Nếu có Style Xanh đặc biệt, giải thích cách phân bổ điểm thể lực/phòng ngự."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "Lệnh Cá Nhân phù hợp và Top 5 Skills."
+            tab4_cmd = "Đề xuất Lệnh Cá Nhân phù hợp (AT1/AT2/DF1/DF2) và Top 5 Skills."
             
         elif "3" in mode:
             tab1_cmd = "Khám HLV Tổng Quan: 1. Triết lý. 2. Đề xuất Sơ đồ luân phiên (Công & Thủ). 3. TACTICAL LINKS. (Tuyệt đối dừng lại ở HLV, không build Dream Team 23 người ở đây)."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab4_cmd = "Cài đặt Lệnh Cá Nhân (Individual Instructions). Lưu ý: Game cho phép gán tối đa 4 slot lệnh. Hãy đề xuất đúng 4 lệnh (kết hợp công thủ) sắc bén nhất để vận hành sơ đồ Công/Thủ của HLV này. Viết dạng văn xuôi giải thích chi tiết, không cần xuất JSON."
+            tab4_cmd = "Cài đặt Lệnh Cá Nhân. BẮT BUỘC đề xuất 4 slot lệnh: AT1, AT2 (Tấn công) và DF1, DF2 (Phòng ngự). CẤM DÙNG DEEP LINE. Viết dạng văn xuôi giải thích tại sao gán 4 lệnh này cho sơ đồ của HLV, không cần xuất JSON."
             
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV, Sơ đồ luân phiên và TACTICAL LINKS."
             tab2_cmd = """
             QUY HOẠCH 23 CẦU THỦ CHO SƠ ĐỒ NÀY.
-            [KỶ LUẬT THÉP]: TUYỆT ĐỐI KHÔNG ĐƯỢC VÍ DỤ HAY NHẮC ĐẾN BẤT KỲ TÊN CẦU THỦ NGOÀI ĐỜI NÀO. 
-            BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐOẠN CODE JSON. TUYỆT ĐỐI KHÔNG ĐƯỢC VIẾT BẤT CỨ VĂN XUÔI NÀO BÊN NGOÀI KHỐI JSON.
+            [KỶ LUẬT THÉP CỰC ĐỘ]: 
+            - TUYỆT ĐỐI KHÔNG NÊU TÊN BẤT KỲ CẦU THỦ NGOÀI ĐỜI NÀO (Cấm ghi Mbappe, Rodri, Messi, v.v...). 
+            - ĐÂY LÀ CHẾ ĐỘ LÊN KHUNG ĐỘI HÌNH, KHÔNG ĐỀ XUẤT SKILLS Ở ĐÂY.
+            - BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 KHỐI CODE JSON. KHÔNG VIẾT BẤT CỨ VĂN XUÔI NÀO TRƯỚC HOẶC SAU JSON.
             ```json
             {
-              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan..."}],
-              "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo..."}],
-              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động..."}],
-              "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra..."}]
+              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan"}],
+              "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo"}],
+              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động"}],
+              "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra"}]
             }
             ```
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            CÀI ĐẶT LỆNH & SKILLS.
-            [KỶ LUẬT THÉP]: KHÔNG NHẮC TÊN CẦU THỦ NGOÀI ĐỜI. BẮT BUỘC CHỈ TRẢ VỀ 1 ĐOẠN CODE JSON DUY NHẤT. KHÔNG VIẾT VĂN XUÔI BÊN NGOÀI.
+            CÀI ĐẶT 4 SLOT LỆNH IN-GAME & THAY NGƯỜI.
+            [KỶ LUẬT THÉP CỰC ĐỘ]: 
+            - TUYỆT ĐỐI CẤM SỬ DỤNG "DEEP LINE".
+            - KHÔNG ĐỀ XUẤT SKILLS Ở CHẾ ĐỘ NÀY (Xóa trường top_5_skills khỏi JSON).
+            - BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 KHỐI CODE JSON. KHÔNG VIẾT VĂN XUÔI BÊN NGOÀI.
             ```json
             {
               "individual_instructions": {
-                "tan_cong": [{"lenh_duoc_chon": "Defensive", "ap_dung_cho_vi_tri": "DMF"}],
-                "phong_ngu": [{"lenh_duoc_chon": "Counter Target", "ap_dung_cho_vi_tri": "CF"}]
+                "AT1": {"lenh": "Anchoring", "vitri": "LWF"},
+                "AT2": {"lenh": "Offensive", "vitri": "CB"},
+                "DF1": {"lenh": "Counter Target", "vitri": "CF"},
+                "DF2": {"lenh": "Tight Marking", "vitri": "AMF"}
               },
-              "k1": "Xuất phát...", "k2": "Phòng ngự...", "k3": "Tấn công...",
-              "top_5_skills": [
-                "1. Tên Skill: Lý do...",
-                "2. Tên Skill: Lý do..."
-              ]
+              "k1": "Xuất phát...", "k2": "Phòng ngự...", "k3": "Tấn công..."
             }
             ```
             """
         elif "5" in mode:
-            tab1_cmd = "SO SÁNH TỔNG QUAN: (Ảnh 1 - Auto vs Ảnh 2 - DNS). So sánh sự khác biệt về tư duy lối chơi, đánh giá điểm yếu của Auto."
+            tab1_cmd = "SO SÁNH TỔNG QUAN: So sánh sự khác biệt về tư duy lối chơi, đánh giá điểm yếu của thẻ Auto."
             tab2_cmd = "PHÂN TÍCH CHÊNH LỆCH PP: Đi sâu vào chênh lệch các chỉ số Tiếng Anh (Speed, Awareness...). Giải thích tại sao cách Build DNS (Thủ công) lại mang tính sát thương cao hơn."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "KỊCH BẢN VIDEO & THUMBNAIL: Đề xuất 3 tiêu đề giật gân, câu view và 1 kịch bản ngắn gọn gọn gàng để làm video Tiktok/Shorts so sánh."
@@ -368,9 +378,8 @@ if 'raw_report' in st.session_state:
         except: pass
         return None
 
-    # RENDER THEO TỪNG MODE ĐỂ KHÔNG BỊ TRẬT ĐƯỜNG RAY
     if mode_selected == "4":
-        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ QUY HOẠCH 23 CẦU THỦ", "🎯 CÀI ĐẶT & KỸ NĂNG SA BÀN"])
+        t1, t2, t4 = st.tabs(["🪪 THẨM ĐỊNH & TRIẾT LÝ", "🛠️ QUY HOẠCH 23 CẦU THỦ", "🎯 CÀI ĐẶT 4 SLOT LỆNH"])
         with t1: st.markdown(format_tab_content(tab1_c), unsafe_allow_html=True)
         
         json_data_23 = extract_json(tab2_c)
@@ -384,10 +393,10 @@ if 'raw_report' in st.session_state:
                 with s3: st.markdown(render_expander_from_json(json_data_23.get("DF", [])), unsafe_allow_html=True)
                 with s4: st.markdown(render_expander_from_json(json_data_23.get("GK", [])), unsafe_allow_html=True)
             else:
-                st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ AI xuất dữ liệu dạng tự do. Dưới đây là bản thô:</span><br><br>{tab2_c}"), unsafe_allow_html=True)
+                st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ CẢNH BÁO LỖI VĂN XUÔI: AI đã lanh chanh nhét tên cầu thủ vào nên khung 3D không load được. Dưới đây là bản thô:</span><br><br>{tab2_c}"), unsafe_allow_html=True)
                 
         with t4: 
-            if json_data_ingame and ("individual_instructions" in json_data_ingame or "top_5_skills" in json_data_ingame): 
+            if json_data_ingame and "individual_instructions" in json_data_ingame: 
                 st.markdown(format_tab_content(format_in_game_json(json_data_ingame)), unsafe_allow_html=True)
             else: 
                 st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ AI xuất dữ liệu dạng tự do. Dưới đây là bản thô:</span><br><br>{tab4_c}"), unsafe_allow_html=True)
@@ -445,7 +454,7 @@ if 'raw_report' in st.session_state:
                 mime="text/plain"
             )
             
-        st.markdown(f"""<div class="tray-box"><p style="color: {label_color}; font-weight: 900; margin-bottom: 5px;">📁 KHAY DỰ ÁN ĐANG LƯU ({len(st.session_state['project_tray'])} cầu thủ/HLV)</p></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="tray-box"><p style="color: {label_color}; font-weight: 900; margin-bottom: 5px;">📁 KHAY DỰ ÁN ĐANG LƯU ({len(st.session_state['project_tray'])} mục)</p></div>""", unsafe_allow_html=True)
         
         with st.expander("📋 BẤM VÀO ĐÂY ĐỂ COPY TOÀN BỘ (Dành cho Điện thoại)"):
             st.text_area("Văn bản tổng hợp (Chạm vào, chọn tất cả và Copy):", value=master_text, height=300)

@@ -173,7 +173,7 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI 
+# 4. LÕI TƯ DUY AI (V4.0 - SIÊU TRÍ TUỆ META 2027)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -183,43 +183,49 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         
         hard_rules = """
         [ĐÓNG VAI TRÒ: CHUYÊN GIA PHÂN TÍCH CHIẾN THUẬT THỰC CHIẾN TẠI DN SIM MY LEAGUE]
-        [LUẬT THÉP BẬT TẮT META - CẤM LỖI LOGIC TỰ VẢ]:
-        1. LOGIC ĐỒNG NHẤT CHIẾN THUẬT:
-           - HLV đá Possession Game -> Mọi lệnh cá nhân & kỹ năng đề xuất PHẢI phục vụ bóng ngắn, ban bật. TUYỆT ĐỐI CẤM xúi phất bóng bổng (Lofted Pass).
-        2. QUY TẮC NGÔN NGỮ ZERO-FLUFF: Không dùng HTML. 100% Tên chỉ số in-game phải ghi Tiếng Anh. TUYỆT ĐỐI KHÔNG in ra các thẻ/ngoặc vuông định hướng. Sử dụng từ ngữ chuyên môn bóng đá thực tế, đa dạng, mượt mà và dễ hiểu cho người chơi. Tuyệt đối không dùng từ R&D.
-        3. CHỈ SỐ CHÍNH XÁC TUYỆT ĐỐI: Phải đọc và ghi ĐÚNG con số cuối cùng (màu xanh lá) hiển thị trên ảnh (tức là đã bao gồm điểm buff HLV). KHÔNG tự ý làm toán trừ đi điểm buff. TUYỆT ĐỐI KHÔNG dùng cụm từ "chưa tính buff HLV" hay "chưa tính buff".
-        4. LỆNH CÁ NHÂN IN-GAME CHUẨN META:
+        [LUẬT THÉP BẬT TẮT META eFOOTBALL 2027 KHẮT KHE]:
+        1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn eFootball thực chiến, mượt mà. KHÔNG dùng HTML. KHÔNG in các thẻ ngoặc vuông định hướng. Tuyệt đối KHÔNG dùng cụm từ "R&D". 
+        2. CHỈ SỐ CHÍNH XÁC TUYỆT ĐỐI: Đọc và ghi ĐÚNG con số in-game (màu xanh lá) hiển thị trên ảnh. KHÔNG tự làm phép tính trừ điểm buff. TUYỆT ĐỐI KHÔNG ghi "chưa tính buff HLV" hay các từ tương tự.
+        3. CƠ CHẾ DUAL PLAYSTYLE (STYLE KÉP ĐỎ/XANH):
+           - Bắt buộc soi cả 2 thẻ Playstyle trên ảnh cầu thủ: Đỏ (In Possession) và Xanh (Out of Possession).
+           - Nếu Style Xanh ghi là "Basic" hoặc không có Style Xanh: Coi như thẻ bình thường, Build PP tập trung 100% tối ưu cho mặt trận tấn công và vị trí sở trường, không cần bận tâm phòng ngự.
+           - Nếu Style Xanh có tên cụ thể (Ví dụ: Front Line Pressure, Track Back...): BẮT BUỘC trích quỹ PP đắp vào Stamina, Aggression hoặc Defensive. Phải viết đoạn văn giải thích cách phân bổ này nuôi thể lực/tranh chấp để phục vụ giai đoạn pressing/phòng ngự.
+        4. CƠ CHẾ HLV ĐỜI MỚI (DUAL-FORMATION & TACTICAL LINKS):
+           - Sơ đồ luân phiên (Dual-Formation): Phân tích chi tiết hình dáng đội hình lúc Có bóng (Tấn công) và Mất bóng (Phòng ngự giật về).
+           - Sợi dây liên kết (Tactical Links): BẮT BUỘC soi 2 khung bài đánh (vd: Over-the-Top Pass, 1-2 Cut-in...). Giải mã bài đánh đó bằng cách chỉ định rõ Center Piece cần Style gì, Key Man cần Style gì để AI chạy chỗ tự động.
+           - QUY HOẠCH 23 NGƯỜI (Chế độ 4): Khi điền JSON, BẮT BUỘC ưu tiên chọn các cầu thủ mang Style khớp với Tactical Links của HLV để kích hoạt bài đánh. Ở mục "style", nếu là bài đánh 2 style thì ghi theo format: "Tên Style Đỏ (Đỏ) + Tên Style Xanh (Xanh)". Nếu thẻ basic thì ghi bình thường.
+        5. LỆNH CÁ NHÂN IN-GAME CHUẨN META:
            - Tấn công: CHỈ CHỌN 'Defensive' HOẶC 'Anchoring'.
            - Phòng ngự: CHỈ CHỌN 'Tight Marking', 'Man Marking', HOẶC 'Counter Target'.
         """
 
         if "1" in mode:
-            tab1_cmd = "Đánh giá Phôi Auto 5 chiều (Style, Hitbox, Skills, Form). KẾT LUẬN RÕ: Hợp hay Loại."
+            tab1_cmd = "Đánh giá Phôi Auto 5 chiều (Style, Hitbox, Skills, Form). Cân nhắc sức mạnh của Dual Playstyle (nếu Style xanh khác Basic). KẾT LUẬN RÕ: Hợp hay Loại."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DO ĐANG DÙNG THẺ AUTO."
             tab4_cmd = "Lệnh cá nhân In-game & 3 kịch bản nấc tâm lý."
             
         elif "2" in mode:
             tab1_cmd = "Đánh giá sự tương thích của Cầu thủ trong sơ đồ. Đề xuất Slot Booster (Crafting +1) phù hợp với thẻ cầu thủ."
-            tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ BẰNG TIẾNG ANH. Viết lập luận chiến thuật sắc bén, dùng từ chuyên môn đa dạng ở mỗi nhánh (TUYỆT ĐỐI KHÔNG in thẻ ngoặc vuông). Xài hết sạch quỹ PP."
+            tab2_cmd = "TỰ ĐỘNG BUILD TỐI ƯU CHỈ SỐ. Viết lập luận chiến thuật sắc bén. Nếu Style Xanh KHÁC Basic, bắt buộc trích quỹ nâng PP phòng ngự/thể lực và giải thích rõ. TUYỆT ĐỐI KHÔNG in thẻ ngoặc vuông. Xài hết sạch quỹ PP."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI DÀNH CHO DỰ ÁN VIDEO."
             tab4_cmd = "Gán Lệnh Cá Nhân phù hợp lối chơi và Đề xuất Top 5 Skills cho cầu thủ."
             
         elif "3" in mode:
-            tab1_cmd = "Phân tích HLV: Triết lý chủ đạo, Sơ đồ Tấn Công, Sơ đồ Phòng Ngự. Tiêu chuẩn Hitbox yêu cầu. KHÔNG NHẮC TỚI BOOSTER CẦU THỦ."
+            tab1_cmd = "Phân tích HLV: 1. Triết lý chủ đạo. 2. Sơ đồ luân phiên (Dual-Formation In/Out Possession). 3. GIẢI MÃ CHI TIẾT TACTICAL LINKS (Bài đánh tự động) chỉ rõ Center Piece và Key Man."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI: Tính năng này chỉ dành cho Thẩm định Cầu thủ, không áp dụng cho HLV."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "CẢNH BÁO TỪ CHỐI."
             
         elif "4" in mode:
-            tab1_cmd = "Phân tích Triết lý HLV và vẽ sa bàn Công/Thủ."
+            tab1_cmd = "Phân tích Triết lý HLV, Sơ đồ luân phiên (Dual-formation). GIẢI MÃ TACTICAL LINKS và chỉ ra các Playstyle bắt buộc phải có ở từng vị trí để kích hoạt bài đánh."
             tab2_cmd = """
-            QUY HOẠCH 23 CẦU THỦ (11 CHÍNH + 12 DỰ BỊ). KHÔNG NÊU TÊN NGOÀI ĐỜI. BẮT BUỘC TRẢ VỀ ĐÚNG FORMAT JSON DƯỚI ĐÂY BÊN TRONG CẶP DẤU ```json VÀ ```.
+            QUY HOẠCH 23 CẦU THỦ (11 CHÍNH + 12 DỰ BỊ). KHÔNG NÊU TÊN NGOÀI ĐỜI. Ở mục "style", BẮT BUỘC ƯU TIÊN chọn các Style khớp với Tactical Links của HLV. Ghi rõ Style Đỏ/Xanh nếu có. BẮT BUỘC TRẢ VỀ ĐÚNG FORMAT JSON DƯỚI ĐÂY BÊN TRONG CẶP DẤU ```json VÀ ```.
             ```json
             {
-              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan..."}],
+              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher (Đỏ) + Front Line Pressure (Xanh)", "vaitro": "Mũi khoan..."}],
               "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo..."}],
-              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Triển khai..."}],
+              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động Tactical Links..."}],
               "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra..."}]
             }
             ```
@@ -240,7 +246,7 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         else:
             tab1_cmd = "CẢNH BÁO TỪ CHỐI."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI."
-            tab3_cmd = "SO SÁNH AUTO VS THỦ CÔNG: Chênh lệch chỉ số Tiếng Anh, Hitbox va chạm, và Câu đúc kết giật gân làm Thumbnail Video."
+            tab3_cmd = "SO SÁNH AUTO VS THỦ CÔNG."
             tab4_cmd = "CẢNH BÁO TỪ CHỐI."
 
         system_instruction = f"""
@@ -364,7 +370,6 @@ if 'raw_report' in st.session_state:
         with t4: st.markdown(format_tab_content(tab4_c), unsafe_allow_html=True)
         raw_to_save = raw_text.replace("===", "\n\n")
         
-    # --- CHỨC NĂNG LƯU VÀO KHAY DỰ ÁN ---
     st.markdown("---")
     col_save, col_dl = st.columns(2)
     with col_save:
@@ -377,18 +382,22 @@ if 'raw_report' in st.session_state:
             st.rerun()
 
     if len(st.session_state['project_tray']) > 0:
+        master_text = "=== HỒ SƠ THẨM ĐỊNH CHIẾN THUẬT - DN SIM MY LEAGUE ===\n\n"
+        for idx, item in enumerate(st.session_state['project_tray']):
+            master_text += f"--- {idx + 1}. {item['title']} ---\n{item['content']}\n\n"
+            
         with col_dl:
-            master_text = "=== HỒ SƠ THẨM ĐỊNH CHIẾN THUẬT - DN SIM MY LEAGUE ===\n\n"
-            for idx, item in enumerate(st.session_state['project_tray']):
-                master_text += f"--- {idx + 1}. {item['title']} ---\n{item['content']}\n\n"
             st.download_button(
-                label=f"📥 TẢI XUỐNG DỰ ÁN ({len(st.session_state['project_tray'])} MỤC)",
+                label=f"📥 TẢI FILE (.TXT)",
                 data=master_text,
                 file_name=f"DNS_Project_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
                 mime="text/plain"
             )
             
         st.markdown(f"""<div class="tray-box"><p style="color: {label_color}; font-weight: 900; margin-bottom: 5px;">📁 KHAY DỰ ÁN ĐANG LƯU ({len(st.session_state['project_tray'])} cầu thủ/HLV)</p></div>""", unsafe_allow_html=True)
+        
+        with st.expander("📋 BẤM VÀO ĐÂY ĐỂ COPY TOÀN BỘ (Dành cho Điện thoại)"):
+            st.text_area("Văn bản tổng hợp (Chạm vào, chọn tất cả và Copy):", value=master_text, height=300)
         
         if st.button("🗑️ XÓA SẠCH KHAY DỰ ÁN ĐỂ LÀM KHÁCH MỚI"):
              st.session_state['project_tray'] = []

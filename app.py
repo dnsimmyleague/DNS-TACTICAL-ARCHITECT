@@ -60,8 +60,6 @@ custom_css = f"""
     div[data-testid="stSpinner"] {{ background-color: transparent !important; }}
     div[data-testid="stSpinner"] svg circle {{ stroke: {border_color} !important; }}
     div[data-testid="stSpinner"] > div > span, div[data-testid="stSpinner"] p {{ color: {label_color} !important; font-weight: 900 !important; font-size: 17px !important; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }}
-    [data-testid="stExpander"] {{ background-color: {expander_copy_bg} !important; border-radius: 8px; border: 1.5px solid {border_color}; margin-top: 15px; }}
-    [data-testid="stExpander"] summary p {{ color: {text_color} !important; font-weight: 800 !important; font-size: 15px; }}
     
     .stApp::before {{ 
         content: ""; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
@@ -88,20 +86,25 @@ custom_css = f"""
     [data-testid="stFileUploader"] section {{ background-color: {element_bg} !important; border: 1.5px dashed {border_color} !important; border-radius: 15px !important; box-shadow: {shadow_3d} !important; }}
     [data-testid="stFileUploader"] button {{ background: linear-gradient(135deg, #E5C058, #B8860B) !important; color: #121418 !important; font-weight: bold !important; }}
     .stButton > button {{ width: 100%; height: 58px; font-size: 19px; font-weight: 900; background: linear-gradient(135deg, #E5C058, #B8860B) !important; color: #121418 !important; border-radius: 12px !important; box-shadow: 0 8px 18px rgba(184, 134, 11, 0.35); }}
+    
     div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background-color: {tab_inactive_bg} !important; border: 2px solid rgba(212, 175, 55, 0.6) !important; border-bottom: none !important; border-radius: 14px 14px 0px 0px !important; padding: 12px 18px !important; }}
     div[data-testid="stTabs"] button[data-baseweb="tab"] p {{ color: {tab_inactive_color} !important; font-weight: 800 !important; }}
     div[data-testid="stTabs"] button[aria-selected="true"] {{ background: linear-gradient(145deg, #E5C058, #C89B2B) !important; transform: translateY(-6px); box-shadow: 0px -6px 15px rgba(200, 155, 43, 0.4) !important; }}
     div[data-testid="stTabs"] button[aria-selected="true"] p {{ color: #121418 !important; font-weight: 900 !important; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[data-baseweb="tab"] {{ background: {subtab_bg} !important; border-radius: 12px !important; transform: none; box-shadow: {subtab_shadow} !important; }}
     div[data-testid="stTabs"] div[data-testid="stTabs"] button[aria-selected="true"] {{ background: {subtab_active_bg} !important; border: 1.5px solid {border_color} !important; box-shadow: {subtab_active_shadow} !important; }}
+    
     .dns-card {{ background-color: {element_bg} !important; border: 2px solid {border_color} !important; border-radius: 0px 15px 15px 15px; padding: 25px; box-shadow: {shadow_3d} !important; position: relative; z-index: 2; margin-bottom: 20px; }}
     .dns-text {{ font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.7; color: {text_color} !important; }}
     .dns-footer {{ text-align: center; border-top: 1px dashed {border_color}; padding-top: 15px; margin-top: 25px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }}
     .warning-box {{ border-left: 5px solid #FF4D4D; background-color: rgba(255,77,77,0.15); padding: 12px 15px; border-radius: 8px; color: #FF4D4D !important; font-weight: bold; margin-bottom: 12px; }}
-    .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); list-style: none; transition: all 0.2s; }}
-    .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #121418 !important; box-shadow: {subtab_active_shadow}; }}
+    
+    /* GIAO DIỆN KHUNG 3D CHO CÁC TAB CẦU THỦ (EXPANDER) */
+    .dns-expander summary {{ padding: 15px; font-weight: 800; color: {label_color}; background: {subtab_bg}; cursor: pointer; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); list-style: none; transition: all 0.2s; box-shadow: 3px 3px 8px rgba(0,0,0,0.2); margin-bottom: 10px; }}
+    .dns-expander[open] summary {{ border-bottom: 1px dashed {border_color}; background: {subtab_active_bg}; color: #121418 !important; box-shadow: {subtab_active_shadow}; margin-bottom: 0px; border-radius: 10px 10px 0 0; }}
     .dns-expander summary::-webkit-details-marker {{ display: none; }}
-    .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; font-size: 14.5px; border-top: 1px solid rgba(212, 175, 55, 0.1); }}
+    .expander-content {{ padding: 15px; background: {app_bg}; color: {text_color} !important; font-size: 14.5px; border-top: 1px solid rgba(212, 175, 55, 0.1); border-left: 1px solid rgba(212, 175, 55, 0.3); border-right: 1px solid rgba(212, 175, 55, 0.3); border-bottom: 1px solid rgba(212, 175, 55, 0.3); border-radius: 0 0 10px 10px; margin-bottom: 15px; box-shadow: 3px 3px 8px rgba(0,0,0,0.1); }}
+    
     .tray-box {{ background-color: {element_bg}; border: 1.5px dashed {border_color}; border-radius: 12px; padding: 15px; margin-top: 25px; box-shadow: {shadow_3d}; }}
 </style>
 """
@@ -132,7 +135,7 @@ with col2:
     uploaded_managers = st.file_uploader("📸 2. Tải ảnh HLV (Manager Buff):", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
 
 # ---------------------------------------------------------
-# 3. HÀM KẾT XUẤT JSON VÀ UI
+# 3. HÀM KẾT XUẤT JSON VÀ UI (GIAO DIỆN 3D CỦA BOSS)
 # ---------------------------------------------------------
 def render_expander_from_json(items):
     if not items or len(items) == 0: 
@@ -161,10 +164,9 @@ def format_in_game_json(data):
     html_out += f"🔹 <strong>Đang dẫn bàn (Nấc Xanh):</strong> {data.get('k2', '')}<br>"
     html_out += f"🔹 <strong>Bị dẫn bàn (Nấc Đỏ):</strong> {data.get('k3', '')}"
     
-    # ĐÃ MỞ KHÓA CHO TOP 5 SKILLS HIỂN THỊ
     top_skills = data.get("top_5_skills", [])
     if top_skills and isinstance(top_skills, list):
-        html_out += "<br><br><strong>3. Top 5 Skills Bắt Buộc Cho Bộ Khung Chiến Thuật:</strong><br><br>"
+        html_out += "<br><br><strong>3. Top 5 Skills Bắt Buộc Cho Bộ Khung:</strong><br><br>"
         for skill in top_skills:
             html_out += f"⭐ {skill}<br>"
             
@@ -179,7 +181,6 @@ def translate_json_to_markdown(json_23, json_ingame):
                 for item in json_23[tuyen]:
                     md_out += f"- {item.get('vitri', '')} ({item.get('loai', '')}): Style {item.get('style', '')}. Vai trò: {item.get('vaitro', '')}\n"
     
-    # ĐÃ FIX LỖI MẤT TAB LỆNH & KỸ NĂNG KHI LƯU DỰ ÁN
     if json_ingame:
         md_out += "\n=== CÀI ĐẶT LỆNH & KỸ NĂNG IN-GAME ===\n\n"
         atk = json_ingame.get("individual_instructions", {}).get("tan_cong", [])
@@ -201,7 +202,7 @@ def translate_json_to_markdown(json_23, json_ingame):
     return md_out
 
 # ---------------------------------------------------------
-# 4. LÕI TƯ DUY AI (V4.3 - KHÔI PHỤC SKILLS & BẢO MẬT JSON)
+# 4. LÕI TƯ DUY AI (V4.5 - KỶ LUẬT THÉP BẢO VỆ JSON & BẢN QUYỀN)
 # ---------------------------------------------------------
 def execute_tactical_analysis(img_list, p_info, eco, mode):
     try:
@@ -215,15 +216,11 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         1. QUY TẮC NGÔN NGỮ: Dùng từ chuyên môn thực chiến. KHÔNG dùng HTML. KHÔNG in ngoặc vuông định hướng.
         2. CHỈ SỐ: Đọc và ghi ĐÚNG số màu xanh lá trên ảnh. TUYỆT ĐỐI KHÔNG ghi "chưa tính buff HLV".
         3. CƠ CHẾ DUAL PLAYSTYLE (Áp dụng khi Khám Cầu Thủ): Nếu Style Xanh khác Basic, bắt buộc phân tích cách phân bổ PP vào thể lực/phòng ngự.
-        4. CƠ CHẾ HLV ĐỜI MỚI (Áp dụng khi Khám HLV):
-           - Phân tích rõ Sơ đồ luân phiên (In/Out Possession).
-           - Phân tích rõ Tactical Links: Yêu cầu Center Piece / Key Man.
-           - LƯU Ý TỐI THƯỢNG CHO TAB HLV: TUYỆT ĐỐI CẤM NHẮC TỚI "SLOT BOOSTER" HOẶC "CRAFTING". HLV KHÔNG CÓ BOOSTER!
-        5. LỆNH IN-GAME CHUẨN META: Tấn công (Defensive/Anchoring). Phòng ngự (Tight Marking/Man Marking/Counter Target).
+        4. CƠ CHẾ HLV ĐỜI MỚI (Áp dụng khi Khám HLV): Phân tích rõ Sơ đồ luân phiên (In/Out Possession) và Tactical Links (yêu cầu Center Piece/Key Man). LƯU Ý TỐI THƯỢNG CHO TAB HLV: TUYỆT ĐỐI CẤM NHẮC TỚI BOOSTER HOẶC CRAFTING. HLV KHÔNG CÓ BOOSTER!
         """
 
         if "1" in mode:
-            tab1_cmd = "Đánh giá Phôi Auto 5 chiều (Style, Hitbox, Skills, Form). Cân nhắc Dual Playstyle. KẾT LUẬN: Hợp/Loại."
+            tab1_cmd = "Đánh giá Phôi Auto 5 chiều. Cân nhắc Dual Playstyle. KẾT LUẬN: Hợp/Loại."
             tab2_cmd = "CẢNH BÁO TỪ CHỐI."
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = "Lệnh cá nhân In-game & 3 kịch bản tâm lý."
@@ -243,20 +240,22 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
         elif "4" in mode:
             tab1_cmd = "Phân tích Triết lý HLV, Sơ đồ luân phiên và TACTICAL LINKS. TUYỆT ĐỐI KHÔNG NHẮC ĐẾN BOOSTER."
             tab2_cmd = """
-            BẮT BUỘC TRẢ VỀ DUY NHẤT 1 ĐOẠN CODE JSON BÊN TRONG ```json VÀ ```. TUYỆT ĐỐI CẤM VIẾT BẤT CỨ VĂN XUÔI NÀO TRONG PHẦN NÀY.
-            Ưu tiên chọn cầu thủ có Style khớp với Tactical Links của HLV.
+            QUY HOẠCH 23 CẦU THỦ CHO SƠ ĐỒ NÀY.
+            [KỶ LUẬT THÉP]: TUYỆT ĐỐI KHÔNG ĐƯỢC VÍ DỤ HAY NHẮC ĐẾN BẤT KỲ TÊN CẦU THỦ NGOÀI ĐỜI NÀO (CẤM NHẮC ĐẾN Mbappe, Saliba, Rodri, Van Dijk, v.v...). 
+            [KỶ LUẬT THÉP VỀ FORMAT]: BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐOẠN CODE JSON. TUYỆT ĐỐI KHÔNG ĐƯỢC VIẾT BẤT CỨ VĂN XUÔI NÀO TRƯỚC HAY SAU KHỐI JSON.
             ```json
             {
-              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan"}],
-              "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo"}],
-              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động"}],
-              "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra"}]
+              "FW": [{"vitri": "CF", "loai": "Đá chính", "style": "Goal Poacher", "vaitro": "Mũi khoan..."}],
+              "MF": [{"vitri": "DMF", "loai": "Đá chính", "style": "Anchor Man", "vaitro": "Mỏ neo..."}],
+              "DF": [{"vitri": "CB", "loai": "Đá chính", "style": "Build Up", "vaitro": "Phát động..."}],
+              "GK": [{"vitri": "GK", "loai": "Đá chính", "style": "Offensive GK", "vaitro": "Băng ra..."}]
             }
             ```
             """
             tab3_cmd = "CẢNH BÁO TỪ CHỐI."
             tab4_cmd = """
-            BẮT BUỘC TRẢ VỀ DUY NHẤT 1 ĐOẠN CODE JSON BÊN TRONG ```json VÀ ```. TUYỆT ĐỐI CẤM VIẾT BẤT CỨ VĂN XUÔI NÀO TRONG PHẦN NÀY.
+            CÀI ĐẶT LỆNH & SKILLS.
+            [KỶ LUẬT THÉP]: TUYỆT ĐỐI KHÔNG ĐƯỢC NHẮC TÊN CẦU THỦ NGOÀI ĐỜI. BẮT BUỘC CHỈ TRẢ VỀ 1 ĐOẠN CODE JSON DUY NHẤT NHƯ MẪU DƯỚI ĐÂY. KHÔNG VIẾT VĂN XUÔI BÊN NGOÀI.
             ```json
             {
               "individual_instructions": {
@@ -265,11 +264,8 @@ def execute_tactical_analysis(img_list, p_info, eco, mode):
               },
               "k1": "Xuất phát...", "k2": "Phòng ngự...", "k3": "Tấn công...",
               "top_5_skills": [
-                "1. Tên Skill: Lý do bắt buộc cho sơ đồ/vị trí...",
-                "2. Tên Skill: Lý do...",
-                "3. Tên Skill: Lý do...",
-                "4. Tên Skill: Lý do...",
-                "5. Tên Skill: Lý do..."
+                "1. Tên Skill: Lý do...",
+                "2. Tên Skill: Lý do..."
               ]
             }
             ```
@@ -347,12 +343,12 @@ if 'raw_report' in st.session_state:
         if "CẢNH BÁO TỪ CHỐI" in content and len(content) < 150:
             return f"<div class='warning-box'>⛔ Tính năng này đã bị khóa do không thuộc phạm vi của Chế độ phân tích hiện tại.</div>"
         html_content = content.replace('\n', '<br>')
-        # ĐÃ THÊM COPYRIGHT VÀO GÓC DƯỚI BÊN PHẢI CHUẨN XÁC THEO LỆNH BOSS
+        # GẮN LẠI CHỮ KÝ BẢN QUYỀN ĐẦY ĐỦ 2027
         return f"""<div class="dns-card">
             <div class="dns-text">{html_content}</div>
             <div class="dns-footer">
                 <span style="color: {footer_text_color}; font-style: italic; font-weight: 600;">Đồng bộ lúc: {report_time}</span>
-                <span style="color: {label_color}; font-weight: 900;">© 2027 DN SIM MY LEAGUE</span>
+                <span style="color: {label_color}; font-weight: 900;">© 2027 DN SIM MY LEAGUE. All rights reserved.</span>
             </div>
         </div>"""
 
@@ -360,8 +356,8 @@ if 'raw_report' in st.session_state:
         try:
             json_match = re.search(r'```(?:json)?\n([\s\S]*?)\n```', text, re.IGNORECASE)
             if json_match: return json.loads(json_match.group(1).strip())
-            match = re.search(r'\{[\s\S]*\}', text)
-            if match: return json.loads(match.group(0))
+            match = re.search(r'(\{[\s\S]*\})', text)
+            if match: return json.loads(match.group(1))
         except: pass
         return None
 
@@ -373,6 +369,7 @@ if 'raw_report' in st.session_state:
         json_data_ingame = extract_json(tab4_c)
         
         with t2: 
+            # ĐIỀU KIỆN VẼ RA CÁC TAB VÀ KHUNG 3D ĐÃ SẴN SÀNG
             if json_data_23 and any(k in json_data_23 for k in ["FW", "MF", "DF", "GK"]):
                 s1, s2, s3, s4 = st.tabs(["⚽ FW", "🎯 MF", "🛡️ DF", "🧤 GK"])
                 with s1: st.markdown(render_expander_from_json(json_data_23.get("FW", [])), unsafe_allow_html=True)
@@ -380,7 +377,6 @@ if 'raw_report' in st.session_state:
                 with s3: st.markdown(render_expander_from_json(json_data_23.get("DF", [])), unsafe_allow_html=True)
                 with s4: st.markdown(render_expander_from_json(json_data_23.get("GK", [])), unsafe_allow_html=True)
             else:
-                # LƯỚI AN TOÀN: IN RA NẾU AI XUẤT SAI JSON
                 st.markdown(format_tab_content(f"<span style='color:#FF4D4D;font-weight:bold;'>⚠️ AI xuất dữ liệu dạng tự do. Dưới đây là bản thô:</span><br><br>{tab2_c}"), unsafe_allow_html=True)
                 
         with t4: 
